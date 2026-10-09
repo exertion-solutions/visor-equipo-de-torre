@@ -226,6 +226,46 @@ function build() {
         ';',
     )
   }
+  // Modelo SK-575 (legacy-ext/84-modelo-sk575.js): los GLB optimizados en base64 + el decodificador meshopt de three (MIT,
+  // autocontenido). El V2 se abre por file:// (sin fetch), por eso van incrustados.
+  const modelsDir = path.join(root, 'public', 'models', 'tacker10')
+  const meshopt = path.join(
+    root,
+    'node_modules',
+    'three',
+    'examples',
+    'jsm',
+    'libs',
+    'meshopt_decoder.module.js',
+  )
+  const glbs = fs.existsSync(modelsDir)
+    ? fs
+        .readdirSync(modelsDir)
+        .filter((f) => /^sk575_[a-z_]+\.glb$/.test(f))
+        .sort()
+    : []
+  if (glbs.length && fs.existsSync(meshopt)) {
+    const dec = fs.readFileSync(meshopt, 'utf8')
+    const exp = /^export \{ MeshoptDecoder \};?\s*$/m
+    if (!exp.test(dec))
+      throw new Error('meshopt_decoder.module.js cambió: no se encontró su export')
+    blocks.push(
+      '/* meshoptimizer (MIT, three/examples/jsm/libs/meshopt_decoder.module.js) */\n(()=>{' +
+        dec.replace(exp, 'window.__MeshoptDecoder=MeshoptDecoder;') +
+        '})();',
+    )
+    const map = Object.fromEntries(
+      glbs.map((f) => [
+        f.slice(0, -4),
+        fs.readFileSync(path.join(modelsDir, f)).toString('base64'),
+      ]),
+    )
+    blocks.push(
+      '/* GLB del modelo SK-575 (public/models/tacker10/sk575_*.glb) */\nwindow.__TACKER_SK575_GLB=' +
+        JSON.stringify(map) +
+        ';',
+    )
+  }
   for (const f of readExtModules().filter((f) => f !== runtimeFile)) {
     blocks.push(`/* ${f} */\n` + fs.readFileSync(path.join(extDir, f), 'utf8'))
   }

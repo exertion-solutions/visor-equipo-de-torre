@@ -16,9 +16,10 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
 3. [x] **Nativo R3F**: componentes `sk575_equipo` / `sk575_locacion` en `TACKER10_SCENE` (mástil ya ubicable: base documentada).
 4. [x] **V2**: Capa CAD con el modelo SK-575 superpuesto (`cad/capa.py` → `capa-cad.json` → `npm run build:legacy`).
        Sin tocar la geometría base ni los DROPS.
-5. [ ] **Mejoras skill `equipo-3d`**: aristas en el nativo (hecho: `edges.ts`, toggle "Aristas"); GLB sin paso
-       `palette` en `gltf:optimize` (agente A, en curso); V2 Capa CAD con los GLB reales PBR + aristas (agente B, en curso).
-       Noche y desgaste de `visor.py` (en curso: nativo agente principal, V2 agente B), rotulados como efectos visuales.
+5. [x] **Mejoras skill `equipo-3d`**: aristas en el nativo (`edges.ts`); `gltf:optimize` con `--palette false`;
+       `exportar.py` sin soldar vértices + normales (antes el sombreado aplanaba los filos); V2: botón Capas → "Modelo SK-575"
+       (`legacy-ext/84-modelo-sk575.js`, GLB incrustados + meshopt, PBR, entorno room, aristas 28°, desgaste) que reemplaza
+       al procedural mientras está encendido. Pendiente: noche en V2; revisar el nativo con los GLB nuevos (ahora con normales).
 6. [ ] `npm run typecheck`, `lint`, `test`, `build`; capturas con `npm run snap`; commit, push, PR, merge a `main`,
        deploy de GitHub Pages y verificación de la URL en vivo. Sincronizar la copia de OneDrive.
 
@@ -27,7 +28,8 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
 - Hecho (código): fases 1–4. Modelo canónico `cad/sk575/modelo.py` (reemplaza `~/cad/tacker10/tacker10.py`), 16 GLB
   `sk575_*`, escena nativa, Capa CAD V2, aristas nativas. Skills del proyecto y `FEATURE_PARITY.md` actualizados con las
   lecciones de `equipo-3d` (aristas 28°, trampa `palette`).
-- En curso (agentes): A `gltf:optimize` sin `palette` + regenerar `public/models`; B Capa CAD V2 con GLB reales.
+- 2026-10-09: V2 muestra el modelo SK-575 igual que `~/cad/tacker10/tacker10.html` (capturas en `.tmp/cmp/sk*.png`).
+  Tests legacy 105/105, unit 136/136 (+ timeouts de workers conocidos).
 - Falta: verificación completa, capturas (`npm run snap`), commit, push, PR, merge a `main`, deploy de GitHub Pages y
   verificación de la URL en vivo, sincronizar la copia de OneDrive.
 

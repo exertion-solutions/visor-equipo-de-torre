@@ -45,6 +45,9 @@ runGltfTransform([
   'meshopt',
   '--texture-compress',
   'webp',
+  // palette fusiona los materiales en un `PaletteMaterial` con textura: se pierden los nombres `<id>_<material>` y el PBR
+  '--palette',
+  'false',
   ...extra,
 ])
 console.log(`\nOptimizado → ${path.relative(process.cwd(), output)} (original intacto)`)
