@@ -1,0 +1,5 @@
+# Entorno SK-575 (separado del cad-env de CadQuery: build123d 0.13 usa cadquery-ocp 8.x, incompatible con OCP 7.9).
+# venv: python -m venv %USERPROFILE%\.cad-venv  — ver cad/sk575/README.md
+build123d==0.13.0
+trimesh>=4,<5
+numpy

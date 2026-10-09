@@ -17,7 +17,11 @@ test('el módulo y los datos entran en el HTML generado', () => {
 })
 
 test('4 ítems con procedencia y estado; el mástil es ILUSTRATIVO', () => {
-  assert.deepEqual(data.items.map((i) => i.id), ['carrier_huella', 'layout_tkr10', 'piso_trabajo', 'mastil'])
+  // los sk575_* (modelo de referencia) se prueban en capa-cad-sk575.test.mjs
+  assert.deepEqual(
+    data.items.filter((i) => i.grupo !== 'sk575').map((i) => i.id),
+    ['carrier_huella', 'layout_tkr10', 'piso_trabajo', 'mastil'],
+  )
   for (const i of data.items) {
     assert.ok(i.fuente && i.estado && i.nombre, i.id)
     assert.ok(i.tris || i.lineas, i.id)
@@ -50,7 +54,8 @@ test('las cotas documentadas se reproducen: carrier 18 × 4 m terminando a 1,3 m
 test('la altura del mástil es la documentada (31,6992 m) y pesa poco', () => {
   const ys = data.items.find((i) => i.id === 'mastil').lineas.flatMap((l) => l.p.filter((_, k) => k % 3 === 1))
   assert.ok(Math.abs(Math.max(...ys) - Math.min(...ys) - 31.6992) < 0.001)
-  assert.ok(fs.statSync(dataPath).size < 400_000)
+  const base = { ...data, items: data.items.filter((i) => i.grupo !== 'sk575') }
+  assert.ok(JSON.stringify(base).length < 400_000)
 })
 
 test('aviso del entorno de locación (78) en el HTML, sin afirmar marcas ni capacidades', () => {

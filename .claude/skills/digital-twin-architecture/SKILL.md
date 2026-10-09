@@ -35,6 +35,14 @@ Ver `docs/legacy-audit-2026-09-25.md` (patrones a conservar, inconsistencias, l�
 - Textos de riesgos/controles del legacy: importar como `pendingValidation` (sin fuente). Ver skill `qhse-visualization`.
 - No copiar coordenadas o textos que contradigan los documentos (anclajes 13–18 m, "mástil ~30 m"): registrar como conflicto o corregir.
 
+## Modelos CAD externos (p. ej. `cad/sk575/`)
+
+- Las cotas que usa el modelo viven en `technical-spec.js` (fuente única) y el exportador las verifica antes de generar GLB; una cota que solo está en el `.py` no es dato.
+- Contrato GLB `<id>_<rol>` con `<id>` = `Component.id`; un GLB por componente seleccionable; `meta.json` con confianza y `as_built: false`.
+- Cotas medidas sobre vistas CAD sin acotar (p. ej. Parts Manual con escala calibrada) → B/C y `verified: false`; transcripciones de agentes también `verified: false` hasta revisar el original.
+- Fuente CAD canónica del SK-575: `cad/sk575/modelo.py` (no `~/cad/tacker10/`). Aristas, PBR, noche y desgaste son presentación: no cambian datos ni confianza.
+- Documentos de terceros con reproducción prohibida: se citan por código/ruta en `Source.ref`, no se suben (repo público).
+
 ## Checklist al agregar datos
 
 - [ ] `npm run test:unit` (validar con `rigSchema`)

@@ -59,3 +59,11 @@ description: Use when writing or reviewing 3D scene code in this project (three,
 - Los materiales emisivos del visor legacy los apaga `setMode()`; luces que deben persistir (lentes, baliza) van en `MeshBasicMaterial`.
 - Render bajo demanda: para animaciones sueltas (baliza) hay que pedir frame con `R.invalidate()`, no con eventos sintéticos.
 - Estética con fuente: cada detalle no documentado se comenta `// estético`; las cantidades (luminarias 7+5, reflectores 3, bulones) salen del Libro.
+
+## Aristas ("sombreado con aristas", estilo AutoCAD/SolidWorks)
+
+- Patrón del visor CAD de referencia (`~/cad/visor.py`, skill de usuario `equipo-3d`), en `src/scene/loaders/edges.ts`: a cada Mesh un `LineSegments` hijo con `EdgesGeometry(geometry, EDGE_ANGLE = 28°)` y un único `LineBasicMaterial` compartido (`#0b0d10`, `opacity 0.55`, transparente). Idempotente (`userData.edges`).
+- Las líneas **no participan del picking**: `lines.raycast = () => {}` (y no son Mesh, así que el contorno las ignora).
+- Toggle por store (`viewerStore.edges` / `toggleEdges`, botón "Aristas" de `StatusBar`, solo motor nativo): `setEdgesVisible` + `invalidate()` porque el frameloop es bajo demanda. Nunca recrear la geometría al alternar.
+- **Noche y desgaste** (`noche=1` / `desgaste=1` de `visor.py`): toggles `viewerStore.night` / `wear`, botones "Noche" / "Desgaste" de `StatusBar`. Noche = luminarias emisivas como luces puntuales (agrupadas por cercanía, tope de luces) + sombras; desgaste = `onBeforeCompile` sobre los materiales del GLB (suciedad cerca del suelo y variación de brillo en coordenadas de mundo, sin texturas). Ambos reversibles (restaurar el shader/luces al apagar) y con `invalidate()`.
+- Son **efectos visuales de presentación**: no son datos, no representan una condición QHSE (suciedad ≠ estado del equipo) ni un diseño o cálculo de iluminación. Rotularlos así en la UI.

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { GRADE_LABELS, type GeometryGrade } from '@/lib/legacyBridge'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
@@ -17,6 +18,8 @@ export function StatusBar() {
   const mode = useModeStore((s) => s.mode)
   const engine = useViewerStore((s) => s.engine)
   const selection = useViewerStore((s) => (s.engine === 'legacy' ? s.selection : null))
+  const edges = useViewerStore((s) => s.edges)
+  const toggleEdges = useViewerStore((s) => s.toggleEdges)
 
   return (
     <footer
@@ -68,7 +71,20 @@ export function StatusBar() {
         Geometría: referencia digital · no as-built
       </span>
       <span className="hidden shrink-0 md:inline">Escala: 1 unidad = 1 m</span>
-      <Badge variant="outline" className="ml-auto shrink-0">
+      {engine === 'native' && (
+        <Button
+          type="button"
+          size="xs"
+          variant={edges ? 'secondary' : 'ghost'}
+          aria-pressed={edges}
+          onClick={toggleEdges}
+          title="Sombreado con aristas (estilo CAD)"
+          className="ml-auto shrink-0"
+        >
+          Aristas
+        </Button>
+      )}
+      <Badge variant="outline" className={engine === 'native' ? 'shrink-0' : 'ml-auto shrink-0'}>
         Motor: {ENGINE_LABELS[engine]}
       </Badge>
     </footer>
