@@ -20,8 +20,9 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
        `exportar.py` sin soldar vértices + normales (antes el sombreado aplanaba los filos); V2: botón Capas → "Modelo SK-575"
        (`legacy-ext/84-modelo-sk575.js`, GLB incrustados + meshopt, PBR, entorno room, aristas 28°, desgaste) que reemplaza
        al procedural mientras está encendido. Pendiente: noche en V2; revisar el nativo con los GLB nuevos (ahora con normales).
-6. [ ] `npm run typecheck`, `lint`, `test`, `build`; capturas con `npm run snap`; commit, push, PR, merge a `main`,
-       deploy de GitHub Pages y verificación de la URL en vivo. Sincronizar la copia de OneDrive.
+6. [x] typecheck, lint, format, test, build; PR #12 mergeado (520d93c); deploy de Pages OK y verificado en vivo
+       (https://exertion-solutions.github.io/visor-equipo-de-torre/legacy/TACKER10_Digital_Rig_V2.html, botón
+       "Modelo SK-575" carga los 16 componentes, consola sin errores).
 
 ## Estado (checkpoint)
 
@@ -30,9 +31,8 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
   lecciones de `equipo-3d` (aristas 28°, trampa `palette`).
 - 2026-10-09: V2 muestra el modelo SK-575 igual que `~/cad/tacker10/tacker10.html` (capturas en `.tmp/cmp/sk*.png`).
   Tests legacy 105/105, unit 136/136 (+ timeouts de workers conocidos).
-- Falta: verificación completa, capturas (`npm run snap`), commit, push, PR, merge a `main`, deploy de GitHub Pages y
-  verificación de la URL en vivo, sincronizar la copia de OneDrive.
+- Falta: modo noche en el V2; revisar el nativo R3F con los GLB nuevos; sincronizar la copia de OneDrive (sin definir cuál).
 
 ## Próximo comando
 
-`npm run typecheck && npm run lint && npm run format:check && npm test && npm run build`
+`npm run dev` → motor "R3F nativo" → revisar `sk575_equipo` con los GLB nuevos (materiales por pieza + normales).
