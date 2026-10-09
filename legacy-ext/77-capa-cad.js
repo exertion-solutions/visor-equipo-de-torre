@@ -8,6 +8,10 @@
  * NO reemplaza nada ni es as-built: confianza C, malla semitransparente y aristas. El mástil es ILUSTRATIVO (ancho, paneles y
  * diámetros sin plano del fabricante) y se ubica sobre el eje del mástil del V2 (`R.mast`), no sobre una posición documentada.
  *
+ * Además, los ítems `grupo: 'sk575'` (cad/sk575/capa.py) son el modelo SK-575 de referencia, uno por componente, anclados en el
+ * mundo con la base documentada (origen boca de pozo, carrier −X, Y arriba): permiten comparar el V2 procedural con las cotas
+ * del relevamiento. Simplificado (piezas esbeltas como ejes, medianas como cajas) y tampoco es as-built.
+ *
  * Botón "Capa CAD" en el menú Capas. API para pruebas: `window.__tackerCad = { on, off, toggle, isOn, items }`.
  */
 window.__rigExt.onPost((R) => {
@@ -128,6 +132,8 @@ window.__rigExt.onPost((R) => {
     #cad-card .row{display:flex;gap:8px;align-items:flex-start;margin:4px 0}
     #cad-card .sw{flex:none;width:11px;height:11px;border-radius:3px;margin-top:2px;border:1px solid rgba(255,255,255,.35)}
     #cad-card .tag{font-size:10.5px;opacity:.75}
+    #cad-card .grp{margin:8px 0 2px;color:#DDBB65;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    #cad-card .lst{max-height:min(46vh,360px);overflow:auto}
     #cad-card .warn{margin-top:6px;color:#E0B870;font-size:11px}
     body.opts-hidden #cad-card{display:none}
   `
@@ -142,17 +148,22 @@ window.__rigExt.onPost((R) => {
       /[&<>"]/g,
       (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
     )
+  const fila = (it, conFuente) =>
+    `<div class="row"><span class="sw" style="background:${esc(it.color)}"></span><div>${esc(it.nombre)}<div class="tag">${esc(it.estado)}${conFuente ? ' · ' + esc(it.fuente) : ''}</div></div></div>`
+  const sk = usados.filter((it) => it.grupo === 'sk575')
+  const base = usados.filter((it) => it.grupo !== 'sk575')
   card.innerHTML =
     '<details><summary><b>Capa CAD · referencia dimensional</b> <span class="tag">confianza ' +
     esc(D.confianza) +
-    ' · no as-built</span></summary>' +
-    usados
-      .map(
-        (it) =>
-          `<div class="row"><span class="sw" style="background:${esc(it.color)}"></span><div>${esc(it.nombre)}<div class="tag">${esc(it.estado)} · ${esc(it.fuente)}</div></div></div>`,
-      )
-      .join('') +
-    `<div class="warn">${esc(D.aviso)} El mástil se apoya en el eje del V2.</div></details>`
+    ' · no as-built</span></summary><div class="lst">' +
+    '<div class="grp">Cotas verificadas</div>' +
+    base.map((it) => fila(it, true)).join('') +
+    (sk.length
+      ? '<div class="grp">Modelo SK-575 de referencia (por componente)</div>' +
+        sk.map((it) => fila(it, false)).join('') +
+        `<div class="tag">${esc(sk[0].fuente)}</div>`
+      : '') +
+    `</div><div class="warn">${esc(D.aviso)} El mástil ilustrativo se apoya en el eje del V2; el modelo SK-575 se ancla en el mundo con su base documentada (boca de pozo en el origen, carrier hacia −X).</div></details>`
   document.body.appendChild(card)
 
   const btn = document.createElement('button')
@@ -161,7 +172,7 @@ window.__rigExt.onPost((R) => {
   btn.type = 'button'
   btn.textContent = 'Capa CAD'
   btn.title =
-    'Superpone la geometría CAD verificada (carrier, piso, layout, mástil ilustrativo) sobre el modelo'
+    'Superpone la geometría CAD verificada (carrier, piso, layout, mástil ilustrativo) y el modelo SK-575 de referencia sobre el modelo'
   btn.setAttribute('aria-pressed', 'false')
   if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
     window.__rigToolbar.add('capas', btn)

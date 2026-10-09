@@ -70,6 +70,7 @@ const THREE_CLASSES = {
   DirectionalLight: 'Br',
   DoubleSide: 'sn',
   BackSide: 'cn',
+  PMREMGenerator: 'dl',
 }
 
 const obj = (map) =>

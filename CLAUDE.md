@@ -78,7 +78,7 @@ npm run assets:decoders               # refresca public/decoders desde three
 src/app · components/{viewer,equipment,qhse,operation,training,ui} · scene/{cameras,lighting,controls,loaders,effects}
 src/data/{rigs,equipment,qhse,training} · stores · hooks · lib/{three,geometry,units} · types
 public/{legacy,models/tacker10,textures,environments,decoders} · assets/source
-cad/ (CadQuery paramétrico → GLB en assets/source, ver cad/README.md) · legacy-ext/ (módulos del visor V2) · scripts/ (build-legacy, snap, gltf-*) · tests/ (node --test)
+cad/ (CadQuery paramétrico → GLB en assets/source, ver cad/README.md; cad/sk575/ = modelo SK-575 en build123d, entorno aparte, ver cad/sk575/README.md) · legacy-ext/ (módulos del visor V2) · scripts/ (build-legacy, snap, gltf-*) · tests/ (node --test)
 docs/{fuentes/{tacker10,drops},drops,pdf-review,references,preview} · reference/{legacy,v2-previo}
 ```
 
@@ -106,6 +106,10 @@ docs/{fuentes/{tacker10,drops},drops,pdf-review,references,preview} · reference
 Ver `docs/pdf-review/informe-tecnico-tacker.md` y los PDF de `docs/fuentes/tacker10/` (folleto Tacker 10 rev. 26/06/2024,
 layout TKR-10). Los documentos Tacker 11 son referencia de layout/seguridad: **no** alteran la
 geometría de Tacker 10 sin comprobar equivalencia. Anotaciones manuscritas no son cotas técnicas.
+
+TACKER 10 = **Service King SK-575** (mástil DKA104-330-08). Relevamiento 2026-10-09 (placa API, spec sheet, planos TACKER,
+manuales SK, layout WS10): `docs/pdf-review/informe-sk575-2026-10-09.md` (cotas A/B/C y conflictos). Esos documentos
+**no se versionan** (propiedad TACKER / repo público): índice en `docs/fuentes/tacker10/README-sk575.md`.
 
 ## Skills de proyecto (`.claude/skills/`)
 

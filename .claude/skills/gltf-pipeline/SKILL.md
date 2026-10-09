@@ -28,6 +28,16 @@ description: Use when receiving, inspecting, optimizing or integrating GLB/glTF 
 
 El legacy tiene ~900 draw calls porque cada barra de reticulado, cable y caño es un mesh. Al modelar/exportar: fusionar **dentro** de un componente por material (los `join` del CLI operan sobre todo el árbol: usarlos solo por componente, no globalmente) o usar `EXT_mesh_gpu_instancing` para repetidos (`--instance`, ≥5). Un componente = una unidad seleccionable; no fusionar entre componentes.
 
+## Export desde build123d / trimesh (`cad/sk575/exportar.py`)
+
+- **Un GLB por componente**: `trimesh.Scene` con nodo raíz = `Component.id` y una malla por material `<id>_<rol>` (fusiona dentro del componente → ~1 draw call por material). Junto a cada GLB, `<id>.meta.json` con confianza, alcance, triángulos y `as_built: false`.
+- **Verificar cotas antes de exportar**: el script compara las constantes del modelo con `technical-spec.js` (leído con `node`) y sale con exit 1 si una no cierra. Nunca exportar un modelo cuyas cotas documentadas no se verificaron.
+- **Presupuesto de triángulos por componente**: imprimir tris por componente y total (nativo < 1,5 M tris, < 300 draw calls). Teselar más grueso lo fino (`cable`, `goma`: tolerancia propia).
+- **Cables de tambores**: no modelar cada vuelta del cable enrollado; usar un cilindro/envolvente por capa y tramos rectos a la corona (el enrollado helicoidal multiplica los triángulos sin aportar dato).
+- **Modelo canónico: `cad/sk575/modelo.py`** (reemplaza a `~/cad/tacker10/tacker10.py`: misma geometría + cotas exactas 48", 15.2992, 20.629, 72", tambor de cable más liviano y etiquetas `comp()`). Editar ahí, no en `~/cad`.
+- **Trampa: el paso `palette` de `gltf-transform optimize`** convierte los materiales PBR por material en `PaletteMaterial` con texturas → rompe el contrato `<id>_<mat>` (y los factores metalness/roughness). Por eso `gltf:optimize` lo desactiva. Verificar tras optimizar: materiales nombrados `<id>_<mat>` con `baseColorFactor`/`metallicFactor`/`roughnessFactor` y **sin texturas** (`gltf:inspect`).
+- Meshopt sobre el lote SK-575: ~23 MB → **1,6 MB**, sin perder nombres (wrapper con `--flatten false --join false`).
+
 ## Notas
 
 - Meshopt: el decoder viene en el loader. Draco: `--compress draco` (decoders en `public/decoders/draco`). KTX2: `--texture-compress ktx2` requiere el binario `toktx` (no instalado); hasta entonces, webp.
