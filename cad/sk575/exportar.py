@@ -126,7 +126,9 @@ def exportar(solo=None):
                     F += [(base + a, base + b, base + c) for a, b, c in ts]
             if not F:
                 continue
-            m = trimesh.Trimesh(vertices=np.array(V), faces=np.array(F), process=True)
+            # process=False: sin soldar vértices entre caras B-rep → normales suaves dentro de cada cara y filo entre caras
+            # (como export_gltf de build123d / visor.py). Soldar aplanaba los filos al recalcular normales en el visor.
+            m = trimesh.Trimesh(vertices=np.array(V), faces=np.array(F), process=False)
             col, met, rough, *emi = MATS[mat]
             pbr = PBRMaterial(name="%s_%s" % (cid, mat), baseColorFactor=_hex(col) + [1.0],
                               metallicFactor=met, roughnessFactor=rough,
@@ -136,7 +138,7 @@ def exportar(solo=None):
             scene.add_geometry(m, node_name=node, geom_name=node, parent_node_name=cid)
             tris_total += len(m.faces)
         conf, alcance = INFO[cid]
-        (OUT / (cid + ".glb")).write_bytes(scene.export(file_type="glb"))
+        (OUT / (cid + ".glb")).write_bytes(scene.export(file_type="glb", include_normals=True))
         meta = dict(id=cid, confianza=conf, alcance=alcance, triangulos=tris_total, materiales=sorted(mats),
                     marco="glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
                     fuentes="docs/pdf-review/informe-sk575-2026-10-09.md", as_built=False)
