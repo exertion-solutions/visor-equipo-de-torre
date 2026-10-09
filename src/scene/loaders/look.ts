@@ -18,7 +18,9 @@ float h3(vec3 p){return fract(sin(dot(p,vec3(12.99,78.23,37.72)))*43758.55);}
 float vn(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}`
 
 /** Shader de desgaste de visor.py, en coordenadas de mundo (Y arriba, suelo en y = 0), sin texturas. */
-export function wearShader(sh: Pick<WebGLProgramParametersWithUniforms, 'vertexShader' | 'fragmentShader'>): void {
+export function wearShader(
+  sh: Pick<WebGLProgramParametersWithUniforms, 'vertexShader' | 'fragmentShader'>,
+): void {
   sh.vertexShader = sh.vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec3 vW;')
     .replace(
@@ -48,7 +50,8 @@ function materials(root: Object3D): MeshStandardMaterial[] {
   const out = new Set<MeshStandardMaterial>()
   root.traverse((o) => {
     const m = (o as Mesh).material as MeshStandardMaterial | MeshStandardMaterial[] | undefined
-    for (const mat of Array.isArray(m) ? m : m ? [m] : []) if (mat.isMeshStandardMaterial) out.add(mat)
+    for (const mat of Array.isArray(m) ? m : m ? [m] : [])
+      if (mat.isMeshStandardMaterial) out.add(mat)
   })
   return [...out]
 }

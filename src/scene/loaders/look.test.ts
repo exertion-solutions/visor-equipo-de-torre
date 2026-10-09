@@ -17,7 +17,10 @@ function escena() {
 
 describe('look (efectos de presentación)', () => {
   it('wearShader inyecta el ruido en los chunks de MeshStandardMaterial', () => {
-    const sh = { vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader }
+    const sh = {
+      vertexShader: ShaderLib.standard.vertexShader,
+      fragmentShader: ShaderLib.standard.fragmentShader,
+    }
     wearShader(sh)
     expect(sh.vertexShader).toContain('vW=(modelMatrix')
     expect(sh.fragmentShader).toContain('float sucio=')

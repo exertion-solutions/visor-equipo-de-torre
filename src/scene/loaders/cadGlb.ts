@@ -51,7 +51,11 @@ export interface CadMeshData {
 }
 
 /** Aplana cada Mesh de `root` a datos planos en mundo (dequantiza KHR_mesh_quantization vía fromBufferAttribute). */
-export function extractCadMeshes(root: Object3D, component: string, edgeAngle = EDGE_ANGLE): CadMeshData[] {
+export function extractCadMeshes(
+  root: Object3D,
+  component: string,
+  edgeAngle = EDGE_ANGLE,
+): CadMeshData[] {
   root.updateMatrixWorld(true)
   const out: CadMeshData[] = []
   const v = new Vector3()
@@ -68,7 +72,9 @@ export function extractCadMeshes(root: Object3D, component: string, edgeAngle = 
     }
     const geo = new BufferGeometry()
     geo.setAttribute('position', new Float32BufferAttribute(position, 3))
-    const index = src.index ? Uint32Array.from({ length: src.index.count }, (_, i) => src.index!.getX(i)) : null
+    const index = src.index
+      ? Uint32Array.from({ length: src.index.count }, (_, i) => src.index!.getX(i))
+      : null
     if (index) geo.setIndex(Array.from(index))
 
     const nrm = src.getAttribute('normal')
@@ -123,7 +129,9 @@ export async function loadSk575CadMeshes(baseUrl: string): Promise<CadMeshData[]
   ])
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
   const scenes = await Promise.all(
-    SK575_GLBS.map((id) => loader.loadAsync(`${baseUrl}models/tacker10/${id}.glb`).then((g) => [id, g.scene] as const)),
+    SK575_GLBS.map((id) =>
+      loader.loadAsync(`${baseUrl}models/tacker10/${id}.glb`).then((g) => [id, g.scene] as const),
+    ),
   )
   return scenes.flatMap(([id, scene]) => extractCadMeshes(scene, id))
 }
