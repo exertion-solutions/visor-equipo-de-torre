@@ -9489,8 +9489,8 @@ window.__rigExt.onPost(() => {
  * Marco = el del V2: origen en la boca de pozo a nivel de terreno, carrier hacia −X, Y arriba, metros. NO es as-built
  * (confianza B/C por componente, docs/pdf-review/informe-sk575-2026-10-09.md). Desgaste y entorno son EFECTOS VISUALES.
  *
- * Botón "Modelo SK-575" en el menú Capas: muestra el modelo y oculta los 13 componentes procedurales del V2 (los restaura al
- * apagarlo). API para pruebas: `window.__tackerSk575 = { on, off, toggle, isOn, ready }`.
+ * Encendido por defecto al abrir. Botón "Modelo SK-575" en el menú Capas: apagarlo vuelve a los 13 componentes procedurales
+ * del V2. API para pruebas: `window.__tackerSk575 = { on, off, toggle, isOn, ready }`.
  */
 window.__rigExt.onPost((R) => {
   const B64 = window.__TACKER_SK575_GLB
@@ -9802,17 +9802,14 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     window.__rigToolbar.add('capas', btn)
   else document.querySelector('header')?.appendChild(btn)
 
-  const previos = new Map() // visibilidad de los grupos procedurales antes de encender
+  // Se oculta el contenedor de los 13 grupos procedurales (`equipo_pulling`), no cada grupo: los modos, el aislado y la
+  // secuencia de montaje cambian la visibilidad de los grupos y no deben volver a mostrarlos encima del SK-575.
+  const procedural = Object.values(R.groups || {})[0]?.parent
   function set(on) {
     on = !!on
     if (on === root.visible) return Promise.resolve(root)
     root.visible = on
-    for (const [id, g] of Object.entries(R.groups || {})) {
-      if (on) {
-        previos.set(id, g.visible)
-        g.visible = false
-      } else if (previos.has(id)) g.visible = previos.get(id)
-    }
+    if (procedural) procedural.visible = !on
     card.hidden = !on
     btn.setAttribute('aria-pressed', String(on))
     btn.classList.toggle('on', on)
@@ -9828,6 +9825,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     isOn: () => root.visible,
     ready: () => carga,
   }
+  set(true) // el SK-575 es el equipo por defecto al abrir; el botón vuelve al procedural del V2
 })
 
 </script>
