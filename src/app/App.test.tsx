@@ -42,7 +42,7 @@ describe('App', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: /R3F nativo/ }))
     expect(await screen.findByTestId('native-viewport')).toBeTruthy()
-    // El iframe NO se desmonta (conserva estado y evita re-descargar 1,3 MB): solo se oculta.
+    // El iframe NO se desmonta (conserva estado y evita re-descargar ≈7 MB): solo se oculta.
     const frame = screen.getByTitle(/Visor TACKER 10 V2/)
     expect(frame.parentElement?.className).toContain('hidden')
     expect(screen.getByRole('button', { name: /R3F nativo/ }).getAttribute('aria-pressed')).toBe(
