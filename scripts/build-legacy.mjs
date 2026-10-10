@@ -119,7 +119,7 @@ const patches = [
     find: 'window.__rig={groups:Jt,COMPONENTS:at,selectComponent:tr,setExplode:Fh,focusOn:ef,state:Me};',
     replace:
       `window.__rig={groups:Jt,COMPONENTS:at,selectComponent:tr,setExplode:Fh,focusOn:ef,state:Me,` +
-      `scene:Ft,renderer:ot,camera:()=>wt,pickables:Dh,materials:jd,centers:Tn,explodeOffsets:Vx,view:Pe,families:nr,` +
+      `scene:Ft,renderer:ot,camera:()=>wt,controls:()=>qt,pickables:Dh,materials:jd,centers:Tn,explodeOffsets:Vx,view:Pe,families:nr,` +
       `three:${obj(THREE_CLASSES)},mast:gt,hookHeight:Hn,invalidate:At};` +
       `window.__rigExt&&window.__rigExt.runPost(window.__rig);`,
   },

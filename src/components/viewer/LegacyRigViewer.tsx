@@ -29,7 +29,7 @@ const READY_FALLBACK_MS = 45_000
  * `modeStore` es la única fuente de verdad del modo; vista/capas/selección se reflejan desde el visor.
  *
  * El iframe NO se desmonta al cambiar de motor (`active=false` solo lo oculta): así se conservan cámara,
- * capas y mediciones y no se vuelve a bajar el HTML (1,3 MB).
+ * capas y mediciones y no se vuelve a bajar el HTML (≈7 MB).
  */
 export function LegacyRigViewer({ active = true }: { active?: boolean }) {
   const frameRef = useRef<HTMLIFrameElement>(null)
@@ -135,7 +135,7 @@ function LoadingOverlay() {
         </div>
         <p className="text-muted-foreground text-xs">
           {slow
-            ? 'Sigue cargando: el modelo es pesado (≈1,3 MB). Puede tardar unos segundos más.'
+            ? 'Sigue cargando: el visor pesa ≈7 MB (incluye el modelo SK-575). Puede tardar unos segundos más.'
             : 'Preparando el modelo TACKER 10'}
         </p>
       </div>
