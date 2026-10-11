@@ -27,11 +27,9 @@ window.__rigExt.onPost((R) => {
       previo = {
         ortho: isOn($('c-ortho')),
         night: isOn($('c-night')),
-        sk575: !!window.__tackerSk575?.isOn(),
         layers: window.__tackerLayers?.get() ?? [],
         vis: ocultables().map((o) => [o, o.visible]),
       }
-      window.__tackerSk575?.on()
       window.__tackerLayers?.apply([])
       if (previo.ortho) $('c-ortho')?.click()
       if (!previo.night) $('c-night')?.click()
@@ -48,7 +46,6 @@ window.__rigExt.onPost((R) => {
       for (const [o, v] of p.vis) o.visible = v
       if (isOn($('c-ortho')) !== p.ortho) $('c-ortho')?.click()
       if (isOn($('c-night')) !== p.night) $('c-night')?.click()
-      if (!p.sk575) window.__tackerSk575?.off()
       window.__tackerLayers?.apply(p.layers)
     }
     previo = on ? previo : null
