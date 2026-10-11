@@ -12,7 +12,7 @@ import {
 import { EDGE_ANGLE } from './edges'
 
 /**
- * Modelo SK-575 de referencia (public/models/tacker10/sk575_*.glb) para la Capa CAD del visor V2 (legacy-ext/77-capa-cad.js).
+ * Modelo SK-575 de referencia (public/models/tacker10/sk575_*.glb) (el V2 lo integra en legacy-ext/84-modelo-sk575.js).
  * El V2 trae su propio three minificado (sin GLTFLoader ni Meshopt) y corre en un iframe de origen opaco: la app carga los GLB
  * y le manda por postMessage datos planos (arrays transferibles), ya en coordenadas de mundo (origen boca de pozo, Y arriba).
  */

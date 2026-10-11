@@ -11,8 +11,8 @@
  * (confianza B/C por componente, docs/pdf-review/informe-sk575-2026-10-09.md). Desgaste y entorno son EFECTOS VISUALES.
  *
  * Es EL equipo del V2: cada componente SK-575 se integra en su grupo procedural (despiece, selección, aislado, corte, malla, modos,
- * secuencia de montaje, izamiento y aparejo animado) y la geometría procedural pasa a una capa invisible. Solo la casilla del
- * maquinista (`cabina`) sigue siendo procedural. API para pruebas: `window.__tackerSk575 = { ready, isOn }`.
+ * secuencia de montaje, izamiento y aparejo animado) y TODA la geometría procedural pasa a una capa invisible (también la casilla
+ * del maquinista, que el SK-575 no modela). API para pruebas: `window.__tackerSk575 = { ready, isOn }`.
  */
 window.__rigExt.onPost((R) => {
   const B64 = window.__TACKER_SK575_GLB
@@ -263,7 +263,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     const g = new T.BufferGeometry()
     g.setAttribute('position', new Float32Attr(new Float32Array(out), 3))
     const l = new T.Line(g, lineaMat)
-    l.isLineSegments = true // three elige gl.LINES por esta marca (igual que 77-capa-cad.js)
+    l.isLineSegments = true // three elige gl.LINES por esta marca
     l.raycast = () => {}
     return l
   }
@@ -290,8 +290,6 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     sk575_bomba: 'circulacion',
     sk575_pozo_vecino: 'circulacion',
   }
-  // El SK-575 no modela la casilla del maquinista (79-cabina-desmontable.js): esa queda procedural.
-  const PROCEDURAL = new Set(['cabina'])
   const OCULTO = 31 // capa que la cámara no dibuja y el raycaster no toca: ningún módulo puede volver a mostrarlo con .visible
   // Altura del bloque del SK-575 en reposo = valor por defecto del deslizador #hoist (14 m, centro del bloque en modelo.py).
   const BLOQUE_Y = 14
@@ -456,7 +454,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       if (o.isMesh || o.isLine || o.isPoints || o.isSprite) ocultar.push(o)
       for (const c of o.children) recorrer(c)
     }
-    for (const [id, G] of Object.entries(R.groups || {})) if (!PROCEDURAL.has(id)) recorrer(G)
+    for (const G of Object.values(R.groups || {})) recorrer(G) // el SK-575 es el único equipo a la vista
     carga = Promise.all(
       Object.keys(B64)
         .sort()
@@ -492,8 +490,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
   card.innerHTML =
     '<summary style="cursor:pointer;color:#DDBB65"><b>Modelo SK-575 · referencia CAD</b> · no as-built</summary>' +
     'Service King SK-575 (TACKER 10), build123d. Confianza B/C por componente, <b>no es as-built</b> ni apto para ' +
-    'fabricación. Desgaste, aristas y reflejos son efectos visuales; las animaciones son ilustrativas. La casilla del ' +
-    'maquinista sigue siendo la del V2. Cotas y conflictos de fuente: informe SK-575 del 2026-10-09.'
+    'fabricación. Desgaste, aristas y reflejos son efectos visuales; las animaciones son ilustrativas. Cotas y conflictos de fuente: informe SK-575 del 2026-10-09.'
   document.body.appendChild(card)
   const hideStyle = document.createElement('style')
   hideStyle.textContent = 'body.opts-hidden #sk575-card{display:none}'

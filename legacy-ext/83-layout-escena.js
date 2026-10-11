@@ -51,7 +51,6 @@ window.__rigExt.onPost(() => {
     body.focus-scene:not(.paneles-show) #cad-inspector,
     body.focus-scene:not(.paneles-show) #detail,
     body.focus-scene:not(.paneles-show) #hint,
-    body.focus-scene:not(.paneles-show) #cad-card,
     body.focus-scene:not(.paneles-show) #inspector-toggle{display:none!important}
     #v2-toolbar .tm-tool[aria-pressed="true"]{background:rgba(255,255,255,.09);border-color:#DAAE45;color:#fff}
   `
@@ -88,7 +87,6 @@ window.__rigExt.onPost(() => {
     't-explode',
     't-labels',
     'c-isolate',
-    'c-cad',
   ]
   let seqActivo = false
   const activo = () => {
@@ -118,12 +116,7 @@ window.__rigExt.onPost(() => {
     if (b) obs.observe(b, { attributes: true, attributeFilter: ['class', 'aria-pressed'] })
   }
   obs.observe(body, { attributes: true, attributeFilter: ['class'] }) // erect-playing
-  // #c-cad lo crea 77-capa-cad.js (antes de este módulo), pero por si se crea después se vuelve a buscar una vez
-  queueMicrotask(() => {
-    const b = $('c-cad')
-    if (b) obs.observe(b, { attributes: true, attributeFilter: ['class', 'aria-pressed'] })
-    actualizar()
-  })
+  queueMicrotask(actualizar)
 
   // ───────── botón Paneles ─────────
   bPaneles.addEventListener('click', () => {

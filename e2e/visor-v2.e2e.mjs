@@ -51,7 +51,7 @@ after(async () => {
 
 const snap = (name) => page.screenshot({ path: path.join(shots, name + '.png') })
 
-test('el equipo es el SK-575: 16 componentes integrados, procedural oculto salvo la casilla', async () => {
+test('el equipo es el SK-575: 16 componentes integrados, nada procedural a la vista, ni Capa CAD', async () => {
   const r = await page.evaluate(() => {
     const R = window.__rig
     const sk = R.pickables.filter((m) => m.material?.name?.startsWith('sk575_'))
@@ -68,16 +68,20 @@ test('el equipo es el SK-575: 16 componentes integrados, procedural oculto salvo
       return false
     }
     let procVisibles = 0
-    for (const [id, G] of Object.entries(R.groups))
+    for (const G of Object.values(R.groups))
       G.traverse((o) => {
         const sk = o.material?.name?.startsWith('sk575_')
-        if (id !== 'cabina' && o.isMesh && !sk && o.layers.mask === 1 && !deAnimacion(o))
-          procVisibles++
+        if (o.isMesh && !sk && o.layers.mask === 1 && !deAnimacion(o)) procVisibles++
       })
-    return { comps: ids.size, procVisibles }
+    return {
+      comps: ids.size,
+      procVisibles,
+      capaCad: !!window.__tackerCad || !!R.scene.getObjectByName('capa_cad'),
+    }
   })
   assert.equal(r.comps, 16)
   assert.equal(r.procVisibles, 0)
+  assert.equal(r.capaCad, false)
   await snap('01-equipo')
 })
 
@@ -132,7 +136,7 @@ test('aparejo: el bloque SK sigue al deslizador y vuelve a 14 m', async () => {
   assert.ok(Math.abs((await alto(14)) - 14) < 0.05)
 })
 
-test('izamiento: el 1.er tramo gira, el 2.º telescopa; cilindros SK y Capa CAD solo con el mástil montado', async () => {
+test('izamiento: el 1.er tramo gira, el 2.º telescopa; cilindros SK solo con el mástil montado', async () => {
   const r = await page.evaluate(async () => {
     const R = window.__rig
     const izaje = () => R.groups.mastil.getObjectByName('sk575_izaje_rojo')
@@ -150,16 +154,12 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa; cilindros SK y Capa CAD 
     const telescopa = tramoSup.children.some(
       (c) => c.name.startsWith('sk575_mastil_') && c.name.endsWith('_sup'),
     )
-    window.__tackerCad.on()
     window.__tackerErect.set(0.35)
-    const capaOcultaDurante = await hasta(() => !R.scene.getObjectByName('capa_cad').visible)
     const embutido = tramoSup.position.y < -1
     const izajeOculto = await hasta(() => !izaje().visible)
     const giro = Math.abs(pivote.rotation.z)
     window.__tackerErect.set(1)
     const izajeVisible = await hasta(() => izaje().visible)
-    const capaVuelve = await hasta(() => R.scene.getObjectByName('capa_cad').visible)
-    window.__tackerCad.off()
     return {
       tieneMastil,
       giro,
@@ -167,8 +167,6 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa; cilindros SK y Capa CAD 
       izajeVisible,
       telescopa,
       embutido,
-      capaOcultaDurante,
-      capaVuelve,
     }
   })
   assert.ok(r.tieneMastil, 'el mástil SK no cuelga de mastil_pivote')
@@ -177,10 +175,6 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa; cilindros SK y Capa CAD 
   assert.ok(r.izajeVisible, 'los cilindros SK no vuelven con el mástil montado')
   assert.ok(r.telescopa, 'el 2.º tramo SK no cuelga de mastil_tramo_superior')
   assert.ok(r.embutido, 'el 2.º tramo no está embutido durante el izamiento')
-  assert.ok(
-    r.capaOcultaDurante && r.capaVuelve,
-    'la Capa CAD no se oculta/restaura con el izamiento',
-  )
 })
 
 test('Vista CAD: perspectiva, noche y sin entorno; al apagar restaura', async () => {

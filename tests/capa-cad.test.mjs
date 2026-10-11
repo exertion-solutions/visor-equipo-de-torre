@@ -1,4 +1,4 @@
-// Capa CAD del V2 (legacy-ext/77): los datos vienen de cad/ (src/data/cad/capa-cad.json), entran en el HTML y se declaran
+// Datos de la capa CAD (src/data/cad/capa-cad.json, los usa el motor nativo; el V2 ya no la dibuja). Se declaran
 // confianza C / no as-built. El mástil es ILUSTRATIVO y todo lleva procedencia.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -10,10 +10,9 @@ const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digit
 const dataPath = path.join(root, 'src', 'data', 'cad', 'capa-cad.json')
 const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
 
-test('el módulo y los datos entran en el HTML generado', () => {
-  assert.ok(html.includes('/* 77-capa-cad.js */'))
-  assert.ok(html.includes('window.__TACKER_CAD='))
-  assert.ok(html.includes('__tackerCad'))
+test('el V2 ya no trae la Capa CAD: el SK-575 es el único equipo (los datos siguen para el motor nativo)', () => {
+  assert.ok(!html.includes('/* 77-capa-cad.js */'))
+  assert.ok(!html.includes('window.__TACKER_CAD='))
 })
 
 test('4 ítems con procedencia y estado; el mástil es ILUSTRATIVO', () => {
