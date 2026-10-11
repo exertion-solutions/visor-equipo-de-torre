@@ -180,6 +180,17 @@ describe('rigSchema: referencias cruzadas', () => {
     expect(rigSchema.safeParse(rig(conflict('src-layout'))).success).toBe(true)
     expect(rigSchema.safeParse(rig(conflict('ghost'))).success).toBe(false)
   })
+
+  it('una especificación A exige fuente verificada y no estimada', () => {
+    const a = { ...spec, confidence: 'A', sourceId: 'src-x' }
+    const rig = (s: object) => ({
+      ...withSpec(a),
+      sources: [source, { ...source, id: 'src-x', ...s }],
+    })
+    expect(rigSchema.safeParse(rig({})).success).toBe(true)
+    expect(rigSchema.safeParse(rig({ verified: false })).success).toBe(false)
+    expect(rigSchema.safeParse(rig({ kind: 'estimate' })).success).toBe(false)
+  })
 })
 
 describe('specificationSchema: conflictos', () => {

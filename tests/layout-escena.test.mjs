@@ -16,10 +16,10 @@ test('módulo en el HTML y API expuesta', () => {
 })
 
 test('modo enfoque: oculta todas las cartas salvo la leyenda obligatoria de zonas', () => {
-  for (const id of ['#tree', '#cad-inspector', '#detail', '#hint', '#cad-card'])
+  for (const id of ['#tree', '#cad-inspector', '#detail', '#hint'])
     assert.ok(layout.includes(`body.focus-scene:not(.paneles-show) ${id}`), id)
   assert.ok(!/focus-scene[^{]*#legend/.test(layout), 'la leyenda de zonas ilustrativas no se oculta')
-  for (const id of ['c-measure', 'c-cut', 'c-dims', 'c-wire', 't-explode', 't-labels', 'c-isolate', 'c-cad'])
+  for (const id of ['c-measure', 'c-cut', 'c-dims', 'c-wire', 't-explode', 't-labels', 'c-isolate'])
     assert.ok(layout.includes(`'${id}'`), id)
   assert.match(layout, /erect-playing/)
   assert.match(layout, /tacker:seq-step/)

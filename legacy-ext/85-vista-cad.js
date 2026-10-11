@@ -5,6 +5,7 @@
  *
  * Reusa los botones existentes (#c-ortho, #c-night, capas de 10-layers.js) y el modelo de 84-modelo-sk575.js. Apagarlo
  * restaura lo que había antes (entorno, grilla, proyección, noche). Botón en el menú Vista. API: `window.__tackerVistaCad`.
+ * Si se cambia de modo con la Vista CAD encendida, al apagarla quedan las capas del modo NUEVO (no las previas al encendido).
  */
 window.__rigExt.onPost((R) => {
   if (!R.scene || typeof R.camera !== 'function') return
@@ -66,6 +67,11 @@ window.__rigExt.onPost((R) => {
   if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
     window.__rigToolbar.add('vista', btn)
   else document.querySelector('header')?.appendChild(btn)
+
+  // El preset del modo (75-mode-presets.js) ya aplicó sus capas: este listener se registra después, así que las lee aplicadas.
+  document.addEventListener('tacker:mode', () => {
+    if (previo) previo.layers = window.__tackerLayers?.get() ?? []
+  })
 
   window.__tackerVistaCad = { on: () => set(true), off: () => set(false), isOn: () => !!previo }
 })

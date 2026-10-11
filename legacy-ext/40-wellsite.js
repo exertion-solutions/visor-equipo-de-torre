@@ -2592,16 +2592,19 @@
 
   /**
    * Ficha de confiabilidad (`__TACKER_META`, tabla del módulo de producto que se crea DESPUÉS del bundle) del componente 07:
-   * BOP + acumulador + choke manifold. Grado B / Parcial. Se aplica cuando el módulo de producto arranca (`tacker:boot`).
+   * BOP + acumulador + choke manifold. Grado C (geometría SK-575) / Fuente en conflicto (C2). Se aplica cuando el módulo de producto arranca (`tacker:boot`).
    */
   const META_BOP = {
-    grade: 'B',
-    status: 'Parcial',
-    basis: 'Folleto + referencia fotográfica genérica + posición del choke confirmada por Jorge',
+    // CONF. = confianza de la GEOMETRÍA que se ve (modelo SK-575, C); la de cada dato va en el texto (src/data/rigs/tacker10.ts, sk575_bop / sk575_manifold).
+    grade: 'C',
+    status: 'Fuente en conflicto',
+    basis:
+      'Geometría: modelo de referencia SK-575 (C, src-modelo-sk575) · Datos: folleto (src-folleto), manuales BOP 11" (src-manual-bop-11), esquema KL/CL y manifold (src-esquema-ahogo), escala B20-9908 (src-choke-b20)',
     note:
-      'BOP anular + doble 7 1/16" 5M (folleto). Choke manifold: posición confirmada; envolvente ' +
-      `${CHOKE.L.toString().replace('.', ',')} × ${CHOKE.W.toString().replace('.', ',')} × ${CHOKE.H.toString().replace('.', ',')} m aproximada (unidad genérica). ` +
-      'Pendientes: color del BOP/acumulador, presión de trabajo del choke, tipo de válvula de entrada y ruteo choke/kill.',
+      'Diámetro nominal: Fuente en conflicto: folleto 7-1/16" 5M (B) · el modelo está dibujado a 11" 5M (manuales Xinde; aplicabilidad al TKR-10 no confirmada). ' +
+      'Acumulador de 5 botellas (folleto, A). Manifold de ahogo M1–M12: disposición de un esquema sin identificar y escala tomada de otro equipo ' +
+      '(Thrubore B20-9908, TKR-08): no es el manifold del TKR-10. Geometría aproximada, no as-built. ' +
+      'Pendientes: placa del BOP instalado, identidad del manifold, color del BOP/acumulador, presión de trabajo del choke y ruteo choke/kill.',
   }
   const applyMeta = () => {
     const meta = window.__TACKER_META

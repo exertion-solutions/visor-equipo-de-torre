@@ -1,6 +1,6 @@
 """Exporta la CAPA CAD del visor V2: geometría verificada (carrier, piso, layout) y las barras del mástil, en el marco del V2.
 
-Salida: src/data/cad/capa-cad.json -> `window.__TACKER_CAD` (lo inyecta scripts/build-legacy.mjs) -> legacy-ext/77-capa-cad.js.
+Salida: src/data/cad/capa-cad.json -> motor nativo (el V2 ya no la dibuja: el SK-575 es su único equipo).
 Marco: CAD (x mástil, y lateral, z arriba) -> V2 (x, y arriba, z) = (x, z, −y). Unidades: metros. Todo es confianza C, no as-built.
 """
 import json

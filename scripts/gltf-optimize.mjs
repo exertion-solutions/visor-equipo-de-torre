@@ -6,6 +6,8 @@
 //  --flatten false / --join false  → conserva el árbol de nodos y sus nombres (los defaults del CLI los destruyen)
 //  --compress meshopt              → decodificador incluido en el loader (src/scene/loaders/gltf.ts)
 //  --texture-compress webp         → no requiere binarios externos (KTX2 exige `toktx`; ver skill gltf-pipeline)
+//  --simplify true --simplify-error 0.0001 → es el default del CLI 4.5, declarado para que no cambie en silencio. Reduce
+//                                    ~53 % los triángulos del lote SK-575 (docs/gltf-simplify.md). `--simplify false` lo apaga.
 import fs from 'node:fs'
 import path from 'node:path'
 import { outputDir, runGltfTransform, sourceDir } from './_gltf-cli.mjs'
@@ -48,6 +50,11 @@ runGltfTransform([
   // palette fusiona los materiales en un `PaletteMaterial` con textura: se pierden los nombres `<id>_<material>` y el PBR
   '--palette',
   'false',
+  // simplify (meshoptimizer): decisión pendiente de validar sobre las cotas del mástil; ver docs/gltf-simplify.md
+  '--simplify',
+  'true',
+  '--simplify-error',
+  '0.0001',
   ...extra,
 ])
 console.log(`\nOptimizado → ${path.relative(process.cwd(), output)} (original intacto)`)

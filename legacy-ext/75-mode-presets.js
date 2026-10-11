@@ -19,6 +19,9 @@
  * `tacker:mode` en `document`. Sirve tanto al `tacker:setMode` (70-bridge.js) como a la barra interna
  * de modos (oculta al embeber, visible en modo autónomo). Al ir después, el preset gana siempre.
  *
+ * Barra de modos (#v2-modebar, la crea el bundle): grupo con nombre accesible ("Modo de trabajo") y `aria-pressed` sincronizado
+ * con el modo activo en cada `tacker:mode` (la tipografía, 12 px sin mayúsculas espaciadas, está en 60-ui-controls.js).
+ *
  * Extras para pruebas: `window.__tackerPresets = { presets, apply(mode) }`.
  */
 ;(() => {
@@ -81,9 +84,22 @@
     return true
   }
 
+  function syncModebar() {
+    const mb = $('v2-modebar')
+    if (!mb) return
+    mb.setAttribute('role', 'group')
+    mb.setAttribute('aria-label', 'Modo de trabajo')
+    mb.querySelectorAll('button[data-m]').forEach((b) =>
+      b.setAttribute('aria-pressed', String(b.classList.contains('on'))),
+    )
+  }
+
   document.addEventListener('tacker:mode', (e) => {
     apply(e && e.detail)
+    syncModebar()
   })
+  document.addEventListener('tacker:boot', syncModebar)
+  if (window.__tackerBooted) syncModebar()
 
   window.__tackerPresets = { presets: PRESETS, apply }
 })()

@@ -1,4 +1,5 @@
-// Modelo SK-575 de referencia en la capa CAD del V2 (cad/sk575/capa.py → src/data/cad/capa-cad.json, grupo 'sk575').
+// Grupo 'sk575' de src/data/cad/capa-cad.json (cad/sk575/capa.py). El V2 ya no tiene Capa CAD: el SK-575 se ve desde los
+// GLB (legacy-ext/84-modelo-sk575.js). Este JSON hoy no tiene consumidor; se valida para la migración al motor nativo.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'

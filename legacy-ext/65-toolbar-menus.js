@@ -9,7 +9,9 @@
  * Accesibilidad: cada menú es un botón con aria-haspopup / aria-expanded / aria-controls; Escape cierra y devuelve el
  * foco, clic fuera cierra, ↓/↑ abren y recorren, ←/→ cambian de menú, Tab sale del panel y lo cierra.
  * Relevancia por modo (solo UX): un punto en el botón marca los menús más útiles del modo actual
- * (body.v2-mode-*); nada se deshabilita.
+ * (body.v2-mode-*); nada se deshabilita. En EXPLORAR (modo libre) no hay puntos: solo aparecen cuando distinguen algo.
+ * Menú Vista: los presets de cámara son selección única (aria-pressed sincronizado con .on, relleno dorado); los
+ * interruptores (Ortográfica, Vista nocturna, Vista CAD) se muestran con un switch a la derecha, no con relleno.
  *
  * API mínima para otros módulos: window.__rigToolbar = { add(menuId, node), closeAll() }.
  */
@@ -85,7 +87,7 @@ window.__rigExt.onPost(() => {
     training: 'Entrenamiento',
   }
   const RELEVANT = {
-    explore: ['vista', 'capas', 'animar', 'montaje', 'medicion', 'exportar'],
+    explore: [],
     operation: ['vista', 'animar', 'montaje', 'medicion'],
     qhse: ['capas', 'vista'],
     training: ['capas', 'vista'],
@@ -121,7 +123,14 @@ window.__rigExt.onPost(() => {
     .tm-row > input[type=range]{width:100%;margin:8px 0 10px}
     .tm-row > input[type=range]:last-child{grid-column:1/-1}
     .tm-row > .mono{min-width:42px}
-    @media (max-width:700px){#v2-toolbar .tm-btn{padding:0 6px 0 8px;gap:5px}#v2-toolbar .tm-btn > svg:first-child{display:none}}
+    /* Interruptores del menú Vista: switch a la derecha (el relleno dorado queda para el preset de cámara elegido). */
+    #v2-toolbar #tm-pop-vista > .btn[aria-pressed]{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:inherit;gap:10px}
+    #v2-toolbar #tm-pop-vista > .btn[aria-pressed]:hover{background:rgba(255,255,255,.08)}
+    #v2-toolbar #tm-pop-vista > .btn[aria-pressed]::after{content:'';margin-left:auto;flex:none;width:28px;height:16px;border-radius:8px;
+      background:radial-gradient(circle at 8px 50%,#AEB9C7 5px,transparent 5.5px),#273141;box-shadow:inset 0 0 0 1px #46536A}
+    #v2-toolbar #tm-pop-vista > .btn[aria-pressed="true"]::after{background:radial-gradient(circle at 20px 50%,#1A1405 5px,transparent 5.5px),#DFB64B;box-shadow:none}
+    #v2-toolbar .btn{font-size:12px}
+    @media (max-width:700px){#v2-toolbar .tm-btn{padding:0 6px 0 8px;gap:5px;height:30px}#v2-toolbar .tm-btn > svg:first-child{display:none}}
   `
   document.head.appendChild(style)
 
@@ -378,6 +387,21 @@ window.__rigExt.onPost(() => {
     if (document.body.classList.contains('opts-hidden')) closeAll()
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] })
   updateRelevance()
+
+  // Presets de cámara (selección única): aria-pressed sigue a la clase .on que pone el visor.
+  const syncViews = () =>
+    document
+      .querySelectorAll('#views button')
+      .forEach((b) => b.setAttribute('aria-pressed', String(b.classList.contains('on'))))
+  const views = $('views')
+  if (views) {
+    new MutationObserver(syncViews).observe(views, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    syncViews()
+  }
 
   window.__rigToolbar = {
     add(menuId, node) {
