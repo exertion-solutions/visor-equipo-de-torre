@@ -16,6 +16,7 @@
     "test": "npm run test:legacy && npm run test:unit",
     "test:legacy": "node --test \"tests/**/*.test.mjs\"",
     "test:unit": "vitest run",
+    "test:e2e": "node --test --test-concurrency=1 \"e2e/**/*.e2e.mjs\"",
     "test:coverage": "node --test --experimental-test-coverage \"tests/**/*.test.mjs\"",
     "gltf:inspect": "node scripts/gltf-inspect.mjs",
     "gltf:optimize": "node scripts/gltf-optimize.mjs",

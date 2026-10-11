@@ -8,9 +8,7 @@
  * NO reemplaza nada ni es as-built: confianza C, malla semitransparente y aristas. El mástil es ILUSTRATIVO (ancho, paneles y
  * diámetros sin plano del fabricante) y se ubica sobre el eje del mástil del V2 (`R.mast`), no sobre una posición documentada.
  *
- * Además, los ítems `grupo: 'sk575'` (cad/sk575/capa.py) son el modelo SK-575 de referencia, uno por componente, anclados en el
- * mundo con la base documentada (origen boca de pozo, carrier −X, Y arriba): permiten comparar el V2 procedural con las cotas
- * del relevamiento. Simplificado (piezas esbeltas como ejes, medianas como cajas) y tampoco es as-built.
+ * Los ítems `grupo: 'sk575'` (cad/sk575/capa.py) ya no se dibujan: el SK-575 real es el equipo del V2 (84-modelo-sk575.js).
  *
  * Botón "Capa CAD" en el menú Capas. API para pruebas: `window.__tackerCad = { on, off, toggle, isOn, items }`.
  */
@@ -106,6 +104,8 @@ window.__rigExt.onPost((R) => {
   root.userData = { role: 'HELPER' } // fuera de los 13 componentes: ni seleccionable ni en R.pickables
   const usados = []
   for (const it of D.items) {
+    // el modelo SK-575 real ya es el equipo del V2 (84-modelo-sk575.js): su versión simplificada sobra y no seguiría las animaciones
+    if (it.grupo === 'sk575') continue
     const g = new T.Group()
     g.name = 'cad_' + it.id
     for (const t of it.tris || []) g.add(malla(t, it.color))
@@ -163,7 +163,7 @@ window.__rigExt.onPost((R) => {
         sk.map((it) => fila(it, false)).join('') +
         `<div class="tag">${esc(sk[0].fuente)}</div>`
       : '') +
-    `</div><div class="warn">${esc(D.aviso)} El mástil ilustrativo se apoya en el eje del V2; el modelo SK-575 se ancla en el mundo con su base documentada (boca de pozo en el origen, carrier hacia −X).</div></details>`
+    `</div><div class="warn">${esc(D.aviso)} El mástil ilustrativo se apoya en el eje del V2. Es una referencia del equipo armado: no se dibuja durante el izamiento.</div></details>`
   document.body.appendChild(card)
 
   const btn = document.createElement('button')
@@ -172,26 +172,36 @@ window.__rigExt.onPost((R) => {
   btn.type = 'button'
   btn.textContent = 'Capa CAD'
   btn.title =
-    'Superpone la geometría CAD verificada (carrier, piso, layout, mástil ilustrativo) y el modelo SK-575 de referencia sobre el modelo'
+    'Superpone la geometría CAD verificada (carrier, piso, layout, mástil ilustrativo) sobre el modelo SK-575 (equipo armado)'
   btn.setAttribute('aria-pressed', 'false')
   if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
     window.__rigToolbar.add('capas', btn)
   else document.querySelector('header')?.appendChild(btn)
 
+  // Referencia del equipo ARMADO: mientras el izamiento (81-izamiento-mastil.js) no llega al 100 % no se dibuja (quedaría un
+  // mástil fijo en la pose final al lado del que se está levantando). Se evalúa antes de cada render.
+  let encendida = false
+  const montado = () => !window.__tackerErect || window.__tackerErect.progress() >= 1
+  const previoRender = R.scene.onBeforeRender
+  R.scene.onBeforeRender = function (...a) {
+    root.visible = encendida && montado()
+    return previoRender.apply(this, a)
+  }
   function set(on) {
-    root.visible = !!on
+    encendida = !!on
+    root.visible = encendida && montado()
     card.hidden = !on
     btn.setAttribute('aria-pressed', String(!!on))
     btn.classList.toggle('on', !!on)
     invalidate()
   }
-  btn.addEventListener('click', () => set(!root.visible))
+  btn.addEventListener('click', () => set(!encendida))
 
   window.__tackerCad = {
     on: () => set(true),
     off: () => set(false),
-    toggle: () => set(!root.visible),
-    isOn: () => root.visible,
+    toggle: () => set(!encendida),
+    isOn: () => encendida,
     items: usados.map((i) => i.id),
   }
 })

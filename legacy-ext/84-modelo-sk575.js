@@ -318,9 +318,11 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         blk.attach(n) // el bloque, amelas y elevador siguen la animación del aparejo (#hoist / #c-play)
       } else if (blk && cable) {
         lineasElasticas(G, blk, n)
-      } else if (cid === 'sk575_mastil' && pivote)
-        pivote.attach(n) // acompaña el izamiento (81-izamiento-mastil.js)
-      else G.attach(n)
+      } else if (cid === 'sk575_mastil' && pivote) {
+        // 2.º tramo, corona y piso de enganche → el grupo que 81 desliza (telescopado); el 1.er tramo gira con el pivote
+        const sup = pivote.children.find((c) => c.name === 'mastil_tramo_superior')
+        ;(n.name.endsWith('_sup') && sup ? sup : pivote).attach(n)
+      } else G.attach(n)
       n.traverse((o) => {
         if (!o.isMesh) return
         o.userData.id = id
@@ -330,6 +332,51 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         if (R.materials[id] && !(e && e.r + e.g + e.b > 0)) R.materials[id].push(m) // las luminarias no se resaltan
       })
     }
+  }
+
+  // Corte entre tramos del mástil: el 1.er tramo va de 0 a H_INF = 16,4 m (cad/sk575/modelo.py; se inclina 3,5° en bloque, la
+  // diferencia en altura es < 2 cm). Lo que queda por encima (2.º tramo, corona, piso de enganche) telescopa.
+  const H_INF = 16.4
+  /** Parte cada malla del mástil por el centroide de cada triángulo: crea `<nodo>_sup` con los triángulos sobre H_INF. */
+  function partirMastil(raiz) {
+    raiz.updateMatrixWorld(true)
+    const comp = raiz.getObjectByName('sk575_mastil')
+    if (!comp) return
+    const p = new T.Vector3()
+    for (const n of [...comp.children]) {
+      const mesh = n.children.find((c) => c.isMesh)
+      const geo = mesh && mesh.geometry
+      if (!geo || !geo.index) continue
+      const pos = geo.attributes.position
+      const idx = geo.index.array
+      const alto = (i) => p.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld).y
+      const inf = []
+      const sup = []
+      for (let t = 0; t < idx.length; t += 3) {
+        const y = (alto(idx[t]) + alto(idx[t + 1]) + alto(idx[t + 2])) / 3
+        ;(y > H_INF ? sup : inf).push(idx[t], idx[t + 1], idx[t + 2])
+      }
+      if (!sup.length) continue
+      const parte = (tris) => {
+        const g = new T.BufferGeometry()
+        for (const [k, v] of Object.entries(geo.attributes)) g.setAttribute(k, v)
+        g.setIndex(new BufferAttribute(new Uint32Array(tris), 1))
+        return g
+      }
+      const nodoSup = new T.Group()
+      nodoSup.name = n.name + '_sup'
+      nodoSup.position.copy(n.position)
+      nodoSup.quaternion.copy(n.quaternion)
+      nodoSup.scale.copy(n.scale)
+      const mSup = new T.Mesh(parte(sup), mesh.material)
+      mSup.name = mesh.name
+      mSup.castShadow = mSup.receiveShadow = true
+      nodoSup.add(mSup)
+      comp.add(nodoSup)
+      if (inf.length) mesh.geometry = parte(inf)
+      else n.removeFromParent()
+    }
+    raiz.updateMatrixWorld(true)
   }
 
   /** Líneas del aparejo: se estiran desde la corona (fija) hasta el bloque (sigue a `bloque_viajero`). */
@@ -390,12 +437,12 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       pares.push([n, () => !cableMal || cableMal.visible])
     for (const n of buscar(G.caballetes, 'sk575_tiros_'))
       pares.push([n, () => !G.aparejo || G.aparejo.visible])
-    const ancla = buscar(G.camion, 'sk575_carrier_')[0]
-    let malla = null
-    ancla?.traverse((o) => (malla = malla || (o.isMesh ? o : null)))
-    if (!malla || !pares.length) return
-    malla.onBeforeRender = () => {
+    if (!pares.length) return
+    // scene.onBeforeRender corre ANTES de armar la lista de dibujo: el cuadro final de la animación ya sale correcto.
+    const previo = R.scene.onBeforeRender
+    R.scene.onBeforeRender = function (...a) {
       for (const [n, ver] of pares) n.visible = ver()
+      return previo.apply(this, a)
     }
   }
 
@@ -415,6 +462,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         .sort()
         .map((cid) =>
           leerGlb(B64[cid], env).then((g) => {
+            if (cid === 'sk575_mastil') partirMastil(g)
             g.traverse((o) => o.isMesh && o.add(aristas(o)))
             return [cid, g]
           }),
