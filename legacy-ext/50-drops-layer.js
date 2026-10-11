@@ -174,7 +174,9 @@
         case 'debajo-corona':
           return onMast(24.5)
         case 'piso-enganche':
-          return onMast(18.5)
+          // 20,629 m: piso de enganche a 68 ft (plano 8123-1002-2611, A, src-plano-8123). El 18,5 m previo era el boardHeight
+          // del V2 procedural (src-legacy-v2): fuente en conflicto registrada en src/data/rigs/tacker10.ts.
+          return onMast(20.629)
         case 'debajo-piso-enganche':
           return onMast(9)
         case 'boca-pozo':
@@ -214,6 +216,9 @@
           if (sid) secs.add(sid)
         }
         if (!secs.size) return
+        // La geometría procedural etiquetada quedó oculta (capa 31, 84-modelo-sk575.js) y Box3 ignora capas: un objeto
+        // que la cámara no dibuja no ancla marcadores (cae al anclaje cualitativo del modelo).
+        if (!o.layers.isEnabled(0)) return
         box.setFromObject(o)
         if (box.isEmpty()) return
         box.getCenter(c)
@@ -235,7 +240,8 @@
       for (const m of markers) {
         const t = tagged.get(m.sec.id)
         m.anchor = t || fallbackAnchor(m.sec.id)
-        m.approx = !t
+        // Siempre aproximado: el GLB SK-575 no tiene dropsId y ninguna posición del modelo es as-built.
+        m.approx = true
         m.el.classList.toggle('approx', m.approx)
         m.el.title = m.approx ? `${m.sec.label} · ${NOTE_APPROX}` : m.sec.label
       }

@@ -1,4 +1,5 @@
-// Datos de la capa CAD (src/data/cad/capa-cad.json, los usa el motor nativo; el V2 ya no la dibuja). Se declaran
+// Datos de la capa CAD (src/data/cad/capa-cad.json). Hoy no los consume nada: el V2 retiró la Capa CAD (el SK-575 llega
+// como GLB en legacy-ext/84) y el motor nativo todavía no los importa; se conservan para la migración. Se declaran
 // confianza C / no as-built. El mástil es ILUSTRATIVO y todo lleva procedencia.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'

@@ -16,13 +16,20 @@
  *     recordado (60 % por defecto), como antes.
  *  8. La foto de referencia del diálogo (#ref-full) no se embebe dos veces: el build deja el <img> sin src y acá se
  *     copia el de la miniatura (#ref-thumb) la primera vez que se abre el diálogo.
+ *  9. Accesibilidad y legibilidad: un único anillo de foco dorado (--focus) para todo el visor, piso de 12 px en la barra de
+ *     estado y de 11 px en metadatos, y `prefers-reduced-motion` anula transiciones y animaciones CSS.
+ * 10. Métricas de desarrollo (triángulos, llamadas de dibujo) solo con `?debug`: sin él, la barra de estado dice "13 conjuntos".
+ * 11. Tablet y móvil (≤ 1050 px): cabecera de dos filas (título + "Ocultar opciones"; menús en una fila con scroll
+ *     horizontal). En móvil (≤ 700 px) "Ocultar opciones" queda solo con ícono y se oculta el subtítulo.
  * No toca el estado del visor: solo CSS + botones. Sin persistencia (el iframe corre en origen opaco).
  */
 window.__rigExt.onPost(() => {
   const $ = (id) => document.getElementById(id)
   const embedded = new URLSearchParams(location.search).has('embedded')
   const smallWindow = window.innerWidth < 1100
+  const debug = new URLSearchParams(location.search).has('debug')
   if (embedded) document.documentElement.classList.add('v2-embedded')
+  if (debug) document.documentElement.classList.add('debug')
 
   const style = document.createElement('style')
   style.id = 'ui-controls-style'
@@ -52,16 +59,45 @@ window.__rigExt.onPost(() => {
     #inspector-toggle{position:absolute;left:-38px;top:0;width:30px;height:30px;display:grid;place-items:center;
       padding:0;border-radius:8px;background:rgba(20,27,38,.95);border:1px solid #303B4B;color:#DDBB65;cursor:pointer}
     #inspector-toggle:hover{background:rgba(40,52,70,.98)}
-    #inspector-toggle:focus-visible{outline:none;box-shadow:0 0 0 2px #05060A,0 0 0 4px rgba(139,92,246,.7)}
     #inspector-toggle svg{width:15px;height:15px;transition:transform .3s}
     #cad-inspector.collapsed #inspector-toggle svg{transform:rotate(180deg)}
     #opts-toggle{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;
       border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);
       color:inherit;font:inherit;font-size:13px;cursor:pointer;flex:none}
     #opts-toggle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-    #opts-toggle:focus-visible{outline:none;box-shadow:0 0 0 2px #05060A,0 0 0 4px rgba(139,92,246,.7)}
     #opts-toggle svg{width:15px;height:15px;flex:none;transition:transform .2s}
     body.opts-hidden #opts-toggle svg{transform:rotate(180deg)}
+    /* Un solo anillo de foco, dorado (paleta del visor), para todos los controles: reemplaza al violeta del bundle. */
+    :root{--focus:#DFB64B}
+    :where(button,input,select,a,summary,[tabindex]):focus-visible{outline:2px solid var(--focus)!important;outline-offset:2px!important;box-shadow:none!important}
+    /* Piso tipográfico: barra de estado 12 px (lleva el aviso "dimensiones aproximadas"), metadatos 11 px. */
+    #cad-status,#cad-status *{font-size:12px!important}
+    .title span{font-size:11px!important}
+    #v2-modebar button{font:600 12px/1 Arial,Helvetica,sans-serif!important;letter-spacing:0!important;text-transform:none!important}
+    #hint{font:12px/1.45 Arial,Helvetica,sans-serif!important;color:#C9D2DE!important;background:rgba(16,23,33,.9);padding:5px 9px;border-radius:6px}
+    /* Métricas de desarrollo solo con ?debug. */
+    html:not(.debug) #tris,html:not(.debug) #hint br{display:none!important}
+    /* Tablet y móvil: título + "Ocultar opciones" en la 1.ª fila; los menús en UNA fila desplazable (sin 3.ª fila). */
+    @media (max-width:1050px){
+      header{flex-wrap:wrap!important;row-gap:6px!important}
+      header .title{width:auto!important;flex:1 1 auto;min-width:0}
+      #opts-toggle{order:1}
+      #v2-toolbar{order:2;flex:1 1 100%;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none}
+      #v2-toolbar::-webkit-scrollbar{display:none}
+      #v2-toolbar > *{flex:none}
+    }
+    /* Móvil: sin subtítulo, "Ocultar opciones" solo ícono (el texto queda para lectores), controles de 30 px; la barra de
+       estado deja el aviso y el conteo (la proyección ya se ve en el menú Vista) para no crecer a 3 líneas con el piso de 12 px. */
+    @media (max-width:700px){
+      header .title span{display:none!important}
+      #opts-toggle{height:30px;padding:0 9px}
+      #opts-toggle span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+      #cad-status > span:first-child{display:none}
+      #cad-status{line-height:1.25}
+    }
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+    }
   `
   document.head.appendChild(style)
 
@@ -132,7 +168,15 @@ window.__rigExt.onPost(() => {
   const hint = $('hint')
   const stage = $('stage')
   if (hint && stage) {
-    const COVERS = ['tree', 'detail', 'cad-inspector', 'v2-qhse', 'legend', 'cad-status']
+    const COVERS = [
+      'tree',
+      'detail',
+      'cad-inspector',
+      'v2-qhse',
+      'legend',
+      'cad-status',
+      'sk575-card',
+    ]
     const overlaps = (a, b) =>
       a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
     const updateHint = () => {
@@ -181,6 +225,22 @@ window.__rigExt.onPost(() => {
     stage.addEventListener('transitionend', updateHint)
     window.addEventListener('resize', schedule)
     schedule()
+  }
+
+  // ───────── barra de estado: sin "N llamadas" (draw calls) salvo con ?debug ─────────
+  // El bundle reescribe #cad-health cada 10 cuadros con "13 conjuntos · N llamadas": se recorta la métrica.
+  const health = $('cad-health')
+  if (health && !debug) {
+    const trim = () => {
+      const t = health.textContent.replace(/\s*·\s*[\d.]+\s*llamadas/, '')
+      if (t !== health.textContent) health.textContent = t
+    }
+    new MutationObserver(trim).observe(health, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    })
+    trim()
   }
 
   // ───────── botón "Ocultar opciones" ─────────

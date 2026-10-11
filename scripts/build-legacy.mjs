@@ -173,6 +173,15 @@ function readExtModules() {
   return [...runtime, ...rest]
 }
 
+/** JSON apto para incrustar en un <script>: `</`, `<!--` y U+2028/9 escapados para que ningún dato cierre ni altere el bloque. */
+function safeJsonForScript(obj) {
+  return JSON.stringify(obj)
+    .replace(/<\//g, '<\\/')
+    .replace(/<!--/g, '<\\!--')
+    .replaceAll('\u2028', '\\u2028')
+    .replaceAll('\u2029', '\\u2029')
+}
+
 function build() {
   let html = fs.readFileSync(original, 'utf8')
 
@@ -188,27 +197,17 @@ function build() {
   blocks.push(`/* ${runtimeFile} */\n` + fs.readFileSync(path.join(extDir, runtimeFile), 'utf8'))
 
   if (fs.existsSync(dropsJson)) {
-    const data = JSON.parse(fs.readFileSync(dropsJson, 'utf8'))
-    // `</`, `<!--` y U+2028/9 se escapan para que ningún dato cierre ni altere el <script>.
-    const safeJson = JSON.stringify(data)
-      .replace(/<\//g, '<\\/')
-      .replace(/<!--/g, '<\\!--')
-      .replaceAll('\u2028', '\\u2028')
-      .replaceAll('\u2029', '\\u2029')
     blocks.push(
       '/* datos DROPS (src/data/qhse/tacker10-drops.json) */\nwindow.__TACKER_DROPS=' +
-        safeJson +
+        safeJsonForScript(JSON.parse(fs.readFileSync(dropsJson, 'utf8'))) +
         ';',
     )
   }
   const izJson = path.join(root, 'src', 'data', 'cad', 'izamiento.json')
   if (fs.existsSync(izJson)) {
-    const safeIz = JSON.stringify(JSON.parse(fs.readFileSync(izJson, 'utf8')))
-      .replace(/<\//g, '<\\/')
-      .replace(/<!--/g, '<\\!--')
     blocks.push(
       '/* datos del izamiento del mástil (src/data/cad/izamiento.json) */\nwindow.__TACKER_IZAMIENTO=' +
-        safeIz +
+        safeJsonForScript(JSON.parse(fs.readFileSync(izJson, 'utf8'))) +
         ';',
     )
   }
@@ -230,7 +229,12 @@ function build() {
         .filter((f) => /^sk575_[a-z_]+\.glb$/.test(f))
         .sort()
     : []
-  if (glbs.length && fs.existsSync(meshopt)) {
+  if (glbs.length && !fs.existsSync(meshopt))
+    throw new Error(
+      `Hay ${glbs.length} GLB sk575_* pero falta el decodificador meshopt (${path.relative(root, meshopt)}): ` +
+        'el V2 saldría sin el SK-575. Correr `npm ci`.',
+    )
+  if (glbs.length) {
     const dec = fs.readFileSync(meshopt, 'utf8')
     const exp = /^export \{ MeshoptDecoder \};?\s*$/m
     if (!exp.test(dec))
@@ -248,7 +252,7 @@ function build() {
     )
     blocks.push(
       '/* GLB del modelo SK-575 (public/models/tacker10/sk575_*.glb) */\nwindow.__TACKER_SK575_GLB=' +
-        JSON.stringify(map) +
+        safeJsonForScript(map) +
         ';',
     )
   }

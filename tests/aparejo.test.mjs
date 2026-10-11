@@ -24,10 +24,11 @@ test('el componente 04 se renombra, describe el elevador de varillas como pendie
   }
 })
 
-test('la ficha de confiabilidad del 04 es B / Parcial y lista lo pendiente', () => {
+test('la ficha del 04: geometría SK-575 (C) y líneas como fuente en conflicto (C1), con pendientes', () => {
   const meta = read('41-meta-aparejo.js')
-  assert.match(meta, /grade: 'B',\s*status: 'Parcial'/)
-  assert.ok(meta.includes('Pendientes: color real'))
+  assert.match(meta, /grade: 'C',\s*status: 'Fuente en conflicto'/)
+  assert.ok(meta.includes('placa 8') && meta.includes('folleto 6'), 'C1 rotulado, no elegido')
+  assert.ok(meta.includes('Pendientes: enhebrado real'))
   assert.ok(meta.includes("document.addEventListener('tacker:boot'"))
   assert.ok(html.includes('/* 41-meta-aparejo.js */'))
 })

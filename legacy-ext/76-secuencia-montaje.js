@@ -61,7 +61,7 @@ window.__rigExt.onPost(() => {
       add: ['malacate', 'motor', 'cabina', 'bop', 'llave', 'caballetes'],
       geo: true,
       texto:
-        'Se suman malacate, motor y transmisión, cabina, BOP con acumulador y choke manifold, llave y caballetes. La cabina del maquinista es desmontable: se monta fuera del carrier, entre las dos escaleras.',
+        'Se suman malacate, BOP con acumulador, llave y caballetes. El motor, la transmisión y la cabina de manejo vienen con el carrier SK-575 (paso 3). La casilla desmontable del maquinista no está modelada (pendiente).',
     },
     {
       n: 6,
@@ -80,7 +80,7 @@ window.__rigExt.onPost(() => {
       geo: true,
       nota: 'Sin geometría: antorcha y separador.',
       texto:
-        'Bomba triplex, pileta de ensayo con golpeador y cañerías al pozo. El choke manifold ya venía con el BOP.',
+        'Bomba triplex, piletas con golpeador, choke manifold y cañerías al pozo. En el modelo SK-575 el choke manifold aparece en este paso, junto con la circulación.',
     },
     {
       n: 8,
@@ -106,12 +106,12 @@ window.__rigExt.onPost(() => {
     #rig-seq .sq-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
     #rig-seq .sq-title{font-weight:600;color:#DDBB65;letter-spacing:.02em;padding:0 4px}
     #rig-seq button{font:inherit;color:inherit;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-      border-radius:8px;padding:2px 9px;cursor:pointer}
+      border-radius:8px;min-height:30px;padding:4px 10px;cursor:pointer;display:inline-grid;place-items:center}
+    #rig-seq button svg{width:16px;height:16px}
     #rig-seq button:hover{background:rgba(255,255,255,.1)}
     #rig-seq button[aria-pressed="true"]{border-color:#DDBB65;color:#DDBB65}
-    #rig-seq button:focus-visible{outline:none;box-shadow:0 0 0 2px #05060A,0 0 0 4px rgba(139,92,246,.7)}
     #rig-seq .sq-steps{display:flex;gap:4px;flex-wrap:wrap}
-    #rig-seq .sq-steps button{min-width:28px;padding:2px 0}
+    #rig-seq .sq-steps button{min-width:32px;padding:4px 0}
     #rig-seq .sq-line{flex:1 1 100%;font-size:12px;font-weight:600}
     #rig-seq .sq-detail{margin-top:6px;font-size:12.5px;line-height:1.4}
     #rig-seq .sq-step-title{font-weight:600;margin-bottom:2px}
@@ -127,8 +127,8 @@ window.__rigExt.onPost(() => {
   panel.innerHTML = `
     <div class="sq-row">
       <span class="sq-title" title="Ilustrativa · pendiente de validar">Secuencia de montaje</span>
-      <button type="button" id="sq-prev" aria-label="Paso anterior">‹</button>
-      <button type="button" id="sq-next" aria-label="Paso siguiente">›</button>
+      <button type="button" id="sq-prev" aria-label="Paso anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button type="button" id="sq-next" aria-label="Paso siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
       <button type="button" id="sq-close" aria-label="Volver a mostrar todos los componentes">Todo</button>
       <div class="sq-steps" id="sq-steps"></div>
       <span class="sq-line" id="sq-line"></span>
@@ -166,10 +166,10 @@ window.__rigExt.onPost(() => {
     const status = $('sq-status')
     const line = $('sq-line')
     if (current === 0) {
-      line.textContent = 'Elegí un paso para ir armando el equipo'
+      line.textContent = 'Elegí un paso (1–8)'
       line.title = ''
       status.innerHTML =
-        '<div class="sq-text">Elegí un paso para ir armando el equipo. Al cerrar, todos los componentes vuelven a estar visibles.</div>' +
+        '<div class="sq-text">«Todo» vuelve a mostrar todos los componentes.</div>' +
         '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de Tacker ni un requisito. Recorrido visual, no simulación.</div>'
       return
     }

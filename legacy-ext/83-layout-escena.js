@@ -5,9 +5,9 @@
  *     (se reabren con su pestaña o con el botón "Paneles").
  *  2. Los comandos sueltos de la carta de referencia pasaron a la barra: "Vista nocturna" en Vista y "Animar aparejo" + posición del
  *     aparejo en el menú Animar (65-toolbar-menus.js). La secuencia de montaje y el izamiento viven en el menú "Montaje" (65-toolbar-menus.js): ningún panel flotante.
- *  3. MODO ENFOQUE: mientras algo esté activo (un paso del montaje, el izamiento reproduciéndose, la capa CAD, medición, corte, cotas,
- *     malla, despiece, etiquetas o aislamiento) se ocultan TODAS las cartas (árbol, referencia, detalle, aviso de controles, leyenda
- *     de la capa CAD). Quedan la barra de menús y los controles de lo que se está usando. "Paneles" las muestra de nuevo a pedido.
+ *  3. MODO ENFOQUE: mientras algo esté activo (un paso del montaje, el izamiento reproduciéndose, medición, corte, cotas, malla,
+ *     despiece, etiquetas o aislamiento) se ocultan TODAS las cartas (árbol, referencia, detalle, aviso de controles). Quedan la
+ *     barra de menús y los controles de lo que se está usando. "Paneles" (antes de Reset en la barra) las muestra de nuevo a pedido.
  *     La leyenda de zonas ilustrativas (`#legend`, "SIN VALIDAR") NO se oculta: es obligatoria mientras las zonas estén encendidas.
  *  4. En modo embebido se oculta la barra de estado propia del V2 (la app ya muestra la suya con "no as-built").
  *
@@ -68,7 +68,8 @@ window.__rigExt.onPost(() => {
     b.setAttribute('aria-pressed', 'false')
     b.title = title
     b.innerHTML = icon + `<span>${label}</span>`
-    if (toolbar) toolbar.appendChild(b)
+    // Antes del separador de Reset: menús · Paneles │ Reset (Reset limpia todo, va al final y aparte).
+    if (toolbar) toolbar.insertBefore(b, toolbar.querySelector('.tm-sep'))
     return b
   }
   const bPaneles = tool(

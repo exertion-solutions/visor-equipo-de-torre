@@ -36,8 +36,9 @@ test('los peligros nuevos se rotulan "referencia, pendiente de validación" (nun
   assert.ok(html.includes('Barandas en pasarelas de tanques'));
 });
 
-test('la ficha de confiabilidad sigue en B / Parcial y rotula lo nuevo como PENDIENTE', () => {
-  assert.match(meta, /grade: 'B',\s*status: 'Parcial'/);
+test('la ficha: geometría SK-575 (C) y volúmenes 38 vs 40 m³ como fuente en conflicto', () => {
+  assert.match(meta, /grade: 'C',\s*status: 'Fuente en conflicto'/);
+  assert.ok(meta.includes('38 m³') && meta.includes('40 m³'), 'conflicto de volúmenes rotulado');
   assert.match(meta, /window\.__TACKER_META/);
   assert.match(meta, /tacker:boot/);
   assert.ok(html.includes('/* 44-meta-circulacion.js */'), 'el módulo debe estar en el HTML generado');

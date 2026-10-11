@@ -507,7 +507,8 @@ export const rigSchema = z
     components: z.array(componentSchema),
   })
   .superRefine((rig, ctx) => {
-    const sourceIds = new Set(rig.sources.map((s) => s.id))
+    const sourcesById = new Map(rig.sources.map((s) => [s.id, s]))
+    const sourceIds = new Set(sourcesById.keys())
     const componentIds = new Set(rig.components.map((c) => c.id))
 
     if (sourceIds.size !== rig.sources.length) {
@@ -562,6 +563,15 @@ export const rigSchema = z
             code: 'custom',
             message: `fuente inexistente: ${s.sourceId}`,
             path: ['components', i, 'specifications', j, 'sourceId'],
+          })
+        }
+        // A = documento original revisado: exige una fuente verificada que no sea una estimación.
+        const src = sourcesById.get(s.sourceId)
+        if (s.confidence === 'A' && src && (!src.verified || src.kind === 'estimate')) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `Confianza A requiere una fuente verificada y no estimada (${s.sourceId})`,
+            path: ['components', i, 'specifications', j, 'confidence'],
           })
         }
         s.conflicts?.forEach((cf, k) => {

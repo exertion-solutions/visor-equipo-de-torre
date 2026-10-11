@@ -27,6 +27,8 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm test
+      # e2e del V2 (playwright-core + channel 'chrome': usa /opt/google/chrome/chrome, preinstalado en ubuntu-latest)
+      - run: npm run test:e2e
 
   build:
     needs: verify

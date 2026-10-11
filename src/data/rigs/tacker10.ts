@@ -80,7 +80,17 @@ const SK575_COMPONENTS: Component[] = [
       spec('leanDeg', 'Inclinación de trabajo', 3.5, 'A', 'src-placa-api', '°'),
       spec('baseHeightM', 'Base montada sobre el suelo (4 ft)', 1.2192, 'A', 'src-placa-api', 'm'),
       spec('heightM', 'Altura (104 ft)', 31.71, 'A', 'src-plano-8123', 'm'),
-      spec('rackingBoardM', 'Piso de enganche (68 ft)', 20.629, 'A', 'src-plano-8123', 'm'),
+      {
+        // B (no A) solo porque el schema no admite A con conflicto; el valor del plano es el documentado.
+        ...spec('rackingBoardM', 'Piso de enganche (68 ft)', 20.629, 'B', 'src-plano-8123', 'm'),
+        conflicts: [
+          {
+            sourceId: 'src-legacy-v2',
+            value: 18.5,
+            note: 'boardHeight del V2 procedural previo (retirado 2026-10-11)',
+          },
+        ],
+      },
       spec(
         'cota18401M',
         'Cota 18.401 mm (60 ft, significado no confirmado)',
@@ -290,7 +300,11 @@ const SK575_COMPONENTS: Component[] = [
             value: 3,
             note: 'Altura del modelo del folleto (regulable 1 a 4 m)',
           },
-          { sourceId: 'src-legacy-v2', value: 2.3, note: 'El V2 procedural mantiene 2,30 m' },
+          {
+            sourceId: 'src-legacy-v2',
+            value: 2.3,
+            note: 'Valor del V2 procedural previo (retirado 2026-10-11)',
+          },
         ],
       },
       spec(
@@ -475,7 +489,7 @@ export const TACKER10_RIG: Rig = {
       id: 'src-legacy-v2',
       kind: 'estimate',
       title: 'Visor V2 (legacy-ext/30-carrier.js)',
-      ref: 'Altura del piso de trabajo del modelo procedural; no es una fuente documental',
+      ref: 'Alturas del piso de trabajo (2,30 m) y del piso de enganche (boardHeight 18,5 m) del modelo procedural, retirado del V2 el 2026-10-11; no es una fuente documental',
       verified: false,
     },
     // Relevamiento 2026-10-09 (Service King SK-575). Los documentos NO se suben al repo (repo público,
@@ -668,11 +682,18 @@ export const TACKER10_RIG: Rig = {
         },
         {
           key: 'capacityLb',
-          label: 'Capacidad nominal',
+          label: 'Capacidad nominal (designación del modelo, 330k)',
           value: 330000,
           unit: 'lb',
-          confidence: 'A',
+          confidence: 'B',
           sourceId: 'src-folleto',
+          conflicts: [
+            {
+              sourceId: 'src-placa-api',
+              value: 325725,
+              note: 'Placa del mástil instalado: carga estática máx. con vientos a 3,5°',
+            },
+          ],
         },
       ],
     },
@@ -710,7 +731,11 @@ export const TACKER10_RIG: Rig = {
           confidence: 'B',
           sourceId: 'src-folleto',
           conflicts: [
-            { sourceId: 'src-legacy-v2', value: 2.3, note: 'El V2 procedural mantiene 2,30 m' },
+            {
+              sourceId: 'src-legacy-v2',
+              value: 2.3,
+              note: 'Valor del V2 procedural previo (retirado 2026-10-11)',
+            },
             {
               sourceId: 'src-plano-8123',
               value: 3.606,

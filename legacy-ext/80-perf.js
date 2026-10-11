@@ -228,6 +228,7 @@ window.__rigExt.onPost((R) => {
   const walk = (o) => {
     if (o.isLight) return pushShadowLight(o)
     if (o.isLine || o.isPoints || o.isSprite) return // no proyectan sombra
+    if (o.layers.mask === 2 ** 31) return // capa oculta (procedural reemplazado por el SK-575, 84): ni se dibuja ni da sombra
     const isMesh = o.isMesh
     if (isMesh && !o.castShadow && !o.children.length) return // solo recibe: no altera el mapa
     push(o.visible ? 1 : 0)
