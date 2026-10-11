@@ -84,7 +84,7 @@ def main():
     g = runpy.run_path(str(AQUI / "modelo.py"), run_name="sk575_modelo")
     por_comp = {}
     for (cid, mat), shapes in g["parts"].items():
-        por_comp.setdefault(cid, {})[mat] = shapes
+        por_comp.setdefault(cid.split("/")[0], {}).setdefault(mat, []).extend(shapes)   # `raiz/sub` → raíz
     data = json.loads(DEST.read_text(encoding="utf-8"))
     data["items"] = [i for i in data["items"] if not i["id"].startswith("sk575_")]
     for cid in INFO:

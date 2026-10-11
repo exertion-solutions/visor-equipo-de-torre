@@ -1,0 +1,236 @@
+{
+  "id": "sk575_vientos",
+  "confianza": "C",
+  "alcance": "Vientos, anclajes y pirosalva (posiciones del layout de locación)",
+  "triangulos": 23908,
+  "materiales": [
+    "acero",
+    "acero_oscuro",
+    "cable",
+    "hormigon"
+  ],
+  "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
+  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "as_built": false,
+  "aristas": {
+    "segmentos": 882,
+    "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
+    "umbral_grados": 28,
+    "excluye": [
+      "luz",
+      "vidrio"
+    ]
+  },
+  "ids": "<viento>_<lado>_<signo de z glTF>: lado carrier = −X, lado v = +X (planchada); marco glTF del GLB",
+  "cables": [
+    {
+      "id": "A_carrier_+z",
+      "tipo": "viento A",
+      "diametro_in": 0.75,
+      "extremo_mastil": [
+        -1.6329,
+        29.4814,
+        0.56
+      ],
+      "extremo_tierra": [
+        -27.4,
+        1.05,
+        26.8
+      ]
+    },
+    {
+      "id": "B_carrier_+z",
+      "tipo": "viento B",
+      "diametro_in": 0.625,
+      "extremo_mastil": [
+        -2.3637,
+        19.0065,
+        0.65
+      ],
+      "extremo_tierra": [
+        -27.4,
+        1.05,
+        26.8
+      ]
+    },
+    {
+      "id": "A_carrier_-z",
+      "tipo": "viento A",
+      "diametro_in": 0.75,
+      "extremo_mastil": [
+        -1.6329,
+        29.4814,
+        -0.56
+      ],
+      "extremo_tierra": [
+        -27.4,
+        1.05,
+        -26.8
+      ]
+    },
+    {
+      "id": "B_carrier_-z",
+      "tipo": "viento B",
+      "diametro_in": 0.625,
+      "extremo_mastil": [
+        -2.3637,
+        19.0065,
+        -0.65
+      ],
+      "extremo_tierra": [
+        -27.4,
+        1.05,
+        -26.8
+      ]
+    },
+    {
+      "id": "A_v_+z",
+      "tipo": "viento A",
+      "diametro_in": 0.75,
+      "extremo_mastil": [
+        -0.5149,
+        29.4131,
+        0.56
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        26.8
+      ]
+    },
+    {
+      "id": "B_v_+z",
+      "tipo": "viento B",
+      "diametro_in": 0.625,
+      "extremo_mastil": [
+        -1.0661,
+        18.9272,
+        0.65
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        26.8
+      ]
+    },
+    {
+      "id": "A_v_-z",
+      "tipo": "viento A",
+      "diametro_in": 0.75,
+      "extremo_mastil": [
+        -0.5149,
+        29.4131,
+        -0.56
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        -26.8
+      ]
+    },
+    {
+      "id": "B_v_-z",
+      "tipo": "viento B",
+      "diametro_in": 0.625,
+      "extremo_mastil": [
+        -1.0661,
+        18.9272,
+        -0.65
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        -26.8
+      ]
+    },
+    {
+      "id": "plataforma_+z",
+      "tipo": "viento de plataforma",
+      "diametro_in": 0.5625,
+      "extremo_mastil": [
+        0.9646,
+        20.5151,
+        1.2
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        -26.8
+      ]
+    },
+    {
+      "id": "interno_+z",
+      "tipo": "viento interno corona → apoyo del carrier",
+      "diametro_in": 1,
+      "extremo_mastil": [
+        -0.9441,
+        31.6426,
+        0.9
+      ],
+      "extremo_carrier": [
+        -14.3668,
+        3.0734,
+        0.9
+      ]
+    },
+    {
+      "id": "plataforma_-z",
+      "tipo": "viento de plataforma",
+      "diametro_in": 0.5625,
+      "extremo_mastil": [
+        0.9646,
+        20.5151,
+        -1.2
+      ],
+      "extremo_tierra": [
+        24.4,
+        1.05,
+        26.8
+      ]
+    },
+    {
+      "id": "interno_-z",
+      "tipo": "viento interno corona → apoyo del carrier",
+      "diametro_in": 1,
+      "extremo_mastil": [
+        -0.9441,
+        31.6426,
+        -0.9
+      ],
+      "extremo_carrier": [
+        -14.3668,
+        3.0734,
+        -0.9
+      ]
+    },
+    {
+      "id": "pirosalva",
+      "tipo": "línea de escape (pirosalva) desde el piso de enganche",
+      "diametro_in": 1.125,
+      "extremo_mastil": [
+        1.0269,
+        21.5332,
+        -1.2
+      ],
+      "extremo_tierra": [
+        25.8529,
+        0.5,
+        -19.8195
+      ]
+    }
+  ],
+  "anclajes": {
+    "fuente": "src-layout-ws10 (LAYOUT-WS10-0001: 27,4 m lado carrier / 24,4 m lado V desde el pozo, ± 26,8 m laterales)",
+    "confianza": "B",
+    "conflicto": "C4 · Fuente en conflicto: folleto 20 m · spec 25 ± 3 m · layout WS10 27,4 / 24,4 ± 3 m (± 26,8 lat.) · placa 94' (28,7 m) / 82' (25 m), 68' lat. El modelo dibuja WS10; no es diseño de anclaje ni distancia de exclusión."
+  },
+  "extremos_mastil": "Con el mástil armado (inclinado 3,5°). Alturas de amarre (A 29,5 m, B 19,0 m), plataforma, corona y pirosalva: C (no documentadas, informe §5). Diámetros A 3/4\" y B 5/8\": src-placa-api; plataforma 9/16\" e internos 1\": Rig Up p3; pirosalva: valor del modelo (C).",
+  "publicado": {
+    "archivo": "public/models/tacker10/sk575_vientos.glb",
+    "optimize": "npm run gltf:optimize -- sk575_vientos.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
+    "triangulos_origen": 23908,
+    "triangulos_publicados": 5432,
+    "segmentos_aristas": 882,
+    "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
+  }
+}
