@@ -51,7 +51,9 @@ INFO = {
     "sk575_piletas": ("C", "Piletas de circulación, preparación y ensayo + trip tank"),
     "sk575_manifold": ("C", "Manifold de ahogo M1–M12 y líneas de choke/ahogo"),
     "sk575_bomba": ("C", "Bomba triplex sobre patín"),
-    "sk575_acumulador": ("C", "Acumulador del BOP"),
+    "sk575_acumulador": ("C", "Acumulador del BOP: huella 8 × 2,4 m (layout WS10), 5 botellones 3.000 psi (folleto); botellones, "
+                             "válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 "
+                             "(src-ref-rigmfg-4650, genérica: no es el equipo instalado)"),
 }
 
 
@@ -235,6 +237,35 @@ SUBNODOS = {
     "sk575_izaje_orejas_carrier": "Pedestales de los cilindros en el carrier (fijos)",
     "sk575_izaje_orejas_mastil": "Orejas de los cilindros en el mástil (giran con el mástil)",
 }
+_REF = " — referencia CPC S/N 4650 (src-ref-rigmfg-4650), genérica, C"
+SUBNODOS.update({
+    "sk575_acum_rack": "Bastidor de botellones: parantes C, travesaños L, abrazaderas de banda y cabezal" + _REF,
+    "sk575_acum_manifold": "Manifold de botellones 4\" de 6 bocas 5.000 psi, aislación esférica 1\", manómetro de banco con "
+                           "aislación y purga aguja, alivio 3/4\" a 3.300 psi (p33 §2.2-2.4)" + _REF,
+    "sk575_acum_deposito": "Depósito con boca de llenado 4\", tapa de inspección, visor de nivel y purga (p33 §2.1, p98); "
+                           "medidas C" + _REF,
+    "sk575_acum_bloque_valvulas": "Bloque de válvulas, filtro en T 1\" y panel de 3 manómetros de 6\" (p34 §3.0 F, H)" + _REF,
+    "sk575_acum_reguladora_anular": "Reguladora anular serie 3100 1\" con motor neumático y manija en T (p33 §3.0 A, p94 K)" + _REF,
+    "sk575_acum_reguladora_manifold": "Reguladora del manifold serie 2100 1\" con volante, salida 1.500 psi (p33 §3.0 B)" + _REF,
+    "sk575_acum_valvula_3vias_bypass": "Selectora 1\" de 3 vías del by-pass LP/HP (p34 §3.0 E, p95 P)" + _REF,
+    "sk575_acum_succion_descarga": "Succión de bombas: esclusa 1-1/2\" y filtro en Y (triplex), colector con válvula de línea, "
+                                   "by-pass, aislación y filtro en Y por neumática; retenciones 5.000 psi y colector de "
+                                   "descarga (p35 §4.5-4.6, §5.3; p94 A-C; p95 W, AB)" + _REF,
+    "sk575_acum_electrico": "Arrancador NEMA 7 con luz de marcha, caja eléctrica (PLC S7-222 y fuente PULS adentro, no "
+                            "modelados), presostatos hidroeléctrico e hidroneumático, alarma local con 3 pilotos y silencio, "
+                            "baliza, bocina XP, flotante N/C y transmisor XP (p14, p35 §4.3-4.4, p36 §8.1, p94 N, p95 S)" + _REF,
+    "sk575_acum_puertos": "Riel de conexiones 1\" NPT de las funciones y toma de aire 1-1/2\" NPT (p97)" + _REF,
+    "sk575_acum_bomba_electrica":"Bomba triplex con motor XP y guarda de correa dentada, descarga con retención (p34-35 §4)" + _REF,
+})
+for _k in range(1, 6):
+    SUBNODOS["sk575_acum_botellon_%d" % _k] = ("Botellón %d: vejiga 11 gal 3.000 psi, carga superior, válvula de gas con protector, "
+                                                "purga individual (p23, p33, p98); Ø 0,236 × 1,30 m derivado de 11 gal + plano p17. "
+                                                "Cantidad 5 y 3.000 psi: src-folleto" % _k + _REF)
+    SUBNODOS["sk575_acum_valvula_4vias_%d" % _k] = ("Selectora %d: 1\" 4 vías / 3 posiciones, sello de corte rotativo, 3.000 psi, "
+                                                     "con sector indicador (p34 §3.0 C-D); funciones = anular, 2 rams, HCR CL2, HCR KL2 "
+                                                     "(src-esquema-ahogo)" % _k + _REF)
+for _k in (1, 2):
+    SUBNODOS["sk575_acum_bomba_neumatica_%d" % _k] = "Bomba neumática %d 40:1 (p35 §5.1; la unidad de referencia tiene 3)" % _k + _REF
 for _k in (1, 2):
     SUBNODOS["sk575_izaje_cil%d_camisa" % _k] = "Cilindro %d: camisa, ojo del pie, puerto de extensión y manguera" % _k
     SUBNODOS["sk575_izaje_cil%d_etapa1" % _k] = "Cilindro %d: etapa Ø8,12\" (carrera 42,82\")" % _k
