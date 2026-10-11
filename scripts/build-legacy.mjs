@@ -5,6 +5,12 @@
 //        → escribe SOLO ese archivo (para probar sin pisar la copia de trabajo).
 //        --drops <json> usa otro JSON de datos DROPS (por defecto src/data/qhse/tacker10-drops.json).
 //        --only limita los módulos legacy-ext incluidos (siempre entra 00-runtime.js y el bloque de datos).
+//        --standalone incrusta los GLB del SK-575 en el HTML (un solo archivo, ~5 MB) en vez de escribir sk575-glb.js.
+//
+// GLB del SK-575: el HTML servido (Pages, iframe de la app, `vite dev`) los baja con fetch desde
+// ../models/tacker10/sk575_*.glb (legacy-ext/84-modelo-sk575.js). Respaldo (file:// o fetch fallido, p. ej. el iframe
+// sandbox contra un servidor sin CORS): `sk575-glb.js` junto al HTML, con los mismos GLB en base64. Un <script> clásico
+// carga también por file://, así ABRIR_TACKER10_DIGITAL_RIG.cmd sigue funcionando sin servidor.
 //
 // Cada parche exige EXACTAMENTE 1 coincidencia: si el original cambia, el build falla en vez de corromper.
 // Además deduplica la foto de referencia embebida dos veces (ver dedupeRefImage).
@@ -26,6 +32,9 @@ const dropsJson = argValue('--drops')
   ? path.resolve(root, argValue('--drops'))
   : path.join(root, 'src', 'data', 'qhse', 'tacker10-drops.json')
 const only = argValue('--only')?.split(',').filter(Boolean)
+const standalone = args.includes('--standalone')
+/** Respaldo base64 de los GLB del SK-575, junto al HTML (lo carga legacy-ext/84-modelo-sk575.js). */
+const GLB_FALLBACK = 'sk575-glb.js'
 
 /** Helpers del visor (minificados) → nombre legible, expuestos a los módulos en `onPre`. */
 const PRE_API = {
@@ -182,6 +191,9 @@ function safeJsonForScript(obj) {
     .replaceAll('\u2029', '\\u2029')
 }
 
+/** Respaldo base64 de los GLB (lo llena build()); null si no hay GLB sk575_*. */
+let glbB64 = null
+
 function build() {
   let html = fs.readFileSync(original, 'utf8')
 
@@ -211,8 +223,26 @@ function build() {
         ';',
     )
   }
-  // Modelo SK-575 (legacy-ext/84-modelo-sk575.js): los GLB optimizados en base64 + el decodificador meshopt de three (MIT,
-  // autocontenido). El V2 se abre por file:// (sin fetch), por eso van incrustados.
+  // Cilindros de izaje y vientos del SK-575 (meta de cad/sk575/exportar.py): 81-izamiento-mastil.js anima esas piezas y
+  // tiende los vientos dinámicos entre sus extremos, así la pose de la animación empalma con la final.
+  const skMeta = (id) => {
+    const f = path.join(root, 'public', 'models', 'tacker10', id + '.meta.json')
+    return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null
+  }
+  const izMeta = skMeta('sk575_izaje')
+  const vientosMeta = skMeta('sk575_vientos')
+  if (izMeta || vientosMeta) {
+    blocks.push(
+      '/* cilindros y vientos SK-575 (public/models/tacker10/sk575_{izaje,vientos}.meta.json) */\nwindow.__TACKER_SK575_META=' +
+        safeJsonForScript({
+          izaje: izMeta?.cilindros?.lista ?? [],
+          vientos: vientosMeta?.cables ?? [],
+        }) +
+        ';',
+    )
+  }
+  // Modelo SK-575 (legacy-ext/84-modelo-sk575.js): la lista de GLB + el decodificador meshopt de three (MIT, incrustado).
+  // Los GLB van por fetch; el base64 queda como respaldo en sk575-glb.js (o dentro del HTML con --standalone).
   const modelsDir = path.join(root, 'public', 'models', 'tacker10')
   const meshopt = path.join(
     root,
@@ -251,10 +281,12 @@ function build() {
       ]),
     )
     blocks.push(
-      '/* GLB del modelo SK-575 (public/models/tacker10/sk575_*.glb) */\nwindow.__TACKER_SK575_GLB=' +
-        safeJsonForScript(map) +
+      '/* GLB del modelo SK-575 (public/models/tacker10/sk575_*.glb) */\nwindow.__TACKER_SK575_FILES=' +
+        JSON.stringify(Object.keys(map)) +
         ';',
     )
+    glbB64 = 'window.__TACKER_SK575_GLB=' + safeJsonForScript(map) + ';'
+    if (standalone) blocks.push('/* GLB en base64 (--standalone) */\n' + glbB64)
   }
   for (const f of readExtModules().filter((f) => f !== runtimeFile)) {
     blocks.push(`/* ${f} */\n` + fs.readFileSync(path.join(extDir, f), 'utf8'))
@@ -276,4 +308,15 @@ for (const t of targets) {
   fs.mkdirSync(path.dirname(t), { recursive: true })
   fs.writeFileSync(t, html)
   console.log('escrito', path.relative(root, t), `(${(html.length / 1024).toFixed(0)} KB)`)
+  if (glbB64 && !standalone) {
+    const f = path.join(path.dirname(t), GLB_FALLBACK)
+    fs.writeFileSync(
+      f,
+      '/* GLB del SK-575 en base64: respaldo de legacy-ext/84-modelo-sk575.js (file:// o fetch fallido).\n' +
+        ' * GENERADO por scripts/build-legacy.mjs: no editar. */\n' +
+        glbB64 +
+        '\n',
+    )
+    console.log('escrito', path.relative(root, f), `(${(glbB64.length / 1024).toFixed(0)} KB)`)
+  }
 }

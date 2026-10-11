@@ -7,8 +7,9 @@ import path from 'node:path'
 import { after, before, test } from 'node:test'
 import { chromium } from 'playwright-core'
 
-const dir = path.resolve('public/legacy')
-const file = 'TACKER10_Digital_Rig_V2.html'
+// public/ entero (como Pages): el V2 baja los GLB del SK-575 de ../models/tacker10/ con fetch
+const dir = path.resolve('public')
+const file = 'legacy/TACKER10_Digital_Rig_V2.html'
 let server, browser, page, problems
 let skip = false
 

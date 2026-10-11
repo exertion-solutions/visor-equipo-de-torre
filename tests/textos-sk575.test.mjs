@@ -32,5 +32,7 @@ test('50: marcadores DROPS siempre aproximados y sin anclar en geometría oculta
   const drops = read('50-drops-layer.js')
   assert.match(drops, /m\.approx = true/)
   assert.match(drops, /if \(!o\.layers\.isEnabled\(0\)\) return/)
+  // el dropsId va en el grupo `drops_<ID>` (capa 0) y la capa 31 en sus mallas: cuenta solo si alguna malla se dibuja
+  assert.match(drops, /x\.isMesh && x\.layers\.isEnabled\(0\)/)
   assert.match(drops, /case 'piso-enganche':[\s\S]{0,300}onMast\(20\.629\)/)
 })

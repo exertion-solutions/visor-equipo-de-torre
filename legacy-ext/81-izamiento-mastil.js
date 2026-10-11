@@ -8,10 +8,12 @@
  *   3. Se tensan los vientos.
  *
  * QUÉ MUEVE: rota `mastil_pivote` alrededor del pivote de la base (la pose final es la del V2, con su leve inclinación), desliza el
- * tramo superior (reticulado, corona y luminarias del 2.º tramo) a lo largo del eje, dibuja los pistones con su longitud según la
- * posición y oculta lo que todavía no está montado (aparejo, piso del enganchador, vientos). En 100 % el visor queda exactamente
- * como antes. NO es una simulación: no hay cargas, presiones, velocidades ni tiempos reales; las carreras de los pistones y el
- * pistón interno del 2.º tramo son ilustrativos.
+ * tramo superior (reticulado, corona y luminarias del 2.º tramo) a lo largo del eje, anima los cilindros de izaje del SK-575
+ * (camisa, 2 etapas y vástago; regla de `sk575_izaje.meta.json`), tiende los vientos entre los extremos de `sk575_vientos.meta.json`
+ * y oculta lo que todavía no está montado (aparejo, piso del enganchador, vientos). En 100 % el visor queda exactamente como antes
+ * y la pose dinámica empalma con la final (sin saltos). NO es una simulación: no hay cargas, presiones, velocidades ni tiempos
+ * reales. Largos del cilindro HYCO: plano (A, src-plano-hyco); pivotes de montaje: C (no documentados); pistón interno del 2.º
+ * tramo y ángulo de transporte: ilustrativos (V2 procedural previo).
  *
  * Limitación conocida: el cable del malacate hacia la corona está fusionado con el acero del malacate: se oculta (con el resto del acero
  * del malacate) mientras dura el izamiento y reaparece al montar la corona.
@@ -125,22 +127,98 @@ window.__rigExt.onPost((R) => {
     by + 5 * S * Math.cos(theta) + 0.5 * Math.sin(theta),
   ]
 
+  // ───────── cilindros de izaje del SK-575 (84 los integra en el grupo `mastil` con la pose armada) ─────────
+  // Regla de sk575_izaje.meta.json: la camisa gira sobre su pivote del carrier hasta apuntar al empuje (oreja del mástil, gira con
+  // el pivote); la extensión e = L − cerrado se reparte etapa1 → etapa2 → vástago. Ilustrativo: no es cálculo ni simulación.
+  const META = window.__TACKER_SK575_META || {}
+  const V3 = (a) => new T.Vector3().fromArray(a)
+  const Q = P.quaternion.constructor
+  const M4 = P.matrix.constructor
+  /** Matriz local del pivote con el mástil armado (la de set(1)): pasa puntos del modelo armado al marco del pivote. */
+  const armadoInv = () =>
+    new M4()
+      .compose(P.position, new Q().setFromAxisAngle(new T.Vector3(0, 0, 1), -aFinal), P.scale)
+      .invert()
+  let cilSK = null
+  function bindCilindros() {
+    if (cilSK || !META.izaje || !META.izaje.length) return cilSK
+    const nodos = META.izaje.map((c) => [
+      mastG.getObjectByName(c.nodos.camisa),
+      ...c.nodos.etapas.map((n) => mastG.getObjectByName(n)),
+    ])
+    if (nodos.some((ns) => ns.some((n) => !n))) return null // 84 todavía no los integró
+    const inv = armadoInv()
+    cilSK = META.izaje.map((c, i) => {
+      const piv = V3(c.pivote_carrier)
+      const emp = V3(c.empuje_mastil)
+      return {
+        piv,
+        empP: emp.clone().applyMatrix4(inv), // en el marco del pivote: sigue al mástil
+        u0: emp.clone().sub(piv).normalize(),
+        lext: c.largo_extendido_m,
+        lcerr: c.largo_cerrado_m,
+        carreras: c.carrera_etapas_m,
+        piezas: nodos[i].map((n) => ({ n, q0: n.quaternion.clone() })),
+      }
+    })
+    return cilSK
+  }
+  const _e = new T.Vector3()
+  const _u = new T.Vector3()
+  const _q = new Q()
+  /** Largos |empuje − pivote| del último set (para la nota y las pruebas). */
+  const largos = []
+  function updateCilindros() {
+    if (!bindCilindros()) return
+    P.updateMatrix()
+    cilSK.forEach((c, i) => {
+      _e.copy(c.empP).applyMatrix4(P.matrix)
+      const L = _u.copy(_e).sub(c.piv).length()
+      largos[i] = L
+      _u.divideScalar(L)
+      _q.setFromUnitVectors(c.u0, _u)
+      // Lo que falta para el largo modelado se retrae del vástago hacia la etapa 1 (= extender etapa1 → etapa2 → vástago).
+      // Medido desde el largo extendido, la pose armada sale exacta (las carreras del plano suman 0,26 mm de más).
+      let falta = Math.max(0, c.lext - L)
+      const ret = c.carreras.map(() => 0)
+      for (let k = ret.length - 1; k >= 0; k--) falta -= ret[k] = Math.min(falta, c.carreras[k])
+      let retraido = 0
+      c.piezas.forEach(({ n, q0 }, k) => {
+        n.quaternion.copy(_q).multiply(q0)
+        if (k === 0) return // camisa: solo gira en su pivote
+        retraido += ret[k - 1] // la etapa k arrastra a las interiores
+        n.position.copy(c.piv).addScaledVector(_u, c.lext - retraido)
+      })
+    })
+  }
+
   // ───────── ocultar lo que aún no está montado ─────────
   // ───────── vientos dinámicos (fase 3): del tendido flojo (con catenaria) al cable tenso ─────────
-  // Puntos del V2 (20-mast/visor): 4 anclajes a ±25 m, 2 cables por anclaje desde t = 26 y 18,5 del mástil, y 2 cables cortos traseros.
+  // Extremos de sk575_vientos.meta.json: en tensión 1 el cable coincide con el viento SK (anclajes WS10, C4 Fuente en conflicto).
   const FloatAttr = new T.BoxGeometry(1, 1, 1).attributes.position.constructor
   const NSEG = 18
   const cables = []
-  for (const a of [
-    [-25, 0.12, 25],
-    [-25, 0.12, -25],
-    [25, 0.12, 25],
-    [25, 0.12, -25],
-  ])
-    for (const t of [26, 18.5])
-      cables.push({ a, t, x: a[0] < 0 ? -0.6 : 0.6, z: a[2] < 0 ? -0.5 : 0.5 })
-  for (const s of [-1.3, 1.3])
-    cables.push({ a: [-9.6, 1.4, s], t: 14, x: -0.8, z: s > 0 ? 0.8 : -0.8 })
+  if (META.vientos && META.vientos.length) {
+    // extremos del modelo SK-575 (armado): el del mástil pasa al marco del pivote, el de tierra/carrier queda fijo
+    const inv = armadoInv()
+    for (const c of META.vientos)
+      cables.push({
+        mP: V3(c.extremo_mastil).applyMatrix4(inv),
+        a: c.extremo_tierra || c.extremo_carrier,
+      })
+  } else {
+    // sin la meta (build parcial): los puntos del V2 procedural
+    for (const a of [
+      [-25, 0.12, 25],
+      [-25, 0.12, -25],
+      [25, 0.12, 25],
+      [25, 0.12, -25],
+    ])
+      for (const t of [26, 18.5])
+        cables.push({ a, t, x: a[0] < 0 ? -0.6 : 0.6, z: a[2] < 0 ? -0.5 : 0.5 })
+    for (const s of [-1.3, 1.3])
+      cables.push({ a: [-9.6, 1.4, s], t: 14, x: -0.8, z: s > 0 ? 0.8 : -0.8 })
+  }
   const gVientos = new T.Group()
   gVientos.name = 'vientos_dinamicos'
   gVientos.visible = false
@@ -159,9 +237,11 @@ window.__rigExt.onPost((R) => {
     z,
   ]
   /** tension 0 = flojo (flecha máxima), 1 = tenso y recto (igual que los cables fijos del V2). */
+  const _m = new T.Vector3()
   function updateVientos(th, tension) {
+    P.updateMatrix()
     for (const c of cables) {
-      const m = niW(c.t, c.x, c.z, th)
+      const m = c.mP ? _m.copy(c.mP).applyMatrix4(P.matrix).toArray() : niW(c.t, c.x, c.z, th)
       const L = Math.hypot(m[0] - c.a[0], m[1] - c.a[1], m[2] - c.a[2])
       const flecha = L * 0.08 * Math.pow(1 - tension, 1.5)
       const arr = c.line.geometry.attributes.position.array
@@ -217,11 +297,12 @@ window.__rigExt.onPost((R) => {
     if (vientosTendidos && !completo) updateVientos(theta, tens)
     if (cableMalacate) cableMalacate.visible = completo || p >= PHASE.extendEnd
 
-    gDyn.visible = !completo
+    updateCilindros()
+    gDyn.visible = !completo && !cilSK // pistones procedurales solo si no hay cilindros SK
     gSop.visible = p < PHASE.jacksEnd + 0.03
     if (pistonesEstaticos) pistonesEstaticos.visible = completo
     gExt.visible = !completo
-    if (!completo) {
+    if (!completo && !cilSK) {
       const [mx, my] = attach(theta)
       for (const { z, barrel, rod } of izaje) {
         const [x0, y0] = B0(z)
@@ -232,6 +313,8 @@ window.__rigExt.onPost((R) => {
         between(barrel, x0, y0, x0 + ux * lb, y0 + uy * lb, z)
         between(rod, x0 + ux * lb, y0 + uy * lb, mx, my, z)
       }
+    }
+    if (!completo) {
       const supBottom = 14.8 - E * (1 - ext)
       const barrelTop = EXT_Y0 + EXT_BARREL
       between(extBarrel, 0, EXT_Y0, 0, barrelTop, 0)
@@ -292,7 +375,7 @@ window.__rigExt.onPost((R) => {
       <input type="range" id="er-range" min="0" max="100" step="1" value="100" aria-label="Avance del izamiento (100 = montado)">
     </div>
     <div id="er-fase" aria-live="polite"></div>
-    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. En el V2 el mástil parte apoyado en un soporte de traslado sobre la cabina (el equipo del carrier le impide acostarse a 0°; ángulo calculado en cad/izamiento.py). Ilustrativo: sin cargas, presiones ni tiempos; carreras de los pistones y pistón interno aproximados.</div></details>`
+    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Ilustrativo: sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
   // Vive dentro del menú "Montaje" de la barra, debajo de la secuencia (sin paneles flotantes).
   if (window.__rigToolbar) window.__rigToolbar.add('montaje', box)
   else document.body.appendChild(box)
@@ -332,5 +415,12 @@ window.__rigExt.onPost((R) => {
   })
   ui.update()
 
-  window.__tackerErect = { set, play, pause, progress: () => p, fases: PHASE }
+  window.__tackerErect = {
+    set,
+    play,
+    pause,
+    progress: () => p,
+    fases: PHASE,
+    largos: () => [...largos],
+  }
 })

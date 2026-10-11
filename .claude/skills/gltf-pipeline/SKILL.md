@@ -37,6 +37,14 @@ El legacy tiene ~900 draw calls porque cada barra de reticulado, cable y caño e
 - **Modelo canónico: `cad/sk575/modelo.py`** (reemplaza a `~/cad/tacker10/tacker10.py`: misma geometría + cotas exactas 48", 15.2992, 20.629, 72", tambor de cable más liviano y etiquetas `comp()`). Editar ahí, no en `~/cad`.
 - **Trampa: el paso `palette` de `gltf-transform optimize`** convierte los materiales PBR por material en `PaletteMaterial` con texturas → rompe el contrato `<id>_<mat>` (y los factores metalness/roughness). Por eso `gltf:optimize` lo desactiva. Verificar tras optimizar: materiales nombrados `<id>_<mat>` con `baseColorFactor`/`metallicFactor`/`roughnessFactor` y **sin texturas** (`gltf:inspect`).
 - Meshopt sobre el lote SK-575: ~23 MB → **1,6 MB**, sin perder nombres (wrapper con `--flatten false --join false`).
+- **Sub-nodos animables / seleccionables** dentro del GLB de un componente: `comp("raiz/sub", origen)` en `modelo.py`
+  (cabina, motor, enganche, camisa/etapas de los cilindros). El origen del nodo = pivote; anclajes en `<id>.meta.json`.
+- **Aristas horneadas**: `<nodo>_aristas` (LINES) por nodo, umbral 28° (= `aristas()` del V2), sin `_luz`/`_vidrio`.
+  simplify no toca LINES (avisa "Unsupported draw mode": esperado).
+- **simplify declarado**: publicar con `node cad/sk575/publicar.mjs` (pasa `--simplify true --simplify-error 0.0001`,
+  el default del CLI) y registra `triangulos_origen`/`triangulos_publicados` en `public/models/tacker10/<id>.meta.json`.
+  El error es relativo a la extensión de cada malla: partir un componente en sub-nodos **sube** los tris publicados.
+- OpenCascade reutiliza la triangulación de un sólido: el `TOL` por material vale solo para la primera teselación.
 
 ## Notas
 

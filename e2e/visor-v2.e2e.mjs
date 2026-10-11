@@ -14,11 +14,17 @@ import { after, afterEach, before, test } from 'node:test'
 import { chromium } from 'playwright-core'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html')
+const pub = path.join(root, 'public')
+const V2 = '/legacy/TACKER10_Digital_Rig_V2.html'
 const shots = path.join(root, '.tmp', 'e2e')
 let browser, page, server, url
 let ortho0 // proyección con la que arranca el V2 (hoy ortográfica)
 let skip = false
+const LANZAR = {
+  channel: 'chrome',
+  headless: true,
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+}
 const problemas = []
 
 const vigilar = (p) => {
@@ -39,19 +45,29 @@ const abrir = async (viewport) => {
 before(async () => {
   url = process.env.E2E_URL
   if (!url) {
-    // http local efímero: el V2 usa módulos y blobs que file:// no permite en headless
-    server = http.createServer((req, res) =>
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(fs.readFileSync(html)),
-    )
+    // http local efímero que sirve public/ como Pages (el V2 usa módulos y blobs que file:// no permite en headless):
+    // /legacy/… el HTML y su respaldo sk575-glb.js, /models/tacker10/… los GLB que baja con fetch. Sin cabeceras CORS:
+    // /host.html lo embebe en un iframe sandbox (origen opaco, como la app) → el fetch falla y entra el respaldo base64.
+    const tipos = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }
+    server = http.createServer((req, res) => {
+      const ruta = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+      if (ruta === '/host.html')
+        return void res
+          .writeHead(200, { 'content-type': tipos['.html'] })
+          .end(
+            `<iframe sandbox="allow-scripts" src="${V2}" style="width:800px;height:500px"></iframe>`,
+          )
+      const f = path.join(pub, ruta)
+      if (!f.startsWith(pub) || !fs.existsSync(f) || fs.statSync(f).isDirectory())
+        return void res.writeHead(404).end()
+      res.writeHead(200, { 'content-type': tipos[path.extname(f)] ?? 'application/octet-stream' })
+      fs.createReadStream(f).pipe(res)
+    })
     await new Promise((r) => server.listen(0, '127.0.0.1', r))
-    url = `http://127.0.0.1:${server.address().port}/`
+    url = `http://127.0.0.1:${server.address().port}${V2}`
   }
   try {
-    browser = await chromium.launch({
-      channel: 'chrome',
-      headless: true,
-      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
-    })
+    browser = await chromium.launch(LANZAR)
   } catch {
     skip = 'Chrome no disponible'
     return
@@ -222,40 +238,43 @@ test('aparejo: el bloque SK sigue al deslizador y vuelve a 14 m', async (t) => {
   assert.ok(Math.abs((await alto(14)) - 14) < 0.05)
 })
 
-test('izamiento: el 1.er tramo gira, el 2.º telescopa, cilindros SK solo montado, y el ciclo restaura la pose', async (t) => {
+test('izamiento: el 1.er tramo gira, el 2.º telescopa, los cilindros SK se animan y el ciclo restaura la pose', async (t) => {
   if (skip) return t.skip(skip)
   const r = await page.evaluate(async () => {
     const R = window.__rig
     const E = window.__tackerErect
-    const izaje = () => R.groups.mastil.getObjectByName('sk575_izaje_rojo')
-    const pivote = R.groups.mastil.children.find((c) => c.name === 'mastil_pivote')
+    const M = R.groups.mastil
+    const pivote = M.children.find((c) => c.name === 'mastil_pivote')
     const tramoSup = pivote.children.find((c) => c.name === 'mastil_tramo_superior')
     const tieneMastil = pivote.children.some((c) => c.name.startsWith('sk575_mastil_'))
     const sup = tramoSup.children.filter((c) => /^sk575_mastil_.*_sup$/.test(c.name))
     const primero = pivote.children.find(
       (c) => c.name.startsWith('sk575_mastil_') && !c.name.endsWith('_sup'),
     )
-    const piezas = [...sup, primero].filter(Boolean)
+    const cil = ['camisa', 'etapa1', 'etapa2', 'vastago'].map((k) =>
+      M.getObjectByName('sk575_izaje_cil1_' + k),
+    )
+    const camisaRojo = M.getObjectByName('sk575_izaje_cil1_camisa_rojo')
+    const piezas = [...sup, primero, ...cil].filter(Boolean)
     const pose = () => {
       R.scene.updateMatrixWorld(true)
       return piezas.map((o) => o.getWorldPosition(new R.three.Vector3()).toArray())
     }
-    // la sincronización de visibilidad corre en onBeforeRender: con render por software un cuadro puede pasar el segundo
-    const hasta = async (cond) => {
-      for (let i = 0; i < 100 && !cond(); i++) {
-        R.invalidate()
-        await new Promise((res) => setTimeout(res, 100))
-      }
-      return cond()
+    const ver = (o) => {
+      for (let p = o; p; p = p.parent) if (!p.visible) return false
+      return !!(o.layers.mask & 1)
     }
     const antes = pose()
     const rot0 = pivote.rotation.z
+    const q0 = cil[0].quaternion.clone()
     E.set(0.35)
     const embutido = tramoSup.position.y < -1
-    const izajeOculto = await hasta(() => !izaje().visible)
     const giro = Math.abs(pivote.rotation.z - rot0)
+    const camisaGira = cil[0].quaternion.angleTo(q0)
+    const largo035 = E.largos()[0]
+    const dinamicos = M.getObjectByName('pistones_izaje_dinamicos').visible
+    const visible035 = ver(camisaRojo)
     E.set(1)
-    const izajeVisible = await hasta(() => izaje().visible)
     const despues = pose()
     const desvio = Math.max(
       0,
@@ -265,9 +284,12 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa, cilindros SK solo montad
       tieneMastil,
       nSup: sup.length,
       hayPrimero: !!primero,
+      hayCil: cil.every(Boolean) && !!camisaRojo,
       giro,
-      izajeOculto,
-      izajeVisible,
+      camisaGira,
+      largo035,
+      dinamicos,
+      visible035,
       embutido,
       desvio,
       rotFinal: Math.abs(pivote.rotation.z - rot0),
@@ -277,13 +299,140 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa, cilindros SK solo montad
   assert.ok(r.tieneMastil, 'el mástil SK no cuelga de mastil_pivote')
   assert.ok(r.nSup > 0, 'el 2.º tramo SK no cuelga de mastil_tramo_superior')
   assert.ok(r.hayPrimero, 'no hay pieza SK del 1.er tramo en mastil_pivote')
+  assert.ok(r.hayCil, 'faltan los nodos sk575_izaje_cil1_{camisa,etapa1,etapa2,vastago}')
   assert.ok(r.giro > 0.3, `el pivote no giró: ${r.giro}`)
-  assert.ok(r.izajeOculto, 'los cilindros SK siguen visibles con el mástil acostado')
-  assert.ok(r.izajeVisible, 'los cilindros SK no vuelven con el mástil montado')
+  assert.ok(r.camisaGira > 0.05, `la camisa SK no gira en su pivote: ${r.camisaGira} rad`)
+  assert.ok(
+    r.largo035 < 4.8641 - 0.5,
+    `el cilindro no se retrae con el mástil bajo: ${r.largo035} m`,
+  )
+  assert.ok(r.visible035, 'los cilindros SK deben verse durante el izamiento')
+  assert.equal(r.dinamicos, false, 'con cilindros SK no se dibujan los pistones procedurales')
   assert.ok(r.embutido, 'el 2.º tramo no está embutido durante el izamiento')
-  assert.ok(r.desvio < 1e-3, `las piezas SK del mástil no vuelven a su lugar: desvío ${r.desvio} m`)
+  assert.ok(r.desvio < 1e-3, `las piezas SK no vuelven a su lugar: desvío ${r.desvio} m`)
   assert.ok(r.rotFinal < 1e-6, `el pivote no vuelve a su ángulo: ${r.rotFinal}`)
   assert.equal(r.supY, 0)
+  for (const p of [0, 0.35, 0.65, 1]) {
+    await page.evaluate((p) => window.__tackerErect.set(p), p)
+    await cuadro()
+    await snap('04-izamiento-' + String(Math.round(p * 100)).padStart(3, '0'))
+  }
+})
+
+// Sin saltos: la pose dinámica a p = 0,999 empalma con la final (cilindros SK y vientos con los extremos de la meta).
+test('izamiento sin saltos: cilindros y vientos a p = 0,999 coinciden con la pose final (< 0,05 m)', async (t) => {
+  if (skip) return t.skip(skip)
+  const r = await page.evaluate(() => {
+    const R = window.__rig
+    const E = window.__tackerErect
+    const M = R.groups.mastil
+    const V = R.three.Vector3
+    const META = window.__TACKER_SK575_META
+    const topes = () => {
+      R.scene.updateMatrixWorld(true)
+      return META.izaje.flatMap((c) =>
+        [c.nodos.camisa, ...c.nodos.etapas].map((n) =>
+          M.getObjectByName(n).getWorldPosition(new V()),
+        ),
+      )
+    }
+    const lineas = () =>
+      M.getObjectByName('vientos_dinamicos').children.map((l) => {
+        const a = l.geometry.attributes.position
+        l.updateMatrixWorld(true)
+        return [0, a.count - 1].map((k) =>
+          new V().fromBufferAttribute(a, k).applyMatrix4(l.matrixWorld),
+        )
+      })
+    E.set(0.999)
+    const cil999 = topes()
+    const v999 = lineas()
+    E.set(1)
+    const cil1 = topes()
+    // vientos SK armados: extremos de la meta (sin despiece, marco del grupo = mundo)
+    const sk = META.vientos.map((c) => [
+      new V().fromArray(c.extremo_tierra || c.extremo_carrier),
+      new V().fromArray(c.extremo_mastil),
+    ])
+    return {
+      cil: Math.max(...cil999.map((v, i) => v.distanceTo(cil1[i]))),
+      vientos: Math.max(
+        ...v999.map(([a, b], i) => Math.max(a.distanceTo(sk[i][0]), b.distanceTo(sk[i][1]))),
+      ),
+      nVientos: v999.length,
+      nSk: sk.length,
+    }
+  })
+  assert.equal(r.nVientos, r.nSk, 'un viento dinámico por cable SK')
+  assert.ok(r.cil < 0.05, `salto de los cilindros al llegar a p = 1: ${r.cil} m`)
+  assert.ok(r.vientos < 0.05, `salto de los vientos al llegar a p = 1: ${r.vientos} m`)
+})
+
+// Sub-nodos del GLB con grupo propio: cabina (de manejo) y motor en el carrier, piso de enganche en el mástil.
+test('cabina, motor y enganche: piezas SK propias, visibles y con resaltado que no enciende al carrier', async (t) => {
+  if (skip) return t.skip(skip)
+  const ids = { cabina: 'sk575_cabina', motor: 'sk575_motor', enganche: 'sk575_enganche' }
+  for (const [id, nodo] of Object.entries(ids)) {
+    const r = await page.evaluate(
+      ([id, nodo]) => {
+        const R = window.__rig
+        const n = R.groups[id].getObjectByName(nodo)
+        let mallas = 0
+        n?.traverse((o) => o.isMesh && o.layers.mask & 1 && o.userData.id === id && mallas++)
+        // solo piezas SK: las lentes procedurales del mástil son emisivas siempre
+        const brilla = (lista) =>
+          lista.some((m) => m.name.startsWith('sk575_') && m.emissive && m.emissive.r > 0)
+        R.selectComponent(id)
+        return {
+          enGrupo: !!n,
+          mallas,
+          pick: R.pickables.filter((o) => o.userData.id === id).length,
+          propio: brilla(R.materials[id]),
+          carrier: brilla(R.materials.camion),
+          mastil: brilla(R.materials.mastil),
+          sinPieza: window.__tackerSk575.sinPieza(),
+        }
+      },
+      [id, nodo],
+    )
+    await cuadro()
+    await snap('08-seleccion-' + id)
+    assert.ok(r.enGrupo, `${nodo} no cuelga del grupo ${id}`)
+    assert.ok(r.mallas > 0 && r.pick > 0, `${id}: sin mallas SK visibles/seleccionables`)
+    assert.ok(r.propio, `${id}: seleccionar no resalta su pieza SK`)
+    assert.ok(!r.carrier && !r.mastil, `${id}: el resaltado se filtra al carrier o al mástil`)
+    assert.deepEqual(r.sinPieza, [])
+  }
+  const fila = await page.evaluate(
+    () => document.querySelector('.item[data-id="cabina"] .sk-nota')?.textContent ?? '',
+  )
+  assert.match(fila, /cabina de manejo/)
+  // el piso de enganche sigue al 2.º tramo: en la fase 3 (el mástil todavía gira) se mueve con él
+  const despegue = await page.evaluate(async () => {
+    const R = window.__rig
+    const E = window.__tackerErect
+    const V = R.three.Vector3
+    const n = R.groups.enganche.getObjectByName('sk575_enganche')
+    const sup = R.groups.mastil.getObjectByName('mastil_tramo_superior')
+    const render = () =>
+      new Promise((ok) => {
+        R.invalidate()
+        requestAnimationFrame(() => requestAnimationFrame(ok))
+      })
+    // posición del piso en el marco del 2.º tramo: constante si lo acompaña
+    const rel = () => {
+      R.scene.updateMatrixWorld(true)
+      return sup.worldToLocal(n.getWorldPosition(new V()))
+    }
+    const r1 = rel()
+    E.set(0.85)
+    await render()
+    const r085 = rel()
+    E.set(1)
+    await render()
+    return r1.distanceTo(r085)
+  })
+  assert.ok(despegue < 0.01, `el piso de enganche se despega del 2.º tramo: ${despegue} m`)
 })
 
 // Hallazgos 2 (3d-perf #7 y código #2). Espera el fix en 84 (`sincronizarIzamiento`): cables del cuadro y de la llave atados
@@ -345,6 +494,19 @@ test('DROPS: la capa se enciende con marcadores y sin errores de consola', async
   await snap('06-drops')
   assert.ok(r.capas.includes('drops'), r.capas.join())
   assert.ok(r.marcadores > 0, 'sin marcadores DROPS')
+  // la sección piso de enganche se ancla a la pieza SK (centro de su caja) y sigue rotulada aproximada
+  const pe = await page.evaluate(() => {
+    const R = window.__rig
+    const n = R.groups.enganche.getObjectByName('sk575_enganche')
+    R.scene.updateMatrixWorld(true)
+    const c = new R.three.Box3().setFromObject(n).getCenter(new R.three.Vector3()).toArray()
+    const a = R.drops.anclajes().find((m) => m.sec === 'piso-enganche')
+    return { c, tag: n.userData.dropsId, a }
+  })
+  assert.equal(pe.tag, 'piso-enganche')
+  assert.ok(pe.a && pe.a.approx, 'el marcador del piso de enganche debe rotularse aproximado')
+  const d = Math.hypot(...pe.a.anchor.map((v, i) => v - pe.c[i]))
+  assert.ok(d < 1e-3, `el marcador del piso de enganche no está sobre la pieza SK: ${d} m`)
   assert.deepEqual(problemas.slice(errores0), [])
 })
 
@@ -446,6 +608,108 @@ test('móvil 390×844: la tarjeta del SK-575 no tapa la barra de modos', async (
   } finally {
     await page.setViewportSize({ width: 1440, height: 900 })
   }
+})
+
+test('GLB del SK-575: servido por http se bajan con fetch (el HTML no trae el base64)', async (t) => {
+  if (skip) return t.skip(skip)
+  const r = await page.evaluate(() => ({
+    fuente: window.__tackerSk575.stats.fuente,
+    b64: !!window.__TACKER_SK575_GLB,
+    glb: window.__TACKER_SK575_FILES.length,
+  }))
+  assert.deepEqual(r, { fuente: 'fetch', b64: false, glb: 16 })
+})
+
+test('GLB del SK-575: en un iframe sandbox sin CORS entra el respaldo base64 (sk575-glb.js)', async (t) => {
+  if (skip) return t.skip(skip)
+  if (!server) return t.skip('solo con el servidor local (E2E_URL no sirve /host.html)')
+  // Navegador aparte (con la sesión principal abierta, una segunda carga por software no llega a tiempo) y sin vigilar la
+  // consola: el fetch bloqueado por CORS deja errores de red (es lo esperado).
+  const b = await chromium.launch(LANZAR)
+  const p = await b.newPage({ viewport: { width: 900, height: 600 } })
+  try {
+    await p.goto(url.replace(V2, '/host.html'), { waitUntil: 'commit', timeout: 120_000 })
+    let f
+    while (!(f = p.frames().find((x) => x !== p.mainFrame()))) await p.waitForTimeout(100)
+    await f.waitForFunction(() => window.__tackerSk575 && window.__tackerSk575.ready(), null, {
+      timeout: 120_000,
+    })
+    const r = await f.evaluate(async () => {
+      await window.__tackerSk575.ready()
+      const ids = new Set(
+        window.__rig.pickables
+          .filter((m) => m.material?.name?.startsWith('sk575_'))
+          .map((m) => m.material.name.split('_').slice(0, 2).join('_')),
+      )
+      return { fuente: window.__tackerSk575.stats.fuente, origen: self.origin, comps: ids.size }
+    })
+    assert.deepEqual(r, { fuente: 'base64', origen: 'null', comps: 16 })
+  } finally {
+    await b.close()
+  }
+})
+
+test('QHSE: un único panel lateral; "SIN VALIDAR" y el aviso del A2 siguen visibles con todo plegado', async (t) => {
+  if (skip) return t.skip(skip)
+  await page.evaluate(() => document.querySelector('#v2-modebar button[data-m="qhse"]').click())
+  await hasta(
+    () => !!window.__rig.drops?.isActive() && !!document.querySelector('#qp-drops #drops-legend'),
+  )
+  await snap('08-qhse-panel')
+  const leer = () =>
+    page.evaluate(() => {
+      const $ = (id) => document.getElementById(id)
+      const panel = $('qhse-panel')
+      const ve = (el) => {
+        if (!el) return false
+        const b = el.getBoundingClientRect()
+        return (
+          getComputedStyle(el).display !== 'none' &&
+          b.width > 0 &&
+          b.height > 0 &&
+          b.top >= 0 &&
+          b.bottom <= innerHeight
+        )
+      }
+      const legend = $('legend')
+      const warn = document.querySelector('.dl-warn')
+      return {
+        paneles: document.querySelectorAll('#qhse-panel').length,
+        panel: ve(panel),
+        dentro: ['v2-qhse', 'drops-legend', 'legend'].filter((id) => panel.contains($(id))),
+        sueltas: [...$('stage').children].filter((el) =>
+          /^(v2-qhse|drops-legend|legend)$/.test(el.id),
+        ).length,
+        legend: ve(legend) && /SIN VALIDAR/.test(legend.textContent) && !legend.closest('details'),
+        warn:
+          ve(warn) &&
+          /no define radios ni distancias/.test(warn.textContent) &&
+          !warn.closest('details'),
+        fuentes: new Set(
+          [...panel.querySelectorAll('*')].map((e) => getComputedStyle(e).fontFamily),
+        ).size,
+      }
+    })
+  const abierto = await leer()
+  await page.evaluate(() =>
+    document.querySelectorAll('#qhse-panel details').forEach((d) => (d.open = false)),
+  )
+  const plegado = await leer()
+  await snap('09-qhse-plegado')
+  await page.evaluate(() =>
+    document.querySelectorAll('#qhse-panel details').forEach((d) => (d.open = true)),
+  )
+  const esperado = {
+    paneles: 1,
+    panel: true,
+    dentro: ['v2-qhse', 'drops-legend', 'legend'],
+    sueltas: 0,
+    legend: true,
+    warn: true,
+    fuentes: 1,
+  }
+  assert.deepEqual(abierto, esperado)
+  assert.deepEqual(plegado, esperado)
 })
 
 test('consola sin errores durante toda la sesión', (t) => {

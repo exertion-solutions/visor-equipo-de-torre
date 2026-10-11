@@ -10,11 +10,12 @@
  *      proyectado cada 2 frames con la cámara activa. Anclaje: geometría etiquetada con
  *      `userData.dropsId`; si no hay, posición cualitativa APROXIMADA del modelo (borde punteado).
  *   4. Panel lateral con los puntos de la sección / del componente seleccionado.
- *   5. Leyenda propia apilada sobre #legend, con el resumen de la inspección TK10.
+ *   5. Leyenda propia (plegable) en el panel QHSE único de 45-panel-qhse.js (#qp-drops), con el resumen de la
+ *      inspección TK10. El aviso "El A2 no define radios ni distancias…" va fuera de lo plegable (#qp-avisos): siempre visible.
  *   6. Al desactivar se restauran colores y se elimina todo el DOM, listeners y el rAF.
  *
  * Contrato de datos: ver docs/drops y src/data/qhse/tacker10-drops.json (schemaVersion 1).
- * Expone `R.drops = { isActive, setActive, openSection, openComponent }` (útil para pruebas).
+ * Expone `R.drops = { isActive, setActive, openSection, openComponent, anclajes }` (útil para pruebas).
  */
 ;(() => {
   'use strict'
@@ -107,13 +108,13 @@
     let autoActivated = false
     let raf = 0
     let frame = 0
-    let ticks = 0
     let inQhse = false
     // DOM (se crea al activar y se elimina al desactivar)
     let styleEl = null
     let markerLayer = null
     let panel = null
     let legend = null
+    let legendWarn = null // aviso del A2: fuera de la leyenda plegable, siempre visible
     let markers = [] // { sec, el, w, h, anchor, approx, comps }
     let panelState = null // { kind: 'section'|'component', id, trigger }
     let lastSelected = null
@@ -217,8 +218,12 @@
         }
         if (!secs.size) return
         // La geometría procedural etiquetada quedó oculta (capa 31, 84-modelo-sk575.js) y Box3 ignora capas: un objeto
-        // que la cámara no dibuja no ancla marcadores (cae al anclaje cualitativo del modelo).
+        // que la cámara no dibuja no ancla marcadores (cae al anclaje cualitativo del modelo). La etiqueta va en el GRUPO
+        // `drops_<ID>` (capa 0) y la capa 31 en sus mallas: cuenta solo si alguna malla se dibuja.
         if (!o.layers.isEnabled(0)) return
+        let dibuja = false
+        o.traverse((x) => (dibuja ||= x.isMesh && x.layers.isEnabled(0)))
+        if (!dibuja) return
         box.setFromObject(o)
         if (box.isEmpty()) return
         box.getCenter(c)
@@ -240,7 +245,8 @@
       for (const m of markers) {
         const t = tagged.get(m.sec.id)
         m.anchor = t || fallbackAnchor(m.sec.id)
-        // Siempre aproximado: el GLB SK-575 no tiene dropsId y ninguna posición del modelo es as-built.
+        // Siempre aproximado: el dropsId del SK-575 (piso de enganche, 84) ancla la SECCIÓN a la pieza, no cada punto, y
+        // ninguna posición del modelo es as-built.
         m.approx = true
         m.el.classList.toggle('approx', m.approx)
         m.el.title = m.approx ? `${m.sec.label} · ${NOTE_APPROX}` : m.sec.label
@@ -657,12 +663,10 @@
         row.append(sw, h('span', 'dl-row-t', 'SIN CLASIFICAR · sección sin zona en el A2'))
         legend.appendChild(row)
       }
-      legend.appendChild(
-        h(
-          'p',
-          'dl-warn',
-          'El A2 no define radios ni distancias: la clasificación no sustituye exclusiones aprobadas',
-        ),
+      legendWarn = h(
+        'p',
+        'dl-warn',
+        'El A2 no define radios ni distancias: la clasificación no sustituye exclusiones aprobadas',
       )
       legend.appendChild(
         h(
@@ -681,30 +685,11 @@
           ),
         )
       }
-      stage.appendChild(legend)
-      syncLegend()
-    }
-
-    /** Apila la leyenda sobre #legend (si se ve) y copia su `left` (el visor lo mueve al colapsar #tree). */
-    function syncLegend() {
-      if (!legend) return
-      const o = $('legend')
-      if (!o) return
-      const cs = getComputedStyle(o)
-      const baseBottom = parseFloat(cs.bottom) || 54
-      const visible = cs.display !== 'none'
-      let bottom = baseBottom + (visible ? o.offsetHeight + 8 : 0)
-      legend.style.left = cs.left
-      // Si el cartel central del visor (#v2-hud) le queda debajo, se apila por encima de él.
-      const hud = $('v2-hud')
-      if (hud && getComputedStyle(hud).display !== 'none') {
-        const lr = legend.getBoundingClientRect()
-        const hr = hud.getBoundingClientRect()
-        if (hr.left < lr.right && hr.right > lr.left) {
-          bottom = Math.max(bottom, stage.getBoundingClientRect().bottom - hr.top + 8)
-        }
-      }
-      legend.style.bottom = bottom + 'px'
+      // Panel QHSE único (45-panel-qhse.js); sin él (build con --only) queda suelto en el escenario.
+      ;($('qp-drops') || stage).appendChild(legend)
+      const avisos = $('qp-avisos')
+      if (avisos) avisos.prepend(legendWarn)
+      else legend.appendChild(legendWarn)
     }
 
     // ───────────────────────── CSS ─────────────────────────
@@ -753,18 +738,19 @@
 .dp-assump summary{cursor:pointer;color:#e8c978}
 .dp-assump summary:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .dp-assump ul{margin:6px 0 0;padding-left:16px}
-#drops-legend{position:absolute;left:276px;bottom:54px;z-index:3;width:300px;max-width:calc(100% - 300px);padding:9px 11px;border-radius:8px;font:10.5px/1.4 Arial,Helvetica,sans-serif;color:#d8e0e8}
-#drops-legend summary{cursor:pointer;font:700 10px Consolas,monospace;letter-spacing:.04em;color:#f2d58b;list-style-position:inside}
-#drops-legend summary:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#drops-legend{position:absolute;left:276px;bottom:54px;z-index:3;width:300px;max-width:calc(100% - 300px);padding:9px 11px;border-radius:8px;font:11.5px/1.4 Arial,Helvetica,sans-serif;color:#d8e0e8}
+#qp-drops #drops-legend{position:static;width:auto;max-width:none;padding:6px 0;border:0;border-top:1px solid rgba(255,255,255,.07);border-radius:0;background:none;font:inherit;font-size:11.5px}
+#drops-legend summary{cursor:pointer;font-weight:700;font-size:12px;color:#e8c978}
+#drops-legend summary:focus-visible{outline:2px solid #DFB64B;outline-offset:2px}
 .dl-row{display:flex;gap:8px;align-items:flex-start;margin-top:6px}
 .dl-sw{flex:none;width:12px;height:12px;margin-top:1px;border-radius:3px;background:color-mix(in srgb,var(--dl-c) 55%,transparent);border:1px solid var(--dl-c)}
-.dl-row-t b{color:#fff;font-family:Consolas,monospace}
-.dl-warn{margin:8px 0 0;color:#e8c978}
+.dl-row-t b{color:#fff}
+.dl-warn{margin:8px 0 0;color:#e8c978;font-size:12px}
 .dl-note{margin:6px 0 0;color:#9fb0c3;font-size:10px}
-.dl-tk{margin:8px 0 0;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font:700 10px Consolas,monospace;color:#F59E0B}
+.dl-tk{margin:8px 0 0;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#F59E0B}
 @media(max-width:1200px){#drops-panel{right:8px}}
-@media(max-width:1050px){#drops-panel{bottom:105px}#drops-legend{left:234px}}
-@media(max-width:700px){.dp-foot{max-height:64px}#drops-panel{left:8px;right:8px;width:auto;top:auto;bottom:105px;max-height:62%}#drops-legend{width:auto;max-width:calc(100% - 68px)}}
+@media(max-width:1050px){#drops-panel{bottom:105px}}
+@media(max-width:700px){.dp-foot{max-height:64px}#drops-panel{left:8px;right:8px;width:auto;top:auto;bottom:105px;max-height:62%}}
 `
 
     // ───────────────────────── activar / desactivar ─────────────────────────
@@ -777,7 +763,6 @@
       raf = requestAnimationFrame(tick)
       if (frame++ & 1 || document.hidden) return // cada 2 frames, como el visor
       syncSelection()
-      if (++ticks % 8 === 0) syncLegend() // la leyenda sigue a #legend y #v2-hud sin recalcular cada tick
       projectMarkers()
     }
 
@@ -817,26 +802,12 @@
           true,
         )
       }
-      // La leyenda propia sigue a #legend (tamaño, visibilidad, `left` al colapsar #tree) y a #v2-hud.
-      const ro = new ResizeObserver(syncLegend)
-      const mo = new MutationObserver(syncLegend)
-      for (const id of ['legend', 'v2-hud', 'stage']) $(id) && ro.observe($(id))
-      if ($('legend'))
-        mo.observe($('legend'), { attributes: true, attributeFilter: ['style', 'class'] })
-      listeners.push(() => {
-        ro.disconnect()
-        mo.disconnect()
-      })
-      // El layout del visor (fuentes, #legend) se asienta unos instantes después: se re-sincroniza.
-      const settle = [250, 1000].map((ms) => setTimeout(syncLegend, ms))
-      listeners.push(() => settle.forEach(clearTimeout))
       anchorsDirty = true
       hiddenByExplode = false
       wasExploded = false
       lastSelected = null
       sig = null
       frame = 0
-      ticks = 0
       raf = requestAnimationFrame(tick)
     }
 
@@ -846,8 +817,8 @@
       listeners.forEach((off) => off())
       listeners = []
       removeTint()
-      for (const el of [markerLayer, panel, legend, styleEl]) el && el.remove()
-      markerLayer = panel = legend = styleEl = null
+      for (const el of [markerLayer, panel, legend, legendWarn, styleEl]) el && el.remove()
+      markerLayer = panel = legend = legendWarn = styleEl = null
       markers = []
       panelState = null
       sig = null
@@ -874,6 +845,18 @@
     })
     syncQhse()
 
-    R.drops = { isActive: () => active, setActive, openSection, openComponent }
+    R.drops = {
+      isActive: () => active,
+      setActive,
+      openSection,
+      openComponent,
+      // para pruebas: anclaje 3D de cada sección (null si no se proyecta) y si se rotula aproximado
+      anclajes: () =>
+        markers.map((m) => ({
+          sec: m.sec.id,
+          anchor: m.anchor && m.anchor.toArray(),
+          approx: m.approx,
+        })),
+    }
   })
 })()

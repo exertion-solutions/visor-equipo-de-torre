@@ -2,11 +2,11 @@
  * 86-textos-sk575.js · textos del V2 alineados con el SK-575 (único equipo visible desde 84-modelo-sk575.js).
  *
  * El original (reference/legacy/, inmutable) describe la geometría procedural, hoy oculta. Este módulo reescribe EN RUNTIME:
- *  1. Fichas `__TACKER_META` de mastil, subestructura, motor, camion, malacate, caballetes y vientos: `grade` = confianza de la
+ *  1. Fichas `__TACKER_META` de mastil, subestructura, motor, cabina, camion, malacate, caballetes y vientos: `grade` = confianza de la
  *     GEOMETRÍA visible (modelo SK-575 = C); la confianza de cada dato va en el texto con su fuente (src/data/rigs/tacker10.ts).
  *     Aparejo, BOP, enganche y circulación tienen su ficha en 41/40/43/44.
  *  2. Controles de `aparejo` y `vientos` (`R.COMPONENTS[id].epp`): recomendación, pendiente de validación (sin procedimiento).
- *  3. Párrafos del modal "Referencia, criterios y alcance" y la nota del izamiento (81).
+ *  3. Párrafos del modal "Referencia, criterios y alcance". La nota del izamiento la escribe 81.
  * Conflictos de fuentes (C1 líneas, C3 piso, C4 anclajes, C5 ejes, capacidad 330.000 vs placa) se rotulan, no se eligen.
  * Solo valores ya registrados en el repo; nada de esto es as-built ni cálculo.
  */
@@ -42,7 +42,17 @@
       status: 'Aproximado',
       basis: `${GEO} · Datos: spec sheet SK-575 (src-sk575-spec)`,
       note:
-        'Detroit Series 60 475 HP y transmisión Allison 4500 OFS (spec SK-575, A). Sin pieza propia en el SK-575: el motor bajo capot está incluido en el Carrier. ' +
+        'Detroit Series 60 475 HP y transmisión Allison 4500 OFS (spec SK-575, A). Pieza propia del SK-575: motor bajo capot, radiador, escape, transmisión y cardán (sub-nodo del carrier, C). ' +
+        NO_AS_BUILT,
+    },
+    cabina: {
+      grade: 'C',
+      status: 'Aproximado',
+      basis: `${GEO} · Datos: Parts Manual (src-parts-sk575, medido, sin contrastar)`,
+      note:
+        'La pieza SK-575 es la media cabina de manejo del carrier (one-man cab). La consola del maquinista figura en el Parts Manual sin geometría ubicable: no está modelada' +
+        PV +
+        '. ' +
         NO_AS_BUILT,
     },
     camion: {
@@ -126,23 +136,11 @@
     ],
   ]
 
-  const IZ_VIEJO = 'En el V2 el mástil parte apoyado en un soporte de traslado sobre la cabina'
-  const IZ_NUEVO =
-    'En el V2 procedural previo (hoy oculto) el mástil partía apoyado en un soporte de traslado sobre la cabina'
-  const IZ_CONFLICTO =
-    ' Fuente en conflicto: la cinemática viene del V2 procedural previo y no coincide con el SK-575 ni con el cilindro HYCO documentado (1,52–4,86 m, plano HYCO, A).'
-
-  function textosIzamiento() {
-    const n = document.querySelector('#rig-erect .er-note')
-    if (!n || n.dataset.sk575) return
-    n.dataset.sk575 = '1'
-    n.textContent = n.textContent.replace(IZ_VIEJO, IZ_NUEVO) + IZ_CONFLICTO
-  }
-
   function aplicar() {
     const meta = window.__TACKER_META
     if (meta)
-      for (const [id, m] of Object.entries(META_SK)) if (meta[id]) Object.assign(meta[id], m)
+      // cabina no tiene ficha en el original (el visor mostraba un genérico): se crea completa
+      for (const [id, m] of Object.entries(META_SK)) meta[id] = Object.assign(meta[id] || {}, m)
     const C = window.__rig && window.__rig.COMPONENTS
     if (C) {
       for (const [id, epp] of Object.entries(EPP)) if (C[id]) C[id].epp = epp
@@ -153,10 +151,8 @@
       for (const el of dlg.querySelectorAll('p, li'))
         for (const [viejo, nuevo] of MODAL)
           if (el.innerHTML.includes(viejo)) el.innerHTML = el.innerHTML.replace(viejo, nuevo)
-    textosIzamiento()
   }
 
-  window.__rigExt.onPost(textosIzamiento)
   if (window.__tackerBooted) aplicar()
   else document.addEventListener('tacker:boot', aplicar, { once: true })
 })()
