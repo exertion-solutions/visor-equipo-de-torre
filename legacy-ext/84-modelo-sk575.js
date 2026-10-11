@@ -2,8 +2,9 @@
  * 84-modelo-sk575.js — MODELO SK-575 (CAD build123d) en el visor V2, con el aspecto del visor CAD de referencia
  * (~/cad/visor.py, skill `equipo-3d`): materiales PBR por pieza, mapa de entorno tipo "room", aristas a 28° y desgaste.
  *
- * Datos: los 16 GLB `public/models/tacker10/sk575_*.glb` (cad/sk575/modelo.py → exportar.py → gltf:optimize) incrustados por
- * scripts/build-legacy.mjs en `window.__TACKER_SK575_GLB` (base64) + el decodificador meshopt (`window.__MeshoptDecoder`).
+ * Datos: los 16 GLB `public/models/tacker10/sk575_*.glb` (cad/sk575/modelo.py → exportar.py → gltf:optimize), cargados con
+ * fetch desde ../models/tacker10/ (respaldo base64 `window.__TACKER_SK575_GLB` en sk575-glb.js, ver scripts/build-legacy.mjs)
+ * + el decodificador meshopt (`window.__MeshoptDecoder`).
  * El V2 no trae GLTFLoader: este lector cubre solo el contrato de esos GLB (nodos TRS, primitivas con POSITION/NORMAL/índices,
  * EXT_meshopt_compression, KHR_mesh_quantization, PBR metallic-roughness).
  *
@@ -15,16 +16,17 @@
  * del maquinista, que el SK-575 no modela). API para pruebas: `window.__tackerSk575 = { ready, isOn, sinPieza, stats }`.
  */
 window.__rigExt.onPost((R) => {
-  const B64 = window.__TACKER_SK575_GLB
+  const FILES = window.__TACKER_SK575_FILES
   const MD = window.__MeshoptDecoder
-  if (!B64 || !MD || !R.scene || !R.three || !R.renderer) return
+  if (!FILES || !FILES.length || !MD || !R.scene || !R.three || !R.renderer) return
   const T = R.three
   const Float32Attr = new T.BoxGeometry(1, 1, 1).attributes.position.constructor
   const BufferAttribute = Object.getPrototypeOf(Float32Attr)
   const invalidate = () => typeof R.invalidate === 'function' && R.invalidate()
   const SIN_SOMBRA = /_(cable|luz|vidrio)$/ // por nombre de material (exportar.py)
   const SIN_ARISTAS = /_(luz|vidrio)$/ // aristas negras sobre luminarias encendidas y vidrios
-  const stats = { decodeMs: 0, aristasMs: 0 } // medición de la carga (window.__tackerSk575.stats)
+  // medición de la carga (window.__tackerSk575.stats); fuente = 'fetch' | 'base64'
+  const stats = { fuente: '', bytesMs: 0, decodeMs: 0, aristasMs: 0 }
 
   // ───────── entorno tipo RoomEnvironment (solo para estos materiales: el V2 no tiene scene.environment) ─────────
   function entorno() {
@@ -101,12 +103,63 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
   }
   const NC = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }
 
-  async function leerGlb(b64, envMap) {
-    const t0 = performance.now()
+  // ───────── bytes de los GLB: fetch por http(s); respaldo base64 (--standalone o sk575-glb.js) ─────────
+  // Servido (Pages, iframe de la app): ../models/tacker10/<id>.glb, binario, sin el +33 % del base64 ni el atob.
+  // file:// no admite fetch y el iframe sandbox (origen opaco) necesita CORS del servidor: si falla cualquier GLB se usa el
+  // base64 para todos (un <script> clásico carga también por file:// y sin CORS).
+  const desdeB64 = (b64) => {
     const s = atob(b64)
     const bin = new Uint8Array(s.length)
     for (let i = 0; i < s.length; i++) bin[i] = s.charCodeAt(i) // sin callback por byte (×20 más rápido)
-    stats.decodeMs += performance.now() - t0
+    return bin
+  }
+  const respaldoB64 = () =>
+    window.__TACKER_SK575_GLB
+      ? Promise.resolve(window.__TACKER_SK575_GLB)
+      : new Promise((ok, mal) => {
+          const s = document.createElement('script')
+          s.src = 'sk575-glb.js' // junto al HTML (scripts/build-legacy.mjs)
+          s.onload = () =>
+            window.__TACKER_SK575_GLB
+              ? ok(window.__TACKER_SK575_GLB)
+              : mal(new Error('sk575-glb.js sin datos'))
+          s.onerror = () => mal(new Error('no se pudo cargar sk575-glb.js'))
+          document.head.appendChild(s)
+        })
+  async function bytesGlb() {
+    const t0 = performance.now()
+    let out = null
+    if (!window.__TACKER_SK575_GLB && /^https?:$/.test(location.protocol)) {
+      try {
+        const bufs = await Promise.all(
+          FILES.map((id) =>
+            fetch(new URL('../models/tacker10/' + id + '.glb', location.href)).then((r) => {
+              if (!r.ok) throw new Error(id + ': HTTP ' + r.status)
+              return r.arrayBuffer()
+            }),
+          ),
+        )
+        out = Object.fromEntries(FILES.map((id, i) => [id, new Uint8Array(bufs[i])]))
+        stats.fuente = 'fetch'
+      } catch (e) {
+        console.warn(
+          '[modelo SK-575] fetch de los GLB falló, se usa el respaldo base64:',
+          e.message,
+        )
+      }
+    }
+    if (!out) {
+      const B64 = await respaldoB64()
+      const t1 = performance.now()
+      out = Object.fromEntries(FILES.map((id) => [id, desdeB64(B64[id])]))
+      stats.decodeMs = performance.now() - t1
+      stats.fuente = 'base64'
+    }
+    stats.bytesMs = performance.now() - t0
+    return out
+  }
+
+  async function leerGlb(bin, envMap) {
     const dv = new DataView(bin.buffer)
     const jl = dv.getUint32(12, true)
     const J = JSON.parse(new TextDecoder().decode(bin.subarray(20, 20 + jl)))
@@ -560,37 +613,39 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       for (const c of o.children) recorrer(c)
     }
     for (const G of Object.values(R.groups || {})) recorrer(G) // el SK-575 es el único equipo a la vista
-    carga = Promise.all(
-      Object.keys(B64)
-        .sort()
-        .map((cid) =>
-          leerGlb(B64[cid], env).then((g) => {
-            if (cid === 'sk575_mastil') partirMastil(g)
-            const t0 = performance.now()
-            g.traverse((o) => o.isMesh && !SIN_ARISTAS.test(o.material.name) && o.add(aristas(o)))
-            stats.aristasMs += performance.now() - t0
-            return [cid, g]
-          }),
+    carga = bytesGlb()
+      .then((BIN) =>
+        Promise.all(
+          [...FILES].sort().map((cid) =>
+            leerGlb(BIN[cid], env).then((g) => {
+              if (cid === 'sk575_mastil') partirMastil(g)
+              const t0 = performance.now()
+              g.traverse((o) => o.isMesh && !SIN_ARISTAS.test(o.material.name) && o.add(aristas(o)))
+              stats.aristasMs += performance.now() - t0
+              return [cid, g]
+            }),
+          ),
         ),
-    ).then((comps) => {
-      // attach() conserva la posición de mundo: se integra con el equipo armado (despiece en 0, mástil montado) y se
-      // restituye después.
-      const despiece = Object.values(R.groups).map((G) => [G, G.position.clone()])
-      for (const [G] of despiece) G.position.set(0, 0, 0)
-      const E = window.__tackerErect
-      const p0 = E ? E.progress() : 1
-      if (E) (E.pause(), E.set(1))
-      R.scene.updateMatrixWorld(true)
-      for (const [cid, g] of comps) integrar(cid, g)
-      for (const [G, p] of despiece) G.position.copy(p)
-      if (E && p0 < 1) E.set(p0)
-      sincronizarIzamiento()
-      for (const o of ocultar) o.traverse((x) => x.layers.set(OCULTO))
-      retirarOcultos()
-      rotularSinPieza()
-      invalidate()
-      return R.groups
-    })
+      )
+      .then((comps) => {
+        // attach() conserva la posición de mundo: se integra con el equipo armado (despiece en 0, mástil montado) y se
+        // restituye después.
+        const despiece = Object.values(R.groups).map((G) => [G, G.position.clone()])
+        for (const [G] of despiece) G.position.set(0, 0, 0)
+        const E = window.__tackerErect
+        const p0 = E ? E.progress() : 1
+        if (E) (E.pause(), E.set(1))
+        R.scene.updateMatrixWorld(true)
+        for (const [cid, g] of comps) integrar(cid, g)
+        for (const [G, p] of despiece) G.position.copy(p)
+        if (E && p0 < 1) E.set(p0)
+        sincronizarIzamiento()
+        for (const o of ocultar) o.traverse((x) => x.layers.set(OCULTO))
+        retirarOcultos()
+        rotularSinPieza()
+        invalidate()
+        return R.groups
+      })
     carga.catch((e) => console.error('[modelo SK-575]', e))
     return carga
   }

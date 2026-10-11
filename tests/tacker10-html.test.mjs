@@ -7,7 +7,15 @@ const html = await readFile(new URL('../public/legacy/TACKER10_Digital_Rig_V2.ht
 test('TACKER10 HTML is self-contained (opens by double-click, no server or network)', () => {
   assert.doesNotMatch(html, /<script[^>]+\bsrc=/i);
   assert.doesNotMatch(html, /<link[^>]+href=["']https?:/i);
-  assert.doesNotMatch(html, /\bfetch\(|XMLHttpRequest|import\(/);
+  assert.doesNotMatch(html, /XMLHttpRequest|import\(/);
+  // Única carga externa: los GLB del SK-575 de su propio sitio (fetch relativo, ver 84-modelo-sk575.js) con respaldo en el
+  // sk575-glb.js de al lado (un <script> clásico: carga también por file://). Nada absoluto ni de otro origen.
+  assert.deepEqual(
+    [...html.matchAll(/\bfetch\(([^)]*)\)/g)].map((m) => m[1]),
+    ["new URL('../models/tacker10/' + id + '.glb', location.href"],
+  );
+  assert.match(html, /s\.src = 'sk575-glb\.js'/);
+  assert.doesNotMatch(html, /\bsrc\s*=\s*['"]https?:/);
 });
 
 test('TACKER10 HTML keeps its core controls and modes', () => {

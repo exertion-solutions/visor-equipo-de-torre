@@ -1,4 +1,4 @@
-// Modelo SK-575 completo en el V2 (legacy-ext/84-modelo-sk575.js): GLB incrustados con materiales por pieza y normales.
+// Modelo SK-575 completo en el V2 (legacy-ext/84-modelo-sk575.js): GLB (fetch, respaldo base64 en sk575-glb.js) con materiales por pieza y normales.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -23,11 +23,20 @@ test('GLB sk575: materiales <id>_<material> (sin palette) y normales en cada pri
   }
 })
 
-test('el V2 incrusta los 16 GLB, el decodificador meshopt y el módulo 84', () => {
+test('el V2 lista los 16 GLB (fetch), trae el meshopt y el módulo 84; el base64 va aparte en sk575-glb.js', () => {
   const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+  const ids = glbs.map((f) => f.slice(0, -4)).sort()
   assert.match(html, /window\.__MeshoptDecoder=MeshoptDecoder/)
   assert.match(html, /\/\* 84-modelo-sk575\.js \*\//)
-  const m = html.match(/window\.__TACKER_SK575_GLB=(\{[^;]*\});/)
+  const files = html.match(/window\.__TACKER_SK575_FILES=(\[[^\]]*\]);/)
+  assert.ok(files)
+  assert.deepEqual(JSON.parse(files[1]).sort(), ids)
+  assert.doesNotMatch(html, /window\.__TACKER_SK575_GLB=/, 'el HTML servido no lleva el base64')
+  const js = fs.readFileSync(path.join(root, 'public', 'legacy', 'sk575-glb.js'), 'utf8')
+  const m = js.match(/window\.__TACKER_SK575_GLB=(\{[^;]*\});/)
   assert.ok(m)
-  assert.deepEqual(Object.keys(JSON.parse(m[1])).sort(), glbs.map((f) => f.slice(0, -4)).sort())
+  const map = JSON.parse(m[1])
+  assert.deepEqual(Object.keys(map).sort(), ids)
+  for (const id of ids)
+    assert.ok(Buffer.from(map[id], 'base64').equals(fs.readFileSync(path.join(models, id + '.glb'))), id)
 })

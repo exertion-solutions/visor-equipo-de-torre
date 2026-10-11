@@ -14,11 +14,17 @@ import { after, afterEach, before, test } from 'node:test'
 import { chromium } from 'playwright-core'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html')
+const pub = path.join(root, 'public')
+const V2 = '/legacy/TACKER10_Digital_Rig_V2.html'
 const shots = path.join(root, '.tmp', 'e2e')
 let browser, page, server, url
 let ortho0 // proyección con la que arranca el V2 (hoy ortográfica)
 let skip = false
+const LANZAR = {
+  channel: 'chrome',
+  headless: true,
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+}
 const problemas = []
 
 const vigilar = (p) => {
@@ -39,19 +45,29 @@ const abrir = async (viewport) => {
 before(async () => {
   url = process.env.E2E_URL
   if (!url) {
-    // http local efímero: el V2 usa módulos y blobs que file:// no permite en headless
-    server = http.createServer((req, res) =>
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(fs.readFileSync(html)),
-    )
+    // http local efímero que sirve public/ como Pages (el V2 usa módulos y blobs que file:// no permite en headless):
+    // /legacy/… el HTML y su respaldo sk575-glb.js, /models/tacker10/… los GLB que baja con fetch. Sin cabeceras CORS:
+    // /host.html lo embebe en un iframe sandbox (origen opaco, como la app) → el fetch falla y entra el respaldo base64.
+    const tipos = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }
+    server = http.createServer((req, res) => {
+      const ruta = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+      if (ruta === '/host.html')
+        return void res
+          .writeHead(200, { 'content-type': tipos['.html'] })
+          .end(
+            `<iframe sandbox="allow-scripts" src="${V2}" style="width:800px;height:500px"></iframe>`,
+          )
+      const f = path.join(pub, ruta)
+      if (!f.startsWith(pub) || !fs.existsSync(f) || fs.statSync(f).isDirectory())
+        return void res.writeHead(404).end()
+      res.writeHead(200, { 'content-type': tipos[path.extname(f)] ?? 'application/octet-stream' })
+      fs.createReadStream(f).pipe(res)
+    })
     await new Promise((r) => server.listen(0, '127.0.0.1', r))
-    url = `http://127.0.0.1:${server.address().port}/`
+    url = `http://127.0.0.1:${server.address().port}${V2}`
   }
   try {
-    browser = await chromium.launch({
-      channel: 'chrome',
-      headless: true,
-      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
-    })
+    browser = await chromium.launch(LANZAR)
   } catch {
     skip = 'Chrome no disponible'
     return
@@ -446,6 +462,108 @@ test('móvil 390×844: la tarjeta del SK-575 no tapa la barra de modos', async (
   } finally {
     await page.setViewportSize({ width: 1440, height: 900 })
   }
+})
+
+test('GLB del SK-575: servido por http se bajan con fetch (el HTML no trae el base64)', async (t) => {
+  if (skip) return t.skip(skip)
+  const r = await page.evaluate(() => ({
+    fuente: window.__tackerSk575.stats.fuente,
+    b64: !!window.__TACKER_SK575_GLB,
+    glb: window.__TACKER_SK575_FILES.length,
+  }))
+  assert.deepEqual(r, { fuente: 'fetch', b64: false, glb: 16 })
+})
+
+test('GLB del SK-575: en un iframe sandbox sin CORS entra el respaldo base64 (sk575-glb.js)', async (t) => {
+  if (skip) return t.skip(skip)
+  if (!server) return t.skip('solo con el servidor local (E2E_URL no sirve /host.html)')
+  // Navegador aparte (con la sesión principal abierta, una segunda carga por software no llega a tiempo) y sin vigilar la
+  // consola: el fetch bloqueado por CORS deja errores de red (es lo esperado).
+  const b = await chromium.launch(LANZAR)
+  const p = await b.newPage({ viewport: { width: 900, height: 600 } })
+  try {
+    await p.goto(url.replace(V2, '/host.html'), { waitUntil: 'commit', timeout: 120_000 })
+    let f
+    while (!(f = p.frames().find((x) => x !== p.mainFrame()))) await p.waitForTimeout(100)
+    await f.waitForFunction(() => window.__tackerSk575 && window.__tackerSk575.ready(), null, {
+      timeout: 120_000,
+    })
+    const r = await f.evaluate(async () => {
+      await window.__tackerSk575.ready()
+      const ids = new Set(
+        window.__rig.pickables
+          .filter((m) => m.material?.name?.startsWith('sk575_'))
+          .map((m) => m.material.name.split('_').slice(0, 2).join('_')),
+      )
+      return { fuente: window.__tackerSk575.stats.fuente, origen: self.origin, comps: ids.size }
+    })
+    assert.deepEqual(r, { fuente: 'base64', origen: 'null', comps: 16 })
+  } finally {
+    await b.close()
+  }
+})
+
+test('QHSE: un único panel lateral; "SIN VALIDAR" y el aviso del A2 siguen visibles con todo plegado', async (t) => {
+  if (skip) return t.skip(skip)
+  await page.evaluate(() => document.querySelector('#v2-modebar button[data-m="qhse"]').click())
+  await hasta(
+    () => !!window.__rig.drops?.isActive() && !!document.querySelector('#qp-drops #drops-legend'),
+  )
+  await snap('08-qhse-panel')
+  const leer = () =>
+    page.evaluate(() => {
+      const $ = (id) => document.getElementById(id)
+      const panel = $('qhse-panel')
+      const ve = (el) => {
+        if (!el) return false
+        const b = el.getBoundingClientRect()
+        return (
+          getComputedStyle(el).display !== 'none' &&
+          b.width > 0 &&
+          b.height > 0 &&
+          b.top >= 0 &&
+          b.bottom <= innerHeight
+        )
+      }
+      const legend = $('legend')
+      const warn = document.querySelector('.dl-warn')
+      return {
+        paneles: document.querySelectorAll('#qhse-panel').length,
+        panel: ve(panel),
+        dentro: ['v2-qhse', 'drops-legend', 'legend'].filter((id) => panel.contains($(id))),
+        sueltas: [...$('stage').children].filter((el) =>
+          /^(v2-qhse|drops-legend|legend)$/.test(el.id),
+        ).length,
+        legend: ve(legend) && /SIN VALIDAR/.test(legend.textContent) && !legend.closest('details'),
+        warn:
+          ve(warn) &&
+          /no define radios ni distancias/.test(warn.textContent) &&
+          !warn.closest('details'),
+        fuentes: new Set(
+          [...panel.querySelectorAll('*')].map((e) => getComputedStyle(e).fontFamily),
+        ).size,
+      }
+    })
+  const abierto = await leer()
+  await page.evaluate(() =>
+    document.querySelectorAll('#qhse-panel details').forEach((d) => (d.open = false)),
+  )
+  const plegado = await leer()
+  await snap('09-qhse-plegado')
+  await page.evaluate(() =>
+    document.querySelectorAll('#qhse-panel details').forEach((d) => (d.open = true)),
+  )
+  const esperado = {
+    paneles: 1,
+    panel: true,
+    dentro: ['v2-qhse', 'drops-legend', 'legend'],
+    sueltas: 0,
+    legend: true,
+    warn: true,
+    fuentes: 1,
+  }
+  assert.deepEqual(abierto, esperado)
+  assert.deepEqual(plegado, esperado)
 })
 
 test('consola sin errores durante toda la sesión', (t) => {

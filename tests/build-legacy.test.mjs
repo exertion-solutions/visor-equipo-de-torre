@@ -27,8 +27,28 @@ test('el original en reference/legacy/ sigue inmutable', () => {
 });
 
 test('public/legacy es exactamente el build actual (sin edición manual)', () => {
-  const fresh = sha256(build());
-  assert.equal(sha256(read('public', 'legacy', 'TACKER10_Digital_Rig_V2.html')), fresh, 'public/legacy desactualizado');
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'tacker-legacy-')), 'index.html');
+  const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', out], { cwd: root, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(sha256(read('public', 'legacy', 'TACKER10_Digital_Rig_V2.html')), sha256(readFileSync(out)), 'public/legacy desactualizado');
+  assert.equal(
+    sha256(read('public', 'legacy', 'sk575-glb.js')),
+    sha256(readFileSync(path.join(path.dirname(out), 'sk575-glb.js'))),
+    'public/legacy/sk575-glb.js desactualizado',
+  );
+});
+
+test('--standalone incrusta los GLB en el HTML (un solo archivo) y no escribe sk575-glb.js', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'tacker-legacy-'));
+  const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', path.join(dir, 'x.html'), '--standalone'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(r.status, 0, r.stderr);
+  const html = readFileSync(path.join(dir, 'x.html'), 'utf8');
+  assert.match(html, /window\.__TACKER_SK575_GLB=\{/);
+  assert.match(html, /window\.__TACKER_SK575_FILES=\[/);
+  assert.deepEqual(readdirSync(dir), ['x.html']);
 });
 
 test('el build inyecta los hooks, el runtime y los datos DROPS validados', () => {
