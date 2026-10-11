@@ -53,7 +53,7 @@ window.__rigExt.onPost(() => {
     #detail #v2-selection.show{display:block!important}
     #hint{transition:opacity .15s}
     #hint.hint-covered{opacity:0;visibility:hidden}
-    #cad-inspector{transition:transform .3s cubic-bezier(.16,1,.3,1)}
+    #cad-inspector{display:none!important;transition:transform .3s cubic-bezier(.16,1,.3,1)} /* tarjeta "Referencia del conjunto" retirada a pedido del usuario (2026-10-11) */
     #cad-inspector.collapsed{transform:translateX(calc(100% + 14px))}
     #cad-inspector.collapsed > :not(#inspector-toggle){visibility:hidden;transition:visibility 0s .3s}
     #inspector-toggle{position:absolute;left:-38px;top:0;width:30px;height:30px;display:grid;place-items:center;
@@ -168,15 +168,7 @@ window.__rigExt.onPost(() => {
   const hint = $('hint')
   const stage = $('stage')
   if (hint && stage) {
-    const COVERS = [
-      'tree',
-      'detail',
-      'cad-inspector',
-      'v2-qhse',
-      'legend',
-      'cad-status',
-      'sk575-card',
-    ]
+    const COVERS = ['tree', 'detail', 'cad-inspector', 'v2-qhse', 'legend', 'cad-status']
     const overlaps = (a, b) =>
       a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
     const updateHint = () => {

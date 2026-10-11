@@ -33,7 +33,6 @@ test('60: un solo foco dorado, reduced motion, métricas solo con ?debug y el av
   assert.match(src, /prefers-reduced-motion:reduce/)
   assert.match(src, /html:not\(\.debug\) #tris/)
   assert.match(src, /llamadas/)
-  assert.match(src, /COVERS = \[[^\]]*'sk575-card'/)
 })
 
 test('Paneles va antes de Reset y la secuencia no dice que el manifold venía con el BOP', () => {
