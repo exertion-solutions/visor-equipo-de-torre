@@ -106,7 +106,11 @@ comp("sk575_mastil")
 # ───────────────────────── mástil ─────────────────────────
 MX = -1.0                      # centro del mástil en X
 LEAN, ZB = 3.5, 48 * 0.0254            # placa API: 3,5° desde la vertical; base montada 4'-0" sobre el suelo
-WXP = MX + 0.87 + 76 * 0.0254   # eje del pozo: 76" del pie delantero (SK DKA104-330-08, Derrick Info 3 p5)
+# eje del pozo: 76" (1,9304 m) del PIE del mástil = eje de la bisagra/pivote MX (SK DKA104-330-08, Derrick Info 3 p5).
+# Interpretación (informe C6, 2026-10-11): medidos desde la cara delantera del reticulado (MX + 0,87) la corona quedaba en
+# voladizo ~0,9 m para llegar a plomo del pozo; con 3,5° y ~30,5 m de mástil la punta se corre ≈ 1,86 m (≈ 73"), casi
+# exactamente 76": medidos desde el pie/bisagra, la corona queda centrada sobre el reticulado y las poleas a plomo del pozo.
+WXP = MX + 76 * 0.0254
 ZP = 3.606                     # altura del piso de trabajo: 3606 [12'] (plano 8123-1002-2611)
 H_INF, H_SUP, SOLAPE = 16.4, 15.2992, 1.0
 H = H_INF + H_SUP
@@ -142,7 +146,7 @@ sup = tramo(H_INF - SOLAPE, H, 1.30, 1.10, 9, 0.06)
 for c in range(4):                                       # guías del telescópico
     add("amarillo", bar(inf[10][c], sup[0][c], 0.05, sq=True))
 
-# corona en voladizo hacia el pozo: con el mástil inclinado, el centro de poleas queda a plomo sobre WXP (CG corona 76")
+# corona centrada sobre el tope del 2.º tramo: con el mástil inclinado, el centro de poleas queda a plomo sobre WXP (≈ MX)
 MC = MX + (WXP - MX - (H + 0.75 - ZB) * sin(LEAN * pi / 180)) / cos(LEAN * pi / 180)
 add("rojo", box(MC - 0.9, MC + 0.9, -0.9, 0.9, H, H + 0.15, f=0.03))
 for sx in (-0.7, 0.7):
@@ -163,11 +167,10 @@ add("acero", Pos(MC, 0, H + 0.75) * Rot(90, 0, 0) * Cylinder(0.05, 1.3))      # 
 for y in (-0.62, 0.62):                                                          # bancadas
     add("rojo", box(MC - 0.25, MC + 0.25, y - 0.05, y + 0.05, H + 0.15, H + 0.95, f=0.02))
 
-for sy in (-0.5, 0.5):                                                         # ménsulas del voladizo
-    add("rojo", bar((MX + 0.55, sy, H - 1.6), (MC + 0.85, sy, H), 0.05, sq=True))
-    add("rojo", bar((MX + 0.55, sy, H), (MC + 0.85, sy, H), 0.06, sq=True))
 
 # piso de enganche (monkey board) del lado +X, con cartel: sub-nodo propio (va con el 2.º tramo del mástil)
+# Bisagra en el borde interior (cara del mástil), eje lateral Y: origen del nodo = bisagra (el visor lo pliega contra el mástil
+# en transporte e izado y lo baja al telescopar el 2.º tramo; ilustrativo). Se nivela con el mástil inclinado (estético, C).
 comp("sk575_mastil/sk575_enganche")
 ZM, XF = 20.629, MX + 0.68     # piso de enganche a 68' (plano 8123-1002-2611 / Engineering Report SK 2021)
 add("grating", box(XF, XF + 1.9, -1.2, 1.2, ZM, ZM + 0.08, f=0.02))
@@ -179,6 +182,9 @@ railing([(XF, -1.2, ZM + 0.08), (XF + 1.9, -1.2, ZM + 0.08), (XF + 1.9, 1.2, ZM 
 add("rojo", box(XF, XF + 2.2, -1.30, -1.25, ZM + 0.2, ZM + 1.15, f=0.01))
 txt = extrude(Text("TACKER 10", font_size=0.5, font_style=FontStyle.BOLD), amount=0.02)
 add("blanco", Pos(XF + 1.1, -1.30, ZM + 0.67) * Rot(90, 0, 0) * txt)
+for k, v in parts.items():     # contra-rotación sobre la bisagra: con el mástil a 3,5° el piso queda horizontal
+    if k[0] == "sk575_mastil/sk575_enganche":
+        v[:] = [Pos(XF, 0, ZM) * Rot(0, -LEAN, 0) * Pos(-XF, 0, -ZM) * s for s in v]
 comp("sk575_mastil")
 
 # luminarias: 5 debajo y 7 encima del piso de enganche (Libro DROPS)
@@ -202,6 +208,9 @@ def M(x, y, z):
     """Punto del mástil vertical → mástil inclinado."""
     a = LEAN * pi / 180
     return (MX + (x - MX) * cos(a) + (z - ZB) * sin(a), y, ZB - (x - MX) * sin(a) + (z - ZB) * cos(a))
+
+
+ORIGEN["sk575_enganche"] = M(XF, 0, ZM)                 # bisagra del piso de enganche (pivote del plegado)
 
 comp("sk575_carrier")
 # ───────────────────────── carrier ─────────────────────────

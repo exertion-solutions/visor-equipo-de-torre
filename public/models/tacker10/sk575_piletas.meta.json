@@ -29,7 +29,7 @@
     "archivo": "public/models/tacker10/sk575_piletas.glb",
     "optimize": "npm run gltf:optimize -- sk575_piletas.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 46228,
-    "triangulos_publicados": 20890,
+    "triangulos_publicados": 20992,
     "segmentos_aristas": 19168,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

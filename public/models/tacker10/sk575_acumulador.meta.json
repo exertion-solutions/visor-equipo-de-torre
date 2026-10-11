@@ -262,7 +262,7 @@
     "archivo": "public/models/tacker10/sk575_acumulador.glb",
     "optimize": "npm run gltf:optimize -- sk575_acumulador.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 103838,
-    "triangulos_publicados": 86010,
+    "triangulos_publicados": 86080,
     "segmentos_aristas": 34691,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

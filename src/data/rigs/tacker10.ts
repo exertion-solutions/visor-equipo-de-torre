@@ -58,13 +58,20 @@ const sk575 = (
   specifications,
 })
 
+/** Cilindro de izaje del Parts & Service Manual SK575 (p233-251): conflicto registrado, no usado (C11). */
+const cilManual = (value: string | number) => ({
+  sourceId: 'src-parts-sk575',
+  value,
+  note: 'Parts & Service Manual SK575 p233-251 (Mast): plano de otro mástil/variante del manual; manda src-plano-hyco por decisión del usuario 2026-10-11',
+})
+
 const SK575_COMPONENTS: Component[] = [
   sk575(
     'sk575_mastil',
     'Mástil SK DKA104-330-08 (modelo SK-575)',
     'mast',
     ['src-placa-api', 'src-plano-8123', 'src-manual-derrick', 'src-sk575-spec'],
-    'Cotas generales documentadas (altura, piso de enganche, inclinación 3,5°, base a 4 ft, pozo a 76" del pie delantero); perfiles, paneles, uniones y corona estimados. No verifica la carga de placa.',
+    'Cotas generales documentadas (altura, piso de enganche, inclinación 3,5°, base a 4 ft, pozo a 76" del pie del mástil); perfiles, paneles, uniones y corona estimados. Los 76" se leen desde el pie/bisagra del mástil (no desde la cara delantera del reticulado): así la corona queda centrada sobre el reticulado y a plomo del pozo (interpretación, informe C6). No verifica la carga de placa.',
     [
       spec('model', 'Modelo', 'SK DKA104-330-08', 'A', 'src-placa-api'),
       spec('serial', 'N.º de serie', 'DK-3033', 'A', 'src-placa-api'),
@@ -99,9 +106,10 @@ const SK575_COMPONENTS: Component[] = [
         'src-plano-8123',
         'm',
       ),
+      // Interpretación (informe SK-575, C6, 2026-10-11): 76" desde el pie/bisagra del mástil, no desde la cara delantera.
       spec(
         'wellFromFrontLegM',
-        'Pozo desde el pie delantero (76")',
+        'Pozo desde el pie del mástil (76", eje de la bisagra)',
         1.9304,
         'B',
         'src-manual-derrick',
@@ -205,13 +213,30 @@ const SK575_COMPONENTS: Component[] = [
     ['src-plano-hyco'],
     'Cilindros con las cotas del plano HYCO; puntos de anclaje en carrier y mástil estimados.',
     [
-      spec('model', 'Modelo', 'HYCO 50162-813-13150 (SK DK50162)', 'A', 'src-plano-hyco'),
+      // B (no A) solo porque el schema no admite A con conflicto: manda el plano HYCO del equipo (decisión del usuario
+      // 2026-10-11); el Parts & Service Manual SK575 (p233-251, Mast) muestra otro cilindro (informe SK-575, C11).
+      {
+        ...spec('model', 'Modelo', 'HYCO 50162-813-13150 (SK DK50162)', 'B', 'src-plano-hyco'),
+        conflicts: [cilManual('HYCO 50163-933-177')],
+      },
       spec('count', 'Cantidad', 2, 'A', 'src-plano-hyco'),
-      spec('stagesIn', 'Etapas (Ø)', '8,12 / 7,00 / 4,00"', 'A', 'src-plano-hyco'),
+      {
+        ...spec('stagesIn', 'Etapas (Ø)', '8,12 / 7,00 / 4,00"', 'B', 'src-plano-hyco'),
+        conflicts: [cilManual('9,38 / 8,12 / 5,00"')],
+      },
       spec('barrelIn', 'Camisa (Ø)', 9.42, 'A', 'src-plano-hyco', 'in'),
-      spec('closedIn', 'Largo cerrado', 60, 'A', 'src-plano-hyco', 'in'),
-      spec('extendedIn', 'Largo extendido', 191.5, 'A', 'src-plano-hyco', 'in'),
-      spec('strokeIn', 'Carrera (42,82 + 44,07 + 44,62)', 131.5, 'A', 'src-plano-hyco', 'in'),
+      {
+        ...spec('closedIn', 'Largo cerrado', 60, 'B', 'src-plano-hyco', 'in'),
+        conflicts: [cilManual(82.56)],
+      },
+      {
+        ...spec('extendedIn', 'Largo extendido', 191.5, 'B', 'src-plano-hyco', 'in'),
+        conflicts: [cilManual(259.68)],
+      },
+      {
+        ...spec('strokeIn', 'Carrera (42,82 + 44,07 + 44,62)', 131.5, 'B', 'src-plano-hyco', 'in'),
+        conflicts: [cilManual(177.12)],
+      },
       spec('extendForceLb', 'Fuerza a 2.000 psi', 103697, 'A', 'src-plano-hyco', 'lb'),
     ],
   ),

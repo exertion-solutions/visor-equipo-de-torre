@@ -26,7 +26,7 @@
     {
       "nombre": "sk575_izaje_cil1_camisa",
       "origen": [
-        -5.9746,
+        -5.1046,
         2.3582,
         0.6
       ],
@@ -36,7 +36,7 @@
     {
       "nombre": "sk575_izaje_cil1_etapa1",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         0.6
       ],
@@ -46,7 +46,7 @@
     {
       "nombre": "sk575_izaje_cil1_etapa2",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         0.6
       ],
@@ -56,7 +56,7 @@
     {
       "nombre": "sk575_izaje_cil1_vastago",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         0.6
       ],
@@ -66,7 +66,7 @@
     {
       "nombre": "sk575_izaje_cil2_camisa",
       "origen": [
-        -5.9746,
+        -5.1046,
         2.3582,
         -0.6
       ],
@@ -76,7 +76,7 @@
     {
       "nombre": "sk575_izaje_cil2_etapa1",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         -0.6
       ],
@@ -86,7 +86,7 @@
     {
       "nombre": "sk575_izaje_cil2_etapa2",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         -0.6
       ],
@@ -96,7 +96,7 @@
     {
       "nombre": "sk575_izaje_cil2_vastago",
       "origen": [
-        -3.3325,
+        -2.4625,
         6.4422,
         -0.6
       ],
@@ -140,12 +140,12 @@
           ]
         },
         "pivote_carrier": [
-          -5.9746,
+          -5.1046,
           2.3582,
           0.6
         ],
         "empuje_mastil": [
-          -3.3325,
+          -2.4625,
           6.4422,
           0.6
         ],
@@ -179,12 +179,12 @@
           ]
         },
         "pivote_carrier": [
-          -5.9746,
+          -5.1046,
           2.3582,
           -0.6
         ],
         "empuje_mastil": [
-          -3.3325,
+          -2.4625,
           6.4422,
           -0.6
         ],
@@ -213,7 +213,7 @@
     "archivo": "public/models/tacker10/sk575_izaje.glb",
     "optimize": "npm run gltf:optimize -- sk575_izaje.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 56704,
-    "triangulos_publicados": 40554,
+    "triangulos_publicados": 40512,
     "segmentos_aristas": 2088,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

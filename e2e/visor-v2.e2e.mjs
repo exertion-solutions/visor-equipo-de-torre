@@ -435,6 +435,149 @@ test('cabina, motor y enganche: piezas SK propias, visibles y con resaltado que 
   assert.ok(despegue < 0.01, `el piso de enganche se despega del 2.º tramo: ${despegue} m`)
 })
 
+/** Encuadra la cámara (perspectiva) en `pos` mirando a `target`, renderiza y captura; deja la cámara como estaba. */
+async function vista(nombre, pos, target) {
+  const ortho = await page.evaluate(() => !!window.__rig.view.ortho)
+  if (ortho) {
+    await page.evaluate(() => document.getElementById('c-ortho').click())
+    await hasta(() => window.__rig.camera().type === 'PerspectiveCamera')
+  }
+  const previa = await page.evaluate(
+    ([p, t]) => {
+      const R = window.__rig
+      const cam = R.camera()
+      const ctl = R.controls()
+      const antes = [cam.position.toArray(), ctl.target.toArray()]
+      cam.position.fromArray(p)
+      ctl.target.fromArray(t)
+      ctl.update()
+      return antes
+    },
+    [pos, target],
+  )
+  await cuadro()
+  await snap(nombre)
+  await page.evaluate(([p, t]) => {
+    const R = window.__rig
+    R.camera().position.fromArray(p)
+    R.controls().target.fromArray(t)
+    R.controls().update()
+  }, previa)
+}
+
+// Corona centrada (pozo a 76" del pie del mástil, informe C6): sobre la huella del tope del reticulado y poleas a plomo del pozo.
+test('corona: centrada sobre el tope del reticulado y poleas a plomo del pozo (pose montada)', async (t) => {
+  if (skip) return t.skip(skip)
+  const r = await page.evaluate(() => {
+    const R = window.__rig
+    const V = R.three.Vector3
+    R.scene.updateMatrixWorld(true)
+    /** Caja (mundo) de los vértices de las mallas SK del mástil con material `mat` y altura en [y0, y1]. */
+    const caja = (mat, y0, y1) => {
+      const b = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity, n: 0 }
+      const v = new V()
+      R.groups.mastil.traverse((o) => {
+        if (!o.isMesh || o.material.name !== 'sk575_mastil_' + mat) return
+        const pos = o.geometry.attributes.position
+        const idx = o.geometry.index ? o.geometry.index.array : null
+        const n = idx ? idx.length : pos.count
+        for (let k = 0; k < n; k++) {
+          v.fromBufferAttribute(pos, idx ? idx[k] : k).applyMatrix4(o.matrixWorld)
+          if (v.y < y0 || v.y > y1) continue
+          b.x0 = Math.min(b.x0, v.x)
+          b.x1 = Math.max(b.x1, v.x)
+          b.z0 = Math.min(b.z0, v.z)
+          b.z1 = Math.max(b.z1, v.z)
+          b.n++
+        }
+      })
+      return { ...b, cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2 }
+    }
+    // tope del reticulado (2.º tramo, amarillo): último medio metro bajo su punto más alto
+    let ymax = -Infinity
+    R.groups.mastil.traverse((o) => {
+      if (!o.isMesh || o.material.name !== 'sk575_mastil_amarillo') return
+      o.geometry.computeBoundingBox()
+      ymax = Math.max(
+        ymax,
+        new R.three.Box3().copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).max.y,
+      )
+    })
+    const reticulado = caja('amarillo', ymax - 0.5, ymax)
+    const corona = caja('rojo', 25, Infinity) // el rojo del mástil por encima de 25 m es solo la corona
+    const poleas = caja('acero_oscuro', ymax + 0.2, Infinity) // poleas (las luminarias quedan bajo los 30,3 m)
+    const blk = R.groups.aparejo.getObjectByName('bloque_viajero')
+    return {
+      bloqueX: blk && blk.getWorldPosition(new V()).x,
+      reticulado,
+      corona,
+      poleas,
+      desvio: Math.hypot(corona.cx - reticulado.cx, corona.cz - reticulado.cz),
+    }
+  })
+  assert.ok(
+    r.reticulado.n > 0 && r.corona.n > 0 && r.poleas.n > 0,
+    'faltan vértices del tope, la corona o las poleas',
+  )
+  assert.ok(
+    r.desvio < 0.15,
+    `la corona no está centrada sobre el reticulado: ${r.desvio.toFixed(3)} m`,
+  )
+  const cxPoleas = (r.poleas.x0 + r.poleas.x1) / 2
+  assert.ok(
+    Math.abs(cxPoleas) < 0.15,
+    `las poleas no están a plomo del pozo: x = ${cxPoleas.toFixed(3)} m`,
+  )
+  const c = [r.reticulado.cx, 32, r.reticulado.cz]
+  await vista('09-corona-superior', [c[0], 46, c[2] + 0.02], c)
+  await vista('09-corona-lateral', [c[0], 32.5, c[2] + 9], c)
+})
+
+// Piso de enganche: rebatido contra el mástil en transporte e izado del 1.er tramo; horizontal al terminar (ilustrativo).
+test('piso de enganche: plegado (> 60°) a p = 0,35 y horizontal (< 2°) a p = 1', async (t) => {
+  if (skip) return t.skip(skip)
+  const medir = (p) =>
+    page.evaluate(async (p) => {
+      const R = window.__rig
+      const n = R.groups.enganche.getObjectByName('sk575_enganche')
+      const Q = n.quaternion.constructor
+      const sup = R.groups.mastil.getObjectByName('mastil_tramo_superior')
+      window.__tackerErect.set(p)
+      await new Promise((ok) => {
+        R.invalidate()
+        requestAnimationFrame(() => requestAnimationFrame(ok))
+      })
+      R.scene.updateMatrixWorld(true)
+      const qn = n.getWorldQuaternion(new Q())
+      // giro del piso respecto del 2.º tramo (al que va abisagrado) e inclinación de su eje X respecto de la horizontal
+      const rel = sup.getWorldQuaternion(new Q()).invert().multiply(qn)
+      const eje = new R.three.Vector3(1, 0, 0).applyQuaternion(qn)
+      let visible = true
+      for (let o = n; o; o = o.parent) if (!o.visible) visible = false
+      return {
+        rel: rel.toArray(),
+        horizontal: (Math.asin(Math.abs(eje.y)) * 180) / Math.PI,
+        visible,
+      }
+    }, p)
+  const m1 = await medir(1)
+  const m035 = await medir(0.35)
+  const dot = Math.abs(m1.rel.reduce((s, v, i) => s + v * m035.rel[i], 0))
+  const plegado = (2 * Math.acos(Math.min(1, dot)) * 180) / Math.PI
+  assert.ok(m035.visible, 'el piso de enganche debe verse plegado durante el izamiento')
+  assert.ok(
+    plegado > 60,
+    `a p = 0,35 el piso no está rebatido contra el mástil: ${plegado.toFixed(1)}°`,
+  )
+  assert.ok(m1.horizontal < 2, `a p = 1 el piso no queda horizontal: ${m1.horizontal.toFixed(2)}°`)
+  for (const p of [0.35, 0.7, 0.9, 1]) {
+    await page.evaluate((p) => window.__tackerErect.set(p), p)
+    await cuadro()
+    await snap('10-enganche-izamiento-' + String(Math.round(p * 100)).padStart(3, '0'))
+  }
+  await page.evaluate(() => window.__tackerErect.set(1))
+})
+
 // Hallazgos 2 (3d-perf #7 y código #2). Espera el fix en 84 (`sincronizarIzamiento`): cables del cuadro y de la llave atados
 // a la visibilidad del mástil, y tiros SK atados al mástil y al avance del izamiento (no a la casilla del aparejo).
 test('montaje paso 5: sin mástil no se ven cables colgando y los tiros siguen al izamiento', async (t) => {

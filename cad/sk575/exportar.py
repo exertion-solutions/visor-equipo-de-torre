@@ -36,7 +36,7 @@ TOL_DEF = (0.006, 0.3)
 
 # Qué representa cada componente y con qué confianza de geometría (A/B/C). Detalle de cotas y fuentes en el informe.
 INFO = {
-    "sk575_mastil": ("C", "Mástil SK 104-330 inclinado 3,5°, corona en voladizo, piso de enganche a 68'"),
+    "sk575_mastil": ("C", "Mástil SK 104-330 inclinado 3,5°, corona centrada sobre el reticulado (pozo a 76\" del pie, C6), piso de enganche a 68'"),
     "sk575_carrier": ("C", "Carrier SK-575: bastidor 40 ft, 5 ejes, cabina, motor, tanques, gatos y T-sill"),
     "sk575_cuadro": ("C", "Cuadro de maniobras DWA575-01: tambores 42×12 y 42×8, discos, embragues, consola"),
     "sk575_izaje": ("B", "Cilindros de izaje HYCO 50162-813-13150 (3 etapas, 60\" → 191,5\")"),
@@ -81,7 +81,8 @@ def verificar(g, spec):
         ("inclinación del mástil (placa API)", g["LEAN"], s["mast"]["leanDeg"], 1e-9),
         ("base del mástil 4'-0\"", g["ZB"], s["mast"]["baseHeightM"], 0.001),
         ("piso de enganche 68'", g["ZM"], s["mast"]["rackingBoardM"], 0.002),
-        ("pozo a 76\" del pie delantero", g["WXP"] - (g["MX"] + 0.87), s["mast"]["wellFromFrontLegM"], 1e-6),
+        ("pozo a 76\" del pie del mástil (eje de la bisagra MX, C6)", g["WXP"] - g["MX"], s["mast"]["wellFromFrontLegM"], 1e-6),
+        ("corona centrada sobre el reticulado |MC - MX| (< 0,15 m)", abs(g["MC"] - g["MX"]), 0.0, 0.15),
         ("altura del piso de trabajo", g["ZP"], s["workFloor"]["heightM"], 1e-9),
         ("largo del piso", g["X1"] - g["X0"], s["workFloor"]["sizeM"][0], 1e-9),
         ("ancho del piso con laterales", 2 * g["YL"], s["workFloor"]["sizeM"][1], 1e-9),
@@ -140,7 +141,8 @@ def gl(p, wxp):
     return [round(p[0] - wxp, 4), round(p[2], 4), round(-p[1], 4)]
 
 
-def malla(shapes, mat, o):
+def malla(shapes, mat, o, wxp):
+    """Vértices en el marco del nodo: CAD → glTF del pozo (x − WXP, z, −y) menos el origen `o` del nodo (ya en ese marco)."""
     tol, ang = TOL.get(mat, TOL_DEF)
     V, F = [], []
     for sh in shapes:
@@ -148,7 +150,7 @@ def malla(shapes, mat, o):
             assert so.is_valid, "sólido inválido en %s" % mat
             vs, ts = so.tessellate(tol, ang)
             base = len(V)
-            V += [(v.X - o[0], v.Z - o[1], -v.Y - o[2]) for v in vs]
+            V += [(v.X - wxp - o[0], v.Z - o[1], -v.Y - o[2]) for v in vs]
             F += [(base + a, base + b, base + c) for a, b, c in ts]
     return np.array(V, dtype=float), np.array(F, dtype=np.int64)
 
@@ -180,7 +182,7 @@ def exportar(solo=None):
                 scene.graph.update(frame_to=nodo, frame_from=cid, matrix=trimesh.transformations.translation_matrix(o))
             segs, tris_nodo = [], 0
             for mat, shapes in sorted(mats.items()):
-                V, F = malla(shapes, mat, o)
+                V, F = malla(shapes, mat, o, wxp)
                 if not len(F):
                     continue
                 # process=False: sin soldar vértices entre caras B-rep → normales suaves dentro de cada cara y filo entre
@@ -232,7 +234,8 @@ def exportar(solo=None):
 SUBNODOS = {
     "sk575_cabina": "Cabina de manejo (one-man cab), vidrios, espejo, escalones y luces de techo (geometría C)",
     "sk575_motor": "Motor Detroit S60 bajo capot, radiador, filtro de aire, escape, transmisión Allison y cardán (C)",
-    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; va con el 2.º "
+    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; origen = bisagra del borde "
+                      "interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º "
                       "tramo del mástil (geometría C)",
     "sk575_izaje_orejas_carrier": "Pedestales de los cilindros en el carrier (fijos)",
     "sk575_izaje_orejas_mastil": "Orejas de los cilindros en el mástil (giran con el mástil)",
