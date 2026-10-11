@@ -22,11 +22,17 @@ parts: dict[tuple, list] = {}
 
 
 COMP = ["sk575_mastil"]                                                # componente activo (nodo raíz del GLB)
+ORIGEN: dict[str, tuple] = {}            # sub-nodo → punto CAD que el export usa como origen del nodo (pivote de animación)
+IZAJE: list[dict] = []                   # anclajes de los cilindros de izaje (CAD), para el meta.json
+VIENTOS: list[dict] = []                 # extremos de cada cable de sk575_vientos (CAD), para el meta.json
 
 
-def comp(cid):
-    """Las piezas que siguen pertenecen al componente `cid` (una unidad seleccionable del visor)."""
+def comp(cid, origen=None):
+    """Las piezas que siguen pertenecen al componente `cid` (una unidad seleccionable del visor).
+    `raiz/sub` = sub-nodo con nombre `sub` dentro del GLB `raiz` (misma geometría, otra partición); `origen` = su pivote."""
     COMP[0] = cid
+    if origen is not None:
+        ORIGEN[cid.split("/")[-1]] = tuple(origen)
 
 
 def add(mat, *shapes):
@@ -161,7 +167,8 @@ for sy in (-0.5, 0.5):                                                         #
     add("rojo", bar((MX + 0.55, sy, H - 1.6), (MC + 0.85, sy, H), 0.05, sq=True))
     add("rojo", bar((MX + 0.55, sy, H), (MC + 0.85, sy, H), 0.06, sq=True))
 
-# piso de enganche (monkey board) del lado +X, con cartel
+# piso de enganche (monkey board) del lado +X, con cartel: sub-nodo propio (va con el 2.º tramo del mástil)
+comp("sk575_mastil/sk575_enganche")
 ZM, XF = 20.629, MX + 0.68     # piso de enganche a 68' (plano 8123-1002-2611 / Engineering Report SK 2021)
 add("grating", box(XF, XF + 1.9, -1.2, 1.2, ZM, ZM + 0.08, f=0.02))
 for k in range(9):
@@ -172,6 +179,7 @@ railing([(XF, -1.2, ZM + 0.08), (XF + 1.9, -1.2, ZM + 0.08), (XF + 1.9, 1.2, ZM 
 add("rojo", box(XF, XF + 2.2, -1.30, -1.25, ZM + 0.2, ZM + 1.15, f=0.01))
 txt = extrude(Text("TACKER 10", font_size=0.5, font_style=FontStyle.BOLD), amount=0.02)
 add("blanco", Pos(XF + 1.1, -1.30, ZM + 0.67) * Rot(90, 0, 0) * txt)
+comp("sk575_mastil")
 
 # luminarias: 5 debajo y 7 encima del piso de enganche (Libro DROPS)
 for z in [7 + 2.4 * i for i in range(5)] + [ZM + 1.5 + 1.35 * i for i in range(7)]:
@@ -277,7 +285,8 @@ for y in (-0.7, 0.7):
     add("acero", Pos(FR - 0.28, y, 0.9) * Rot(0, 90, 0) * Torus(0.07, 0.02))
     add("acero_oscuro", box(FR - 0.45, FR - 0.25, y - 0.03, y + 0.03, 0.8, 1.0))
 
-# media cabina (one-man cab) X 0–60, H 55–114, ancho 33" lado conductor (−Y)
+# media cabina (one-man cab) X 0–60, H 55–114, ancho 33" lado conductor (−Y): sub-nodo sk575_cabina (cabina de manejo)
+comp("sk575_carrier/sk575_cabina")
 YC0, YC1 = -HW, -HW + 33 * IN
 cab = extrude(Plane.XZ * make_face(Polyline((xc(0), 55 * IN), (xc(60), 55 * IN), (xc(60), 114 * IN), (xc(8), 114 * IN),
                                             (xc(0), 98 * IN), close=True)), amount=YC1 - YC0)
@@ -301,13 +310,16 @@ add("acero_oscuro", bar((xc(4), YC0, 2.6), (xc(-6), YC0 - 0.3, 2.6), 0.02))     
 add("acero_oscuro", Pos(xc(-6), YC0 - 0.32, 2.4) * fillet(Box(0.07, 0.2, 0.45).edges(), 0.025))
 for z in (0.62, 0.95, 1.25):                                                           # escalones de la cabina
     add("grating", box(xc(30), xc(46), YC0 - 0.12, YC0 + 0.1, z, z + 0.035, f=0.01))
-for y in (YC0 + 0.15, YC1 - 0.15):
-    add("acero_oscuro", box(FR - 0.02, FR + 0.06, y - 0.12, y + 0.12, 1.5, 1.7, f=0.02))
-    add("luz", Pos(FR - 0.025, y, 1.6) * Rot(0, 90, 0) * Cylinder(0.075, 0.02))
 for y in (YC0 + 0.2, YC1 - 0.2):
     add("luz", Pos(xc(10), y, 114 * IN + 0.025) * Box(0.08, 0.12, 0.05))
-# filtro de aire Donaldson y caja de baterías al lado de la cabina (+Y)
+comp("sk575_carrier")
+for y in (YC0 + 0.15, YC1 - 0.15):                                                     # faros en el bastidor
+    add("acero_oscuro", box(FR - 0.02, FR + 0.06, y - 0.12, y + 0.12, 1.5, 1.7, f=0.02))
+    add("luz", Pos(FR - 0.025, y, 1.6) * Rot(0, 90, 0) * Cylinder(0.075, 0.02))
+# filtro de aire Donaldson (motor) y caja de baterías al lado de la cabina (+Y)
+comp("sk575_carrier/sk575_motor")
 add("acero_oscuro", Pos(xc(30), 0.8, 1.4) * fillet(Cylinder(0.2, 0.9, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.04))
+comp("sk575_carrier")
 add("rojo", box(xc(5), xc(25), 0.2, 1.2, 1.15, 1.55, f=0.02))
 
 # apoyo del mástil (headache rack) X 64, tope a 121"
@@ -317,7 +329,9 @@ for y in (-1.05, 1.05):
 add("rojo", box(xc(64) - 0.12, xc(64) + 0.12, -1.15, 1.15, 121 * IN - 0.15, 121 * IN, f=0.02))
 for s_ in (-1, 1):
     add("goma", Plane(origin=(xc(64), s_ * 0.35, 121 * IN + 0.06), x_dir=(0, 1, 0), z_dir=(0, -s_ * 0.6, 0.8)) * Box(0.6, 0.25, 0.04))
-# radiador X 65–88 con rejilla y motor Detroit S60 bajo capot X 85–156 (tope 114")
+# radiador X 65–88 con rejilla y motor Detroit S60 bajo capot X 85–156 (tope 114"): sub-nodo sk575_motor (con escape y
+# transmisión hasta las crucetas del cardán; la caja angular queda en el carrier)
+comp("sk575_carrier/sk575_motor")
 add("acero_oscuro", box(xc(66), xc(72), -0.65, 0.65, ZK, 2.75, f=0.02))
 for k in range(12):
     add("acero", box(xc(65.5), xc(66), -0.6, 0.6, ZK + 0.1 + k * 0.11, ZK + 0.14 + k * 0.11))
@@ -332,6 +346,7 @@ add("acero_oscuro", Pos(xc(160), 0, 1.5) * Rot(0, 90, 0) * fillet(Cylinder(0.28,
 add("acero_oscuro", bar((xc(165), 0, 1.5), (xc(212), 0, 1.55), 0.045))
 for x in (xc(165), xc(212)):
     add("acero", Pos(x, 0, 1.5) * Rot(0, 90, 0) * Cylinder(0.08, 0.05))                  # crucetas
+comp("sk575_carrier")
 add("azul", box(xc(212), xc(240), -0.42, 0.42, ZK, 1.95, f=0.04))                       # caja angular
 add("azul", Pos(xc(235), 0.5, 61 * IN) * Rot(90, 0, 0) * Cylinder(0.12, 0.16))
 # tanque hidráulico X 204–243, H 80–109, sobre patas
@@ -500,7 +515,13 @@ comp("sk575_izaje")
 # base 2,25"; cabezal del émbolo Ø3,69"; puertos 1/2" NPTF extender (base) / retraer (cabezal); 2000 psi → 103.697 lb.
 
 
-def izaje(base, top):
+HYCO_EXT, HYCO_CARRERAS = 191.5, (42.82, 44.07, 44.62)   # entre pernos extendido / carrera por etapa, pulgadas (src-plano-hyco)
+
+
+def izaje(base, top, k):
+    """Cilindro k: sub-nodos sk575_izaje_cil<k>_camisa (origen = perno del pie, en el carrier) y _etapa1, _etapa2,
+    _vastago (origen = perno superior, en el mástil). Modelado extendido (mástil armado)."""
+    pre = "sk575_izaje/sk575_izaje_cil%d_" % k
     u = (top - base).normalized()
     L = Plane(origin=base, x_dir=(0, 1, 0), z_dir=u).location               # eje local z = eje del cilindro, perno en x (= Y)
 
@@ -514,39 +535,48 @@ def izaje(base, top):
         add(mat, L * Pos(0, 0, z * IN) * o)
         add("acero", L * Pos(0, 0, z * IN) * Rot(0, 90, 0) * Cylinder(1.77 / 2 * IN, 4.5 * IN))   # perno
 
+    comp(pre + "camisa", base)
     ojo(0, "acero_oscuro")
     seg(1.75, 2.25, 4.0, "acero_oscuro")
     seg(2.25, 4.5, 10.0, "acero_oscuro")                                # tapa de base
     seg(4.5, 54.6, 9.42, "rojo")                                        # camisa
     seg(54.6, 56.88, 10.0, "acero_oscuro")                              # glándula de la camisa
     z = 56.88
-    for d, c, dg in ((8.12, 42.82, 8.62), (7.00, 44.07, 7.5), (4.00, 44.62, None)):   # etapas cromadas + glándulas
+    for (d, dg), c, nom in zip(((8.12, 8.62), (7.00, 7.5), (4.00, None)), HYCO_CARRERAS, ("etapa1", "etapa2", "vastago")):
+        comp(pre + nom, top)                                            # etapas cromadas + glándulas
         seg(z - 2, z + c - (1.5 if dg else 0), d, "acero")
         if dg:
             seg(z + c - 1.5, z + c, dg, "acero_oscuro")
         z += c
-    seg(z, 191.5 - 1.75, 3.69, "acero_oscuro")                          # cabezal del émbolo
-    ojo(191.5, "acero_oscuro")
+    seg(z, HYCO_EXT - 1.75, 3.69, "acero_oscuro")                       # cabezal del émbolo
+    ojo(HYCO_EXT, "acero_oscuro")
     for zp, tipo in ((6.8, "ext"), (z + 0.8, "ret")):                   # puertos 1/2" NPTF con codo y manguera
+        comp(pre + ("camisa" if tipo == "ext" else "vastago"))
         r = (9.42 if tipo == "ext" else 3.69) / 2 * IN
         add("acero", L * Pos(0, -r - 0.02, zp * IN) * Rot(90, 0, 0) * Cylinder(0.018, 0.04))
         if tipo == "ext":
             p0 = L * Pos(0, -r - 0.04, zp * IN)
             p0 = p0.position
             manguera(tuple(p0), (p0.X - 0.3, p0.Y, ZK + 0.15), (p0.X - 0.7, p0.Y, ZK + 0.03), r=0.014, n=6)
+    comp(pre + "camisa")
     add("acero", L * Pos(0.0, 9.42 / 2 * IN + 0.01, 52.0 * IN) * Rot(-90, 0, 0) * Cylinder(0.008, 0.03))   # purga 1/8" NPT
 
 
-for y in (-0.6, 0.6):
+# Pernos: superior M(-1,85; ±0,6; 6,4) en el mástil y dirección hacia (-4,6; ±0,6; 1,7) estimados por foto (C); el pie queda
+# a 191,5" (extendido, src-plano-hyco) del perno superior.
+for k, y in enumerate((-0.6, 0.6), 1):
     top = Vector(*M(-1.85, y, 6.4))
     u = (top - Vector(-4.6, y, 1.7)).normalized()
-    pie = top - u * (191.5 * IN)
+    pie = top - u * (HYCO_EXT * IN)
+    comp("sk575_izaje/sk575_izaje_orejas_carrier")
     for dy in (-1.2, 1.2):                                              # orejas del pedestal a ambos lados del ojo
         add("rojo", box(pie.X - 0.1, pie.X + 0.1, y + dy * IN - 0.01, y + dy * IN + 0.01, ZK, pie.Z + 0.06, f=0.004))
     add("rojo", box(pie.X - 0.16, pie.X + 0.16, y - 0.09, y + 0.09, ZK, ZK + 0.04))
+    comp("sk575_izaje/sk575_izaje_orejas_mastil")
     for dy in (-1.2, 1.2):                                              # orejas en el mástil
         add("amarillo", Pos(top + Vector(0, dy * IN, 0)) * Box(0.14, 0.02, 0.14))
-    izaje(pie, top)
+    izaje(pie, top, k)
+    IZAJE.append(dict(cil=k, pie=tuple(pie), top=tuple(top)))
 
 comp("sk575_aparejo")
 # ───────────────────────── aparejo y cables ─────────────────────────
@@ -791,16 +821,24 @@ for ax, ay in ((WXP - 27.4, -26.8), (WXP - 27.4, 26.8), (WXP + 24.4, -26.8), (WX
     add("hormigon", box(ax - 0.5, ax + 0.5, ay - 0.5, ay + 0.5, 0, 0.08, f=0.02))
     add("acero_oscuro", Pos(ax, ay, 0.08) * Cylinder(0.076, 0.92, align=(Align.CENTER, Align.CENTER, Align.MIN)))
     add("acero", Pos(ax, ay, 1.05) * Rot(90, 0, 0) * Torus(0.08, 0.02))
-    for z, w, r in ((29.5, 1.12, 0.0095), (19.0, 1.3, 0.0079)):                # placa API: A 3/4" EEIPS, B 5/8"
+    for z, w, r, nom in ((29.5, 1.12, 0.0095, "A"), (19.0, 1.3, 0.0079, "B")):  # placa API: A 3/4" EEIPS, B 5/8"
         cx, cy = MX + (w / 2 if ax > WXP else -w / 2), (w / 2 if ay > 0 else -w / 2)
         add("cable", bar(M(cx, cy, z), (ax, ay, 1.05), r))
+        VIENTOS.append(dict(id="%s_%s_%s" % (nom, "v" if ax > WXP else "carrier", "-z" if ay > 0 else "+z"), tipo="viento " + nom,
+                            diametro_in=0.75 if nom == "A" else 0.625, mastil=M(cx, cy, z), tierra=(ax, ay, 1.05)))
 # vientos de plataforma 9/16" cruzados a los anclajes delanteros + vientos internos 2 × 1" de la corona al apoyo (Rig Up p3)
 for s_ in (-1, 1):
     add("cable", bar(M(XF + 1.9, s_ * 1.2, ZM + 0.08), (WXP + 24.4, -s_ * 26.8, 1.05), 0.0071))
     add("cable", bar(M(MC - 0.9, s_ * 0.9, H), (xc(64), s_ * 0.9, 121 * IN), 0.0127))
+    VIENTOS.append(dict(id="plataforma_%s" % ("-z" if s_ > 0 else "+z"), tipo="viento de plataforma", diametro_in=0.5625,
+                        mastil=M(XF + 1.9, s_ * 1.2, ZM + 0.08), tierra=(WXP + 24.4, -s_ * 26.8, 1.05)))
+    VIENTOS.append(dict(id="interno_%s" % ("-z" if s_ > 0 else "+z"), tipo="viento interno corona → apoyo del carrier",
+                        diametro_in=1.0, mastil=M(MC - 0.9, s_ * 0.9, H), carrier=(xc(64), s_ * 0.9, 121 * IN)))
 pz = ZM + 1.1                                                                    # pirosalva desde el piso de enganche a 35°
 P0 = M(XF + 1.9, 1.2, pz)
 add("cable", bar(P0, (P0[0] + pz / 0.7002 * 0.8, 1.2 + pz / 0.7002 * 0.6, 0.5), 0.0143))
+VIENTOS.append(dict(id="pirosalva", tipo="línea de escape (pirosalva) desde el piso de enganche", diametro_in=1.125,
+                    mastil=P0, tierra=(P0[0] + pz / 0.7002 * 0.8, 1.2 + pz / 0.7002 * 0.6, 0.5)))
 add("hormigon", box(P0[0] + pz / 0.7002 * 0.8 - 0.4, P0[0] + pz / 0.7002 * 0.8 + 0.4,
                     1.2 + pz / 0.7002 * 0.6 - 0.4, 1.2 + pz / 0.7002 * 0.6 + 0.4, 0, 0.5, f=0.03))
 

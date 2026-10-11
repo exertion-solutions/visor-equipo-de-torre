@@ -1,0 +1,34 @@
+{
+  "id": "sk575_piso",
+  "confianza": "B",
+  "alcance": "Piso pulling 2600 × 3304 a 3606 mm, subestructura, escaleras a 45°",
+  "triangulos": 21064,
+  "materiales": [
+    "acero",
+    "acero_oscuro",
+    "amarillo",
+    "goma",
+    "grating",
+    "rojo"
+  ],
+  "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
+  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "as_built": false,
+  "aristas": {
+    "segmentos": 6662,
+    "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
+    "umbral_grados": 28,
+    "excluye": [
+      "luz",
+      "vidrio"
+    ]
+  },
+  "publicado": {
+    "archivo": "public/models/tacker10/sk575_piso.glb",
+    "optimize": "npm run gltf:optimize -- sk575_piso.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
+    "triangulos_origen": 21064,
+    "triangulos_publicados": 15870,
+    "segmentos_aristas": 6662,
+    "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
+  }
+}

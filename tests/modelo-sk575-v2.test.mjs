@@ -12,14 +12,17 @@ const json = (f) => {
   return JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString('utf8'))
 }
 
-test('GLB sk575: materiales <id>_<material> (sin palette) y normales en cada primitiva', () => {
+test('GLB sk575: materiales <id>_<material> (sin palette) y normales en cada primitiva de triángulos', () => {
   assert.equal(glbs.length, 16)
   for (const f of glbs) {
     const j = json(f)
     const id = f.slice(0, -4)
     assert.ok(j.materials.length > 0, f)
     for (const m of j.materials) assert.ok(m.name.startsWith(id + '_'), `${f}: ${m.name}`)
-    for (const m of j.meshes) for (const p of m.primitives) assert.ok(p.attributes.NORMAL !== undefined, f)
+    for (const m of j.materials) assert.ok(m.pbrMetallicRoughness?.baseColorFactor, `${f}: ${m.name} sin color`)
+    // las aristas horneadas (`<nodo>_aristas`, LINES mode 1) no llevan normales
+    for (const m of j.meshes)
+      for (const p of m.primitives) if (p.mode !== 1) assert.ok(p.attributes.NORMAL !== undefined, f)
   }
 })
 
