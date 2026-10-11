@@ -6,27 +6,38 @@
  * fetch desde ../models/tacker10/ (respaldo base64 `window.__TACKER_SK575_GLB` en sk575-glb.js, ver scripts/build-legacy.mjs)
  * + el decodificador meshopt (`window.__MeshoptDecoder`).
  * El V2 no trae GLTFLoader: este lector cubre solo el contrato de esos GLB (nodos TRS, primitivas con POSITION/NORMAL/índices,
- * EXT_meshopt_compression, KHR_mesh_quantization, PBR metallic-roughness).
+ * EXT_meshopt_compression, KHR_mesh_quantization, PBR metallic-roughness) y las aristas horneadas `<nodo>_aristas` (LINES,
+ * umbral 28°, exportar.py): el navegador ya no las calcula.
  *
  * Marco = el del V2: origen en la boca de pozo a nivel de terreno, carrier hacia −X, Y arriba, metros. NO es as-built
  * (confianza B/C por componente, docs/pdf-review/informe-sk575-2026-10-09.md). Desgaste y entorno son EFECTOS VISUALES.
  *
  * Es EL equipo del V2: cada componente SK-575 se integra en su grupo procedural (despiece, selección, aislado, corte, malla, modos,
  * secuencia de montaje, izamiento y aparejo animado) y TODA la geometría procedural pasa a una capa invisible (también la casilla
- * del maquinista, que el SK-575 no modela). API para pruebas: `window.__tackerSk575 = { ready, isOn, sinPieza, stats }`.
+ * del maquinista, que el SK-575 no modela). Sub-nodos del GLB con grupo propio: cabina y motor (dentro del carrier) y piso de
+ * enganche (dentro del mástil, sigue al 2.º tramo). API para pruebas: `window.__tackerSk575 = { ready, isOn, sinPieza, stats }`.
  */
 window.__rigExt.onPost((R) => {
   const FILES = window.__TACKER_SK575_FILES
   const MD = window.__MeshoptDecoder
   if (!FILES || !FILES.length || !MD || !R.scene || !R.three || !R.renderer) return
   const T = R.three
-  const Float32Attr = new T.BoxGeometry(1, 1, 1).attributes.position.constructor
-  const BufferAttribute = Object.getPrototypeOf(Float32Attr)
+  const BufferAttribute = Object.getPrototypeOf(
+    new T.BoxGeometry(1, 1, 1).attributes.position.constructor,
+  )
   const invalidate = () => typeof R.invalidate === 'function' && R.invalidate()
   const SIN_SOMBRA = /_(cable|luz|vidrio)$/ // por nombre de material (exportar.py)
-  const SIN_ARISTAS = /_(luz|vidrio)$/ // aristas negras sobre luminarias encendidas y vidrios
   // medición de la carga (window.__tackerSk575.stats); fuente = 'fetch' | 'base64'
-  const stats = { fuente: '', bytesMs: 0, decodeMs: 0, aristasMs: 0 }
+  const stats = { fuente: '', bytesMs: 0, decodeMs: 0 }
+  // aristas horneadas: un solo material para todas (como visor.py); no participan del picking ni proyectan sombra
+  const lineaMat = new T.LineBasicMaterial({ color: '#0b0d10', transparent: true, opacity: 0.55 })
+  /** LineSegments sin exponer la clase: three dibuja gl.LINES por la marca `isLineSegments`. */
+  const segmentos = (geo) => {
+    const l = new T.Line(geo, lineaMat)
+    l.isLineSegments = true
+    l.raycast = () => {}
+    return l
+  }
 
   // ───────── entorno tipo RoomEnvironment (solo para estos materiales: el V2 no tiene scene.environment) ─────────
   function entorno() {
@@ -234,9 +245,17 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       }
       if (n.mesh !== undefined) {
         for (const pr of J.meshes[n.mesh].primitives) {
-          if (pr.mode !== undefined && pr.mode !== 4) continue // solo triángulos
           const geo = new T.BufferGeometry()
           geo.setAttribute('position', acc(pr.attributes.POSITION))
+          if (pr.mode === 1) {
+            // `<nodo>_aristas`: primitiva LINES
+            if (pr.indices !== undefined) geo.setIndex(acc(pr.indices))
+            const l = segmentos(geo)
+            l.name = g.name
+            g.add(l)
+            continue
+          }
+          if (pr.mode !== undefined && pr.mode !== 4) continue // solo triángulos
           if (pr.attributes.NORMAL !== undefined)
             geo.setAttribute('normal', acc(pr.attributes.NORMAL))
           if (pr.indices !== undefined) geo.setIndex(acc(pr.indices))
@@ -255,93 +274,6 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     const raiz = new T.Group()
     for (const i of J.scenes[J.scene || 0].nodes) raiz.add(nodo(i))
     return raiz
-  }
-
-  // ───────── aristas (ángulo entre caras > 28°, como EdgesGeometry / visor.py) ─────────
-  const COS = Math.cos((28 * Math.PI) / 180)
-  const lineaMat = new T.LineBasicMaterial({ color: '#0b0d10', transparent: true, opacity: 0.55 })
-  function aristas(mesh) {
-    const pos = mesh.geometry.attributes.position
-    const idx = mesh.geometry.index
-    const nv = pos.count
-    const P = new Float32Array(nv * 3)
-    for (let i = 0; i < nv; i++) {
-      P[i * 3] = pos.getX(i)
-      P[i * 3 + 1] = pos.getY(i)
-      P[i * 3 + 2] = pos.getZ(i)
-    }
-    // soldar por posición (las normales partidas duplican vértices en los filos)
-    const id = new Uint32Array(nv)
-    const ver = new Map()
-    // clave numérica: mismas celdas de 0,1 mm que la clave de texto, empaquetadas en un entero (< 2^53); si no entra, texto
-    const Q = new Int32Array(nv * 3)
-    const lo = [Infinity, Infinity, Infinity]
-    const hi = [-Infinity, -Infinity, -Infinity]
-    for (let i = 0; i < nv * 3; i++) {
-      const q = (Q[i] = Math.round(P[i] * 1e4))
-      if (q < lo[i % 3]) lo[i % 3] = q
-      if (q > hi[i % 3]) hi[i % 3] = q
-    }
-    const ny = hi[1] - lo[1] + 1
-    const nz = hi[2] - lo[2] + 1
-    const num = (hi[0] - lo[0] + 1) * ny * nz < Number.MAX_SAFE_INTEGER
-    for (let i = 0; i < nv; i++) {
-      const x = Q[i * 3] - lo[0],
-        y = Q[i * 3 + 1] - lo[1],
-        z = Q[i * 3 + 2] - lo[2]
-      const k = num ? (x * ny + y) * nz + z : x + ',' + y + ',' + z
-      let v = ver.get(k)
-      if (v === undefined) ver.set(k, (v = i))
-      id[i] = v
-    }
-    const tri = idx ? idx.array : null
-    const nt = (tri ? tri.length : nv) / 3
-    const N = new Float32Array(nt * 3)
-    const bordes = new Map()
-    const out = []
-    for (let t = 0; t < nt; t++) {
-      const a = tri ? tri[t * 3] : t * 3
-      const b = tri ? tri[t * 3 + 1] : t * 3 + 1
-      const c = tri ? tri[t * 3 + 2] : t * 3 + 2
-      const ux = P[b * 3] - P[a * 3],
-        uy = P[b * 3 + 1] - P[a * 3 + 1],
-        uz = P[b * 3 + 2] - P[a * 3 + 2]
-      const vx = P[c * 3] - P[a * 3],
-        vy = P[c * 3 + 1] - P[a * 3 + 1],
-        vz = P[c * 3 + 2] - P[a * 3 + 2]
-      let nx = uy * vz - uz * vy,
-        ny = uz * vx - ux * vz,
-        nz = ux * vy - uy * vx
-      const l = Math.hypot(nx, ny, nz)
-      if (!l) continue // triángulo degenerado
-      N[t * 3] = nx /= l
-      N[t * 3 + 1] = ny /= l
-      N[t * 3 + 2] = nz /= l
-      const vs = [id[a], id[b], id[c]]
-      for (let e = 0; e < 3; e++) {
-        const i = vs[e],
-          j = vs[(e + 1) % 3]
-        const k = i < j ? i * nv + j : j * nv + i
-        const otra = bordes.get(k)
-        if (otra === undefined) bordes.set(k, t)
-        else {
-          bordes.delete(k)
-          if (N[otra * 3] * nx + N[otra * 3 + 1] * ny + N[otra * 3 + 2] * nz <= COS)
-            out.push(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], P[j * 3], P[j * 3 + 1], P[j * 3 + 2])
-        }
-      }
-    }
-    for (const k of bordes.keys()) {
-      const i = Math.floor(k / nv),
-        j = k % nv
-      out.push(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], P[j * 3], P[j * 3 + 1], P[j * 3 + 2])
-    }
-    const g = new T.BufferGeometry()
-    g.setAttribute('position', new Float32Attr(new Float32Array(out), 3))
-    const l = new T.Line(g, lineaMat)
-    l.isLineSegments = true // three elige gl.LINES por esta marca
-    l.raycast = () => {}
-    return l
   }
 
   // ───────── integración en los componentes del V2 ─────────
@@ -366,6 +298,8 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     sk575_bomba: 'circulacion',
     sk575_pozo_vecino: 'circulacion',
   }
+  // Sub-nodos del GLB que son otro componente del árbol del V2 (cad/sk575/modelo.py: comp("raiz/sub")).
+  const SUB = { sk575_cabina: 'cabina', sk575_motor: 'motor', sk575_enganche: 'enganche' }
   const OCULTO = 31 // capa que la cámara no dibuja y el raycaster no toca: ningún módulo puede volver a mostrarlo con .visible
   // Altura del bloque del SK-575 en reposo = valor por defecto del deslizador #hoist (14 m, centro del bloque en modelo.py).
   const BLOQUE_Y = 14
@@ -385,6 +319,10 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       dy = v3.y - G.position.y - BLOQUE_Y // si el aparejo ya no está en reposo al cargar
     }
     for (const n of [...comp.children]) {
+      if (SUB[n.name]) {
+        integrarSub(n, SUB[n.name], pivote)
+        continue
+      }
       const cable = n.name.endsWith('_cable')
       if (blk && !cable) {
         n.position.y += dy
@@ -396,7 +334,9 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         // 2.º tramo, corona y piso de enganche → el grupo que 81 desliza (telescopado); el 1.er tramo gira con el pivote
         const sup = pivote.children.find((c) => c.name === 'mastil_tramo_superior')
         ;(n.name.endsWith('_sup') && sup ? sup : pivote).attach(n)
-      } else G.attach(n)
+      } else if (cid === 'sk575_izaje' && pivote && n.name.endsWith('_orejas_mastil'))
+        pivote.attach(n) // las orejas del mástil giran con él; camisas, etapas y vástagos los anima 81
+      else G.attach(n)
       n.traverse((o) => {
         if (!o.isMesh) return
         o.userData.id = id
@@ -408,27 +348,89 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     }
   }
 
+  /**
+   * Sub-nodo con grupo propio (selección, resaltado, aislado, despiece y teñido DROPS por su id). Comparte los materiales de su
+   * raíz (`sk575_carrier_*`, `sk575_mastil_*`): se clonan para que resaltar la cabina no encienda todo el carrier.
+   */
+  function integrarSub(n, id, pivote) {
+    const G = R.groups && R.groups[id]
+    if (!G) return console.warn('[modelo SK-575] sub-nodo sin destino en el V2:', n.name, '→', id)
+    const clon = new Map()
+    n.traverse((o) => {
+      if (!o.isMesh) return
+      if (!clon.has(o.material)) {
+        const m = o.material.clone()
+        m.onBeforeCompile = o.material.onBeforeCompile
+        m.customProgramCacheKey = o.material.customProgramCacheKey
+        clon.set(o.material, m)
+      }
+      o.material = clon.get(o.material)
+      o.userData.id = id
+      R.pickables.push(o)
+      const e = o.material.emissive
+      if (R.materials[id] && !(e && e.r + e.g + e.b > 0)) R.materials[id].push(o.material)
+    })
+    G.attach(n)
+    if (id === 'enganche') {
+      // marcador DROPS del piso de enganche sobre la pieza SK (sigue siendo aproximado: 50 nunca lo da por as-built)
+      n.userData.dropsId = 'piso-enganche'
+      seguirTramoSuperior(n, pivote)
+    }
+  }
+
+  /**
+   * El piso de enganche va con el 2.º tramo (ZM = 20,629 m > H_INF): en el izamiento gira con el pivote y telescopa con
+   * `mastil_tramo_superior` (81), pero vive en el grupo `enganche`. En cada cuadro se le aplica el movimiento del tramo dentro del
+   * grupo `mastil` (el despiece de cada grupo queda aparte).
+   */
+  function seguirTramoSuperior(n, pivote) {
+    const sup = pivote && pivote.children.find((c) => c.name === 'mastil_tramo_superior')
+    if (!sup) return
+    const mastG = R.groups.mastil
+    const M4 = n.matrix.constructor
+    R.scene.updateMatrixWorld(true)
+    const rel = () => new M4().copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld)
+    const base = rel().invert().multiply(n.matrix) // pose armada de n respecto del tramo
+    const m = new M4()
+    n.matrixAutoUpdate = false
+    const previo = R.scene.onBeforeRender
+    R.scene.onBeforeRender = function (...a) {
+      m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base)
+      // tolerancia: el producto con la inversa no repite bits y 80-perf rehace la sombra ante cualquier cambio
+      if (m.elements.some((v, i) => Math.abs(v - n.matrix.elements[i]) > 1e-7)) {
+        n.matrix.copy(m)
+        n.updateMatrixWorld(true)
+      }
+      return previo.apply(this, a)
+    }
+  }
+
   // Corte entre tramos del mástil: el 1.er tramo va de 0 a H_INF = 16,4 m (cad/sk575/modelo.py; se inclina 3,5° en bloque, la
   // diferencia en altura es < 2 cm). Lo que queda por encima (2.º tramo, corona, piso de enganche) telescopa.
   const H_INF = 16.4
-  /** Parte cada malla del mástil por el centroide de cada triángulo: crea `<nodo>_sup` con los triángulos sobre H_INF. */
+  /**
+   * Parte cada malla del mástil por el centroide de cada triángulo (y sus aristas por el punto medio de cada segmento): crea
+   * `<nodo>_sup` con lo que queda sobre H_INF. El piso de enganche (sub-nodo con grupo propio) no se parte.
+   */
   function partirMastil(raiz) {
     raiz.updateMatrixWorld(true)
     const comp = raiz.getObjectByName('sk575_mastil')
     if (!comp) return
     const p = new T.Vector3()
     for (const n of [...comp.children]) {
-      const mesh = n.children.find((c) => c.isMesh)
+      const mesh = n.children.find((c) => c.isMesh || c.isLineSegments)
       const geo = mesh && mesh.geometry
-      if (!geo || !geo.index) continue
+      if (!geo || (mesh.isMesh && !geo.index)) continue
       const pos = geo.attributes.position
-      const idx = geo.index.array
+      const idx = geo.index ? geo.index.array : Array.from({ length: pos.count }, (_, i) => i)
+      const k = mesh.isMesh ? 3 : 2 // vértices por triángulo o por segmento
       const alto = (i) => p.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld).y
       const inf = []
       const sup = []
-      for (let t = 0; t < idx.length; t += 3) {
-        const y = (alto(idx[t]) + alto(idx[t + 1]) + alto(idx[t + 2])) / 3
-        ;(y > H_INF ? sup : inf).push(idx[t], idx[t + 1], idx[t + 2])
+      for (let t = 0; t < idx.length; t += k) {
+        let y = 0
+        for (let j = 0; j < k; j++) y += alto(idx[t + j]) / k
+        ;(y > H_INF ? sup : inf).push(...idx.slice(t, t + k))
       }
       if (!sup.length) continue
       const parte = (tris) => {
@@ -450,7 +452,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       nodoSup.position.copy(n.position)
       nodoSup.quaternion.copy(n.quaternion)
       nodoSup.scale.copy(n.scale)
-      const mSup = new T.Mesh(parte(sup), mesh.material)
+      const mSup = mesh.isMesh ? new T.Mesh(parte(sup), mesh.material) : segmentos(parte(sup))
       mSup.name = mesh.name
       mSup.castShadow = mesh.castShadow
       mSup.receiveShadow = true
@@ -496,12 +498,11 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     'vientos_dinamicos',
   ])
   /**
-   * Durante el izamiento 81 muestra sus pistones dinámicos y oculta los estáticos (`pistones_izaje`) y el cable del malacate a
-   * la corona (`malacate_steel`): los cilindros SK, los cables del cuadro y los tiros SK copian esa visibilidad en cada cuadro.
+   * Durante el izamiento 81 oculta el cable del malacate a la corona (`malacate_steel`) hasta la fase 3: los cables del cuadro y
+   * de la llave y los tiros SK copian esa visibilidad en cada cuadro. Los cilindros SK los anima 81 (siempre visibles).
    */
   function sincronizarIzamiento() {
     const G = R.groups
-    const estaticos = G.mastil && G.mastil.children.find((c) => c.name === 'pistones_izaje')
     const cableMal = G.malacate && G.malacate.children.find((c) => c.name === 'malacate_steel')
     const pares = []
     const buscar = (grupo, pref) =>
@@ -514,8 +515,6 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
               ),
             )
         : []
-    for (const n of buscar(G.mastil, 'sk575_izaje_'))
-      pares.push([n, () => !estaticos || estaticos.visible])
     // sin mástil (paso 5 de la secuencia de montaje) los cables a la corona no tienen de dónde colgar
     // y durante el izamiento (fases 1-2) tampoco: 81 oculta el cable del malacate hasta la fase 3 y estos lo siguen
     const cablesCorona = () => (!G.mastil || G.mastil.visible) && (!cableMal || cableMal.visible)
@@ -561,45 +560,15 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     }
   }
 
-  // Componentes del árbol sin pieza propia en el SK-575: su geometría real está dentro de otro componente. No se vuelve a
-  // mostrar el procedural; la fila lo dice y al seleccionarla se resalta el componente que la contiene.
-  const SIN_PIEZA = {
-    motor: ['camion', 'Carrier'],
-    cabina: ['camion', 'Carrier'],
-    enganche: ['mastil', 'Mástil'],
-  }
-  // en cuanto DESTINO mapee una pieza a uno de estos ids (p. ej. sk575_motor: 'motor'), deja de figurar como "sin pieza"
-  const sinPieza = () => Object.keys(SIN_PIEZA).filter((id) => !Object.values(DESTINO).includes(id))
-  function rotularSinPieza() {
-    const sp = sinPieza()
-    for (const id of sp) {
-      const nombre = SIN_PIEZA[id][1]
-      const fila = document.querySelector(`.item[data-id="${id}"] .item-name`)
-      if (!fila || fila.querySelector('.sk-sin-pieza')) continue
-      const s = document.createElement('small')
-      s.className = 'sk-sin-pieza'
-      s.style.cssText = 'display:block;opacity:.65;font-size:11px;line-height:1.25'
-      s.textContent = `sin pieza propia en el SK-575 · incluido en ${nombre}`
-      fila.appendChild(s)
-    }
-    // resaltado del contenedor: el bundle resalta R.materials[id] (vacío para estos ids); se replica sobre el contenedor
-    let previo = null // contenedor resaltado por una fila sin pieza
-    const brillo = (id, k) => {
-      for (const m of R.materials[id] || [])
-        if (m.emissive)
-          (m.emissive.set(k ? '#F2BE4F' : '#000000'), (m.emissiveIntensity = k * 0.65))
-    }
-    const antes = R.scene.onBeforeRender
-    R.scene.onBeforeRender = function (...a) {
-      const st = R.state || {}
-      const cont = sp.includes(st.selected) ? SIN_PIEZA[st.selected][0] : null
-      // se reafirma en cada cuadro: el hover del bundle (bl) reescribe el emissive del contenedor al entrar/salir
-      if (previo && previo !== cont)
-        brillo(previo, st.selected === previo ? 0.55 : st.hover === previo ? 0.28 : 0)
-      if (cont) brillo(cont, 0.55)
-      previo = cont
-      return antes.apply(this, a)
-    }
+  /** La cabina SK es la de manejo del carrier; la fila `cabina` del V2 es la casilla del maquinista y consola. */
+  function rotularCabina() {
+    const fila = document.querySelector('.item[data-id="cabina"] .item-name')
+    if (!fila || fila.querySelector('.sk-nota')) return
+    const s = document.createElement('small')
+    s.className = 'sk-nota'
+    s.style.cssText = 'display:block;opacity:.65;font-size:11px;line-height:1.25'
+    s.textContent = 'SK-575: cabina de manejo del carrier · consola del maquinista sin ubicar'
+    fila.appendChild(s)
   }
 
   let carga = null
@@ -619,9 +588,6 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
           [...FILES].sort().map((cid) =>
             leerGlb(BIN[cid], env).then((g) => {
               if (cid === 'sk575_mastil') partirMastil(g)
-              const t0 = performance.now()
-              g.traverse((o) => o.isMesh && !SIN_ARISTAS.test(o.material.name) && o.add(aristas(o)))
-              stats.aristasMs += performance.now() - t0
               return [cid, g]
             }),
           ),
@@ -630,6 +596,9 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       .then((comps) => {
         // attach() conserva la posición de mundo: se integra con el equipo armado (despiece en 0, mástil montado) y se
         // restituye después.
+        // 79 corre la casilla procedural (hoy oculta) fuera del carrier; la cabina SK va sobre el carrier: el grupo vuelve al
+        // marco común (el despiece del bundle, Fh, también lo pisa con offset × factor)
+        if (R.groups.cabina) R.groups.cabina.position.set(0, 0, 0)
         const despiece = Object.values(R.groups).map((G) => [G, G.position.clone()])
         for (const [G] of despiece) G.position.set(0, 0, 0)
         const E = window.__tackerErect
@@ -642,7 +611,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         sincronizarIzamiento()
         for (const o of ocultar) o.traverse((x) => x.layers.set(OCULTO))
         retirarOcultos()
-        rotularSinPieza()
+        rotularCabina()
         invalidate()
         return R.groups
       })
@@ -675,7 +644,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
   window.__tackerSk575 = {
     ready: () => carga,
     isOn: () => true,
-    sinPieza,
+    sinPieza: () => [], // cabina, motor y enganche ya tienen pieza SK propia (sub-nodos del GLB)
     stats,
   }
   cargar()

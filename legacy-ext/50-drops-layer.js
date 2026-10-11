@@ -15,7 +15,7 @@
  *   6. Al desactivar se restauran colores y se elimina todo el DOM, listeners y el rAF.
  *
  * Contrato de datos: ver docs/drops y src/data/qhse/tacker10-drops.json (schemaVersion 1).
- * Expone `R.drops = { isActive, setActive, openSection, openComponent }` (útil para pruebas).
+ * Expone `R.drops = { isActive, setActive, openSection, openComponent, anclajes }` (útil para pruebas).
  */
 ;(() => {
   'use strict'
@@ -218,8 +218,12 @@
         }
         if (!secs.size) return
         // La geometría procedural etiquetada quedó oculta (capa 31, 84-modelo-sk575.js) y Box3 ignora capas: un objeto
-        // que la cámara no dibuja no ancla marcadores (cae al anclaje cualitativo del modelo).
+        // que la cámara no dibuja no ancla marcadores (cae al anclaje cualitativo del modelo). La etiqueta va en el GRUPO
+        // `drops_<ID>` (capa 0) y la capa 31 en sus mallas: cuenta solo si alguna malla se dibuja.
         if (!o.layers.isEnabled(0)) return
+        let dibuja = false
+        o.traverse((x) => (dibuja ||= x.isMesh && x.layers.isEnabled(0)))
+        if (!dibuja) return
         box.setFromObject(o)
         if (box.isEmpty()) return
         box.getCenter(c)
@@ -241,7 +245,8 @@
       for (const m of markers) {
         const t = tagged.get(m.sec.id)
         m.anchor = t || fallbackAnchor(m.sec.id)
-        // Siempre aproximado: el GLB SK-575 no tiene dropsId y ninguna posición del modelo es as-built.
+        // Siempre aproximado: el dropsId del SK-575 (piso de enganche, 84) ancla la SECCIÓN a la pieza, no cada punto, y
+        // ninguna posición del modelo es as-built.
         m.approx = true
         m.el.classList.toggle('approx', m.approx)
         m.el.title = m.approx ? `${m.sec.label} · ${NOTE_APPROX}` : m.sec.label
@@ -840,6 +845,18 @@
     })
     syncQhse()
 
-    R.drops = { isActive: () => active, setActive, openSection, openComponent }
+    R.drops = {
+      isActive: () => active,
+      setActive,
+      openSection,
+      openComponent,
+      // para pruebas: anclaje 3D de cada sección (null si no se proyecta) y si se rotula aproximado
+      anclajes: () =>
+        markers.map((m) => ({
+          sec: m.sec.id,
+          anchor: m.anchor && m.anchor.toArray(),
+          approx: m.approx,
+        })),
+    }
   })
 })()

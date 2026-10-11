@@ -223,6 +223,24 @@ function build() {
         ';',
     )
   }
+  // Cilindros de izaje y vientos del SK-575 (meta de cad/sk575/exportar.py): 81-izamiento-mastil.js anima esas piezas y
+  // tiende los vientos dinámicos entre sus extremos, así la pose de la animación empalma con la final.
+  const skMeta = (id) => {
+    const f = path.join(root, 'public', 'models', 'tacker10', id + '.meta.json')
+    return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null
+  }
+  const izMeta = skMeta('sk575_izaje')
+  const vientosMeta = skMeta('sk575_vientos')
+  if (izMeta || vientosMeta) {
+    blocks.push(
+      '/* cilindros y vientos SK-575 (public/models/tacker10/sk575_{izaje,vientos}.meta.json) */\nwindow.__TACKER_SK575_META=' +
+        safeJsonForScript({
+          izaje: izMeta?.cilindros?.lista ?? [],
+          vientos: vientosMeta?.cables ?? [],
+        }) +
+        ';',
+    )
+  }
   // Modelo SK-575 (legacy-ext/84-modelo-sk575.js): la lista de GLB + el decodificador meshopt de three (MIT, incrustado).
   // Los GLB van por fetch; el base64 queda como respaldo en sk575-glb.js (o dentro del HTML con --standalone).
   const modelsDir = path.join(root, 'public', 'models', 'tacker10')
