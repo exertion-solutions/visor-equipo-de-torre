@@ -720,7 +720,7 @@ test('modos: los cuatro presets aplican y operación aísla aparejo + malacate',
   assert.equal(r.explore.carrier, true)
 })
 
-test('móvil 390×844: la tarjeta del SK-575 no tapa la barra de modos', async (t) => {
+test('móvil 390×844: sin tarjeta del SK-575 ni "Referencia del conjunto"; la barra de modos se ve', async (t) => {
   if (skip) return t.skip(skip)
   // misma página redimensionada: una segunda carga del V2 con render por software no llega a 'load' a tiempo
   await page.setViewportSize({ width: 390, height: 844 })
@@ -733,21 +733,16 @@ test('móvil 390×844: la tarjeta del SK-575 no tapa la barra de modos', async (
         const b = el.getBoundingClientRect()
         return b.width && b.height ? { l: b.left, t: b.top, r: b.right, b: b.bottom } : null
       }
-      return { card: caja('sk575-card'), barra: caja('v2-modebar') }
+      return {
+        card: caja('sk575-card'),
+        inspector: caja('cad-inspector'),
+        barra: caja('v2-modebar'),
+      }
     })
     await snap('07-movil')
-    const { card, barra } = r
-    const tapa =
-      !!card &&
-      !!barra &&
-      card.l < barra.r &&
-      barra.l < card.r &&
-      card.t < barra.b &&
-      barra.t < card.b
-    assert.ok(
-      !tapa,
-      `superposición: tarjeta ${JSON.stringify(card)} / barra ${JSON.stringify(barra)}`,
-    )
+    assert.equal(r.card, null, 'la tarjeta del SK-575 fue retirada')
+    assert.equal(r.inspector, null, 'la tarjeta "Referencia del conjunto" fue retirada')
+    assert.ok(r.barra, 'la barra de modos debe verse')
   } finally {
     await page.setViewportSize({ width: 1440, height: 900 })
   }

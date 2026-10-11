@@ -585,6 +585,14 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       for (const c of o.children) recorrer(c)
     }
     for (const G of Object.values(R.groups || {})) recorrer(G) // el SK-575 es el único equipo a la vista
+    // oculto desde el arranque (sin el destello del procedural mientras bajan los GLB); si la carga falla, vuelve
+    const capas = []
+    for (const o of ocultar)
+      o.traverse((x) => {
+        capas.push([x, x.layers.mask])
+        x.layers.set(OCULTO)
+      })
+    invalidate()
     carga = bytesGlb()
       .then((BIN) =>
         Promise.all(
@@ -612,37 +620,18 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         for (const [G, p] of despiece) G.position.copy(p)
         if (E && p0 < 1) E.set(p0)
         sincronizarIzamiento()
-        for (const o of ocultar) o.traverse((x) => x.layers.set(OCULTO))
         retirarOcultos()
         rotularCabina()
         invalidate()
         return R.groups
       })
-    carga.catch((e) => console.error('[modelo SK-575]', e))
+    carga.catch((e) => {
+      console.error('[modelo SK-575]', e)
+      for (const [x, m] of capas) x.layers.mask = m
+      invalidate()
+    })
     return carga
   }
-
-  const card = document.createElement('details')
-  card.id = 'sk575-card'
-  card.setAttribute('aria-label', 'Aviso del modelo SK-575')
-  card.style.cssText =
-    'position:fixed;right:16px;bottom:44px;z-index:19;width:min(320px,calc(100vw - 32px));padding:8px 12px;border-radius:12px;' +
-    'background:rgba(20,27,38,.95);border:1px solid #303B4B;color:#DDE3EC;font-size:12px;line-height:1.4'
-  card.innerHTML =
-    '<summary style="cursor:pointer;color:#DDBB65"><b><span class="sk-largo">Modelo </span>SK-575 · referencia CAD</b> · no as-built</summary>' +
-    '<div class="sk-largo">Service King SK-575 (TACKER 10), build123d. Confianza B/C por componente, <b>no es as-built</b> ni apto para ' +
-    'fabricación. Desgaste, aristas y reflejos son efectos visuales; las animaciones son ilustrativas. Cotas y conflictos de fuente: informe SK-575 del 2026-10-09.</div>'
-  document.body.appendChild(card)
-  const cardStyle = document.createElement('style')
-  // ≤1050 px: la barra de modos baja a bottom:55px; la tarjeta va por encima. Con "Ocultar opciones" queda como chip (el
-  // aviso "no as-built" no desaparece nunca).
-  cardStyle.textContent =
-    '@media(max-width:1050px){#sk575-card{bottom:104px!important}}' +
-    'body.opts-hidden #sk575-card{width:auto!important;padding:4px 10px!important;pointer-events:none}' +
-    'body.opts-hidden #sk575-card .sk-largo{display:none}' +
-    'body.opts-hidden #sk575-card summary{list-style:none}' +
-    'body.opts-hidden #sk575-card summary::-webkit-details-marker{display:none}'
-  document.head.appendChild(cardStyle)
 
   window.__tackerSk575 = {
     ready: () => carga,
