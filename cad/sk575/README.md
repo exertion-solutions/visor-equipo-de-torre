@@ -48,7 +48,8 @@ ahora **declarado**) y copia el meta a `public/models/tacker10/<id>.meta.json` (
   materiales PBR `<id>_<material>` de la raíz (compartidos con los sub-nodos; las aristas usan `<id>_arista`). Las mallas de la raíz van primero (84-modelo-sk575.js toma el primer `sk575_carrier_*`).
 - **Sub-nodos con nombre** (misma geometría, otra partición; `comp("raiz/sub", origen)` en `modelo.py`):
   - `sk575_carrier` → `sk575_cabina` (cabina de manejo) y `sk575_motor` (motor, radiador, filtro, escape, transmisión).
-  - `sk575_mastil` → `sk575_enganche` (piso de enganche a 68'; va con el 2.º tramo del mástil).
+  - `sk575_mastil` → `sk575_enganche` (piso de enganche a 68'; origen = bisagra del borde interior, eje lateral; va con el
+    2.º tramo del mástil; el visor lo pliega contra el mástil en transporte e izado, ilustrativo).
   - `sk575_izaje` → `sk575_izaje_cil{1,2}_camisa` (origen = perno del pie en el carrier), `_etapa1`, `_etapa2`,
     `_vastago` (origen = perno superior en el mástil), `sk575_izaje_orejas_carrier`, `sk575_izaje_orejas_mastil`.
     Anclajes, largos HYCO (1,524 / 4,864 m, A) y regla de animación en `sk575_izaje.meta.json` → `cilindros`.
@@ -66,26 +67,26 @@ ahora **declarado**) y copia el meta a `public/models/tacker10/<id>.meta.json` (
 
 ## Componentes
 
-| componentId         | Familia      | Conf. geom. | Tris origen | Publicados | Qué es                                                                                  |
-| ------------------- | ------------ | ----------- | ----------- | ---------- | --------------------------------------------------------------------------------------- |
-| `sk575_mastil`      | mast         | C           | 46.924      | 28.004     | Mástil inclinado 3,5°, corona en voladizo; sub-nodo `sk575_enganche` (piso 68')         |
-| `sk575_carrier`     | carrier      | C           | 268.082     | 121.008    | Bastidor 40 ft, 5 ejes, tanques, gatos, T-sill; sub-nodos `sk575_cabina`, `sk575_motor` |
-| `sk575_cuadro`      | hoisting     | C           | 122.202     | 40.482     | Tambores, discos, embragues, consola, líneas a la corona                                |
-| `sk575_izaje`       | mast         | B           | 56.704      | 40.554     | Cilindros HYCO 50162-813-13150 (camisa / etapas / vástago)                              |
-| `sk575_aparejo`     | hoisting     | C           | 37.740      | 25.630     | Aparejo-gancho, 8 líneas, amelas, elevador                                              |
-| `sk575_bop`         | well-control | C           | 106.556     | 64.924     | Carretel + doble ram + anular + KL/CL (diámetro en conflicto)                           |
-| `sk575_llave`       | workfloor    | C           | 4.636       | 4.132      | Llave hidráulica                                                                        |
-| `sk575_piso`        | workfloor    | B           | 21.064      | 15.870     | Piso pulling, subestructura, escaleras                                                  |
-| `sk575_planchada`   | auxiliary    | C           | 89.964      | 27.792     | Planchada, rampa, caballetes, línea HP                                                  |
-| `sk575_tiros`       | auxiliary    | C           | 2.296       | 712        | Tiros de tubing (ilustrativo)                                                           |
-| `sk575_vientos`     | anchoring    | C           | 23.908      | 5.432      | Vientos, anclajes, pirosalva (extremos en el meta.json)                                 |
-| `sk575_pozo_vecino` | well-control | C           | 13.680      | 12.272     | Árbol de navidad vecino (ilustrativo)                                                   |
-| `sk575_piletas`     | circulation  | C           | 46.228      | 20.890     | 3 piletas + trip tank                                                                   |
-| `sk575_manifold`    | well-control | C           | 152.392     | 68.068     | Manifold M1–M12 + líneas                                                                |
-| `sk575_bomba`       | circulation  | C           | 11.290      | 8.906      | Bomba triplex                                                                           |
-| `sk575_acumulador`  | well-control | C           | 37.772      | 32.006     | Acumulador BOP                                                                          |
+| componentId         | Familia      | Conf. geom. | Tris origen | Publicados | Qué es                                                                                                                      |
+| ------------------- | ------------ | ----------- | ----------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `sk575_mastil`      | mast         | C           | 46.876      | 27.590     | Mástil inclinado 3,5°, corona centrada (pozo a 76" del pie, C6); sub-nodo `sk575_enganche` (piso 68', origen en la bisagra) |
+| `sk575_carrier`     | carrier      | C           | 268.082     | 121.008    | Bastidor 40 ft, 5 ejes, tanques, gatos, T-sill; sub-nodos `sk575_cabina`, `sk575_motor`                                     |
+| `sk575_cuadro`      | hoisting     | C           | 122.202     | 40.482     | Tambores, discos, embragues, consola, líneas a la corona                                                                    |
+| `sk575_izaje`       | mast         | B           | 56.704      | 40.554     | Cilindros HYCO 50162-813-13150 (camisa / etapas / vástago)                                                                  |
+| `sk575_aparejo`     | hoisting     | C           | 37.740      | 25.630     | Aparejo-gancho, 8 líneas, amelas, elevador                                                                                  |
+| `sk575_bop`         | well-control | C           | 106.556     | 64.924     | Carretel + doble ram + anular + KL/CL (diámetro en conflicto)                                                               |
+| `sk575_llave`       | workfloor    | C           | 4.636       | 4.132      | Llave hidráulica                                                                                                            |
+| `sk575_piso`        | workfloor    | B           | 21.064      | 15.870     | Piso pulling, subestructura, escaleras                                                                                      |
+| `sk575_planchada`   | auxiliary    | C           | 89.964      | 27.792     | Planchada, rampa, caballetes, línea HP                                                                                      |
+| `sk575_tiros`       | auxiliary    | C           | 2.296       | 712        | Tiros de tubing (ilustrativo)                                                                                               |
+| `sk575_vientos`     | anchoring    | C           | 23.908      | 5.432      | Vientos, anclajes, pirosalva (extremos en el meta.json)                                                                     |
+| `sk575_pozo_vecino` | well-control | C           | 13.680      | 12.272     | Árbol de navidad vecino (ilustrativo)                                                                                       |
+| `sk575_piletas`     | circulation  | C           | 46.228      | 20.890     | 3 piletas + trip tank                                                                                                       |
+| `sk575_manifold`    | well-control | C           | 152.392     | 68.068     | Manifold M1–M12 + líneas                                                                                                    |
+| `sk575_bomba`       | circulation  | C           | 11.290      | 8.906      | Bomba triplex                                                                                                               |
+| `sk575_acumulador`  | well-control | C           | 103.838     | 86.010     | Acumulador BOP: 5 botellones, 6 selectoras, reguladoras, bombas (ref. CPC 4650, sub-nodos `sk575_acum_*`)                   |
 
-Total 1.041.438 tris de origen → **516.682 publicados** + 111.158 segmentos de aristas (presupuesto nativo < 1,5 M tris,
+Total 1.107.460 tris de origen → **572.378 publicados** + 143.609 segmentos de aristas (presupuesto nativo < 1,5 M tris,
 < 300 draw calls). Antes de la partición y las aristas: 1.085.884 → 505.828 (el error de simplify es relativo a cada
 malla: los sub-nodos simplifican menos).
 

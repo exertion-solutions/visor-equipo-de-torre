@@ -24,4 +24,18 @@ Uso de cada fuente y confianza: [`docs/pdf-review/informe-sk575-2026-10-09.md`](
 | `src-esquema-ahogo`  | Esquemas manifold de ahogo M1–M12 y conjunto BOP/válvulas                                 | 2026-10-09               | Imágenes provistas por el usuario; documento de origen sin identificar                                                                                            |
 | `src-manual-bop-11`  | Manuales BOP RAM / ANNULAR 11" 5000 PSI (Xinde 2FZ28-35II / FH28-35I) — aplicabilidad no confirmada | —              | `C:\Users\jcastro\cad\BOP RAM  Operation Manual 11''5000PSI.pdf`; `BOP ANNULAR Operational Manual 11''5000PSI.pdf`                                               |
 
+| `src-ref-rigmfg-4650` | Manual O&M unidad de cierre CPC (Consolidated Pressure Control) S/N 4650, 6 estaciones, API 16D, para Applied Machinery — **referencia genérica, no es el acumulador del TKR-10** (`verified: false`) | Design Book Rev 1 - 010211; fabricada 07/2011 | Web: `http://rigmanufacturing.com/drillog/Closing%20Unit/Closing%20Unit%204650%20O&M%20Manual%20Part1.pdf` (Part 1, 127 p; la tabla "Bottle Dimensions" p138 está en el Part 2, no relevado) |
+
+**Acumulador (`sk575_acumulador`).** Del folleto (`src-folleto`) y del layout (`src-layout-ws10`) salen solo la huella
+8 × 2,4 m, los 5 botellones y los 3.000 psi; no se cambian. Botellón, selectoras, reguladoras, manómetros, bombas y
+depósito se dibujaron según `src-ref-rigmfg-4650` (confianza C): botellón de vejiga 11 gal 3.000 psi (p33), Ø 0,236 ×
+1,30 m **derivado** del volumen y de la relación largo/Ø medida en el plano sin cotas p17; selectoras 1" de 4 vías rotativas
+(p34); alivio 3/4" a 3.300 psi (p33); manómetros de 6" (p34). Con el folleto no hay valores en choque: 3.000 psi coincide y la
+unidad de referencia tiene 24 botellones porque es otra unidad (perforación, 6 estaciones), no un dato del TKR-10.
+**Fuente en conflicto (interna del manual de referencia):** depósito 350 gal (p33) / 450 gal (p10) / "Storage 310" (p12);
+triplex 12,5 gpm (p34) / 14 gpm (p7). No se usan para dimensionar. Fotos y tabla FKDQ de CAMTOP
+(`https://www.camtop-oilfieldtools.com/product/bop-drilling-accumulator-units/`, p. ej. FKDQ125-3: 5 × 25 L, 21 MPa) solo
+como referencia visual de proporciones (palancas con sector indicador, motor con guarda de correa); ningún valor del modelo
+sale de ahí.
+
 Los "—" en revisión: el documento no la indica o no se registró en el relevamiento (pendiente de completar).

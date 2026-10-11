@@ -1,4 +1,4 @@
-# PENDIENTES — rama `feat/tkr10-datos-reales-sk575`
+# PENDIENTES — TACKER 10 / SK-575
 
 Objetivo: incorporar al proyecto los datos reales del TACKER 10 relevados el 2026-10-09 (Service King SK-575, placa API del
 mástil, planos TACKER, manual SK 575, inspecciones) y el modelo CAD completo, sin romper el V2 ni la trazabilidad.
@@ -24,14 +24,17 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
        (https://exertion-solutions.github.io/visor-equipo-de-torre/legacy/TACKER10_Digital_Rig_V2.html, botón
        "Modelo SK-575" carga los 16 componentes, consola sin errores).
 
-## Estado (checkpoint)
+## Estado (checkpoint 2026-10-11)
 
-- Hecho (código): fases 1–4. Modelo canónico `cad/sk575/modelo.py` (reemplaza `~/cad/tacker10/tacker10.py`), 16 GLB
-  `sk575_*`, escena nativa, Capa CAD V2, aristas nativas. Skills del proyecto y `FEATURE_PARITY.md` actualizados con las
-  lecciones de `equipo-3d` (aristas 28°, trampa `palette`).
-- 2026-10-09: V2 muestra el modelo SK-575 igual que `~/cad/tacker10/tacker10.html` (capturas en `.tmp/cmp/sk*.png`).
-  Tests legacy 105/105, unit 136/136 (+ timeouts de workers conocidos).
-- Falta: modo noche en el V2; revisar el nativo R3F con los GLB nuevos; sincronizar la copia de OneDrive (sin definir cuál).
+- Rama `feat/sk575-acumulador`: acumulador del BOP (ref. CPC 4650, C); pozo a 76" del **pie/bisagra** del mástil (C6,
+  decisión del usuario) → corona centrada y poleas a plomo del pozo; C11 HYCO (manda el plano del equipo); piso de enganche
+  abisagrado y plegado en transporte/izado (ilustrativo). Verificado: legacy 115/115, unit 137/137 (+ timeouts de workers
+  conocidos), e2e V2 20/20.
+- Falta:
+  - **Choque piso de trabajo ↔ patas del mástil** (≈ 0,26 m, informe §4.1): relevar en el equipo el ancho real del mástil en
+    la base o cómo abraza el piso las patas.
+  - Izamiento V2 gira en el pivote procedural (−2,2; 2,0), no en la bisagra SK (≈ −1,93; 1,22): regenerar `cad/izamiento.py` (C10).
+  - Modo noche en el V2; revisar el nativo R3F con los GLB nuevos; sincronizar la copia de OneDrive (sin definir cuál).
 
 ## Próximo comando
 

@@ -2,7 +2,7 @@
   "id": "sk575_bop",
   "confianza": "C",
   "alcance": "Stack BOP (carretel + doble ram + anular) con válvulas KL/CL; diámetro en conflicto",
-  "triangulos": 106556,
+  "triangulos": 106560,
   "materiales": [
     "acero",
     "acero_oscuro",
@@ -25,8 +25,8 @@
   "publicado": {
     "archivo": "public/models/tacker10/sk575_bop.glb",
     "optimize": "npm run gltf:optimize -- sk575_bop.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 106556,
-    "triangulos_publicados": 64924,
+    "triangulos_origen": 106560,
+    "triangulos_publicados": 64642,
     "segmentos_aristas": 15094,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

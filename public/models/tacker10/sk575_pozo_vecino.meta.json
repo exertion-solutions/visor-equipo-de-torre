@@ -23,7 +23,7 @@
     "archivo": "public/models/tacker10/sk575_pozo_vecino.glb",
     "optimize": "npm run gltf:optimize -- sk575_pozo_vecino.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 13680,
-    "triangulos_publicados": 12272,
+    "triangulos_publicados": 12252,
     "segmentos_aristas": 756,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

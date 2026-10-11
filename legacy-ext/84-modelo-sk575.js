@@ -392,10 +392,13 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     const rel = () => new M4().copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld)
     const base = rel().invert().multiply(n.matrix) // pose armada de n respecto del tramo
     const m = new M4()
+    // plegado sobre la bisagra (origen del nodo, eje lateral Z del glTF): lo calcula 81 (`plegado()`, ilustrativo)
+    const giro = new M4()
     n.matrixAutoUpdate = false
     const previo = R.scene.onBeforeRender
     R.scene.onBeforeRender = function (...a) {
-      m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base)
+      giro.makeRotationZ(window.__tackerErect?.plegado?.() || 0)
+      m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base).multiply(giro)
       // tolerancia: el producto con la inversa no repite bits y 80-perf rehace la sombra ante cualquier cambio
       if (m.elements.some((v, i) => Math.abs(v - n.matrix.elements[i]) > 1e-7)) {
         n.matrix.copy(m)

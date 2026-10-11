@@ -70,7 +70,7 @@ window.__rigExt.onPost(() => {
       add: ['mastil', 'aparejo', 'enganche', 'vientos'],
       geo: true,
       texto:
-        'Aparece el mástil con aparejo, piso del enganchador y vientos. Izamiento (secuencia indicada por el usuario): pistón de izaje del 1.er tramo de 0 a 90°, el 2.º pistón extiende el tramo embutido y se tensan los vientos. Usá el control de abajo; plomo y verificación estructural no se representan.',
+        'Aparece el mástil con aparejo, piso del enganchador y vientos. Izamiento (secuencia indicada por el usuario): pistón de izaje del 1.er tramo de 0 a 90°, el 2.º pistón extiende el tramo embutido y se tensan los vientos. El piso del enganchador viaja rebatido contra el mástil y se despliega al telescopar el 2.º tramo (al final queda horizontal; movimiento ilustrativo). Usá el control de abajo; plomo y verificación estructural no se representan.',
     },
     {
       n: 7,

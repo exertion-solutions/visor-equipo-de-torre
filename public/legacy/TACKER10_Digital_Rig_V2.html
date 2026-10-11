@@ -231,7 +231,7 @@ window.__TACKER_DROPS={"schemaVersion":1,"meta":{"rigId":"TACKER-10","title":"Pu
 /* datos del izamiento del mástil (src/data/cad/izamiento.json) */
 window.__TACKER_IZAMIENTO={"version":1,"estado":"pendingValidation","unidades":"m, grados","fuente":"secuencia y cinemática: usuario + imágenes de referencia de equipos similares (otras marcas); posiciones: medidas del V2 procedural previo (retirado 2026-10-11, hoy oculto). NO recalculado sobre el SK-575","elevacion_transporte":22.1,"elevacion_final":94.24,"margen_libre":0.16,"pistones":{"fijacion_chasis":[-5,1.45],"largo_min":2.639,"largo_max":5.997,"carrera":3.358,"relacion":2.27,"largo_camisa":2.639,"tabla":[{"elevacion":22.1,"longitud":2.639},{"elevacion":25.11,"longitud":2.768},{"elevacion":28.11,"longitud":2.902},{"elevacion":31.12,"longitud":3.041},{"elevacion":34.12,"longitud":3.183},{"elevacion":37.13,"longitud":3.329},{"elevacion":40.13,"longitud":3.476},{"elevacion":43.14,"longitud":3.624},{"elevacion":46.15,"longitud":3.773},{"elevacion":49.15,"longitud":3.923},{"elevacion":52.16,"longitud":4.073},{"elevacion":55.16,"longitud":4.222},{"elevacion":58.17,"longitud":4.37},{"elevacion":61.17,"longitud":4.517},{"elevacion":64.18,"longitud":4.663},{"elevacion":67.19,"longitud":4.807},{"elevacion":70.19,"longitud":4.95},{"elevacion":73.2,"longitud":5.09},{"elevacion":76.2,"longitud":5.228},{"elevacion":79.21,"longitud":5.363},{"elevacion":82.21,"longitud":5.496},{"elevacion":85.22,"longitud":5.626},{"elevacion":88.23,"longitud":5.753},{"elevacion":91.23,"longitud":5.877},{"elevacion":94.24,"longitud":5.997}]},"soporte_traslado":{"x":-14.49,"y0":3.28,"y1":6.13,"alto":2.85,"valido":true},"notas":["0° (mástil horizontal) no es posible en el V2: el motor y el malacate quedan bajo el mástil acostado; se parte del ángulo mínimo que libra el equipo","el pistón del 2.º tramo es interno al mástil y sus medidas son ilustrativas","cinemática calculada sobre el V2 procedural previo (carrier, cabina y mástil hoy ocultos): no coincide con la geometría SK-575 ni con el cilindro HYCO documentado (1,52–4,86 m). Regenerar cad/izamiento.py contra el SK-575 (pendiente)"],"conflicts":[{"sourceId":"src-plano-hyco","value":{"largo_min":1.524,"largo_max":4.864,"carrera":3.34},"unidades":"m","note":"Cilindro HYCO 50162-813-13150: 60\" cerrado, 191,5\" extendido, carrera 131,5\" (A, src/data/rigs/tacker10.ts sk575_izaje). Los largos de esta cinemática (2,639–5,997 m) salen del V2 procedural y no coinciden: Fuente en conflicto, no se elige en silencio"}]};
 /* cilindros y vientos SK-575 (public/models/tacker10/sk575_{izaje,vientos}.meta.json) */
-window.__TACKER_SK575_META={"izaje":[{"id":"cil1","nodos":{"camisa":"sk575_izaje_cil1_camisa","etapas":["sk575_izaje_cil1_etapa1","sk575_izaje_cil1_etapa2","sk575_izaje_cil1_vastago"]},"pivote_carrier":[-5.9746,2.3582,0.6],"empuje_mastil":[-3.3325,6.4422,0.6],"eje_unitario":[0.543181,0.839616,0],"largo_modelado_m":4.8641,"largo_cerrado_m":1.524,"largo_extendido_m":4.8641,"carrera_m":3.3401,"carrera_etapas_m":[1.08763,1.11938,1.13335],"nota_carreras":"las 3 carreras del plano suman 131,51\" contra 131,5\" de carrera total (redondeo del plano)","fuente_largos":"src-plano-hyco","confianza_largos":"A","confianza_pivotes":"C (coordenadas de montaje de los cilindros no documentadas: informe §5; perno superior y dirección estimados por foto)"},{"id":"cil2","nodos":{"camisa":"sk575_izaje_cil2_camisa","etapas":["sk575_izaje_cil2_etapa1","sk575_izaje_cil2_etapa2","sk575_izaje_cil2_vastago"]},"pivote_carrier":[-5.9746,2.3582,-0.6],"empuje_mastil":[-3.3325,6.4422,-0.6],"eje_unitario":[0.543181,0.839616,0],"largo_modelado_m":4.8641,"largo_cerrado_m":1.524,"largo_extendido_m":4.8641,"carrera_m":3.3401,"carrera_etapas_m":[1.08763,1.11938,1.13335],"nota_carreras":"las 3 carreras del plano suman 131,51\" contra 131,5\" de carrera total (redondeo del plano)","fuente_largos":"src-plano-hyco","confianza_largos":"A","confianza_pivotes":"C (coordenadas de montaje de los cilindros no documentadas: informe §5; perno superior y dirección estimados por foto)"}],"vientos":[{"id":"A_carrier_+z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-1.6329,29.4814,0.56],"extremo_tierra":[-27.4,1.05,26.8]},{"id":"B_carrier_+z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-2.3637,19.0065,0.65],"extremo_tierra":[-27.4,1.05,26.8]},{"id":"A_carrier_-z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-1.6329,29.4814,-0.56],"extremo_tierra":[-27.4,1.05,-26.8]},{"id":"B_carrier_-z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-2.3637,19.0065,-0.65],"extremo_tierra":[-27.4,1.05,-26.8]},{"id":"A_v_+z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-0.5149,29.4131,0.56],"extremo_tierra":[24.4,1.05,26.8]},{"id":"B_v_+z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-1.0661,18.9272,0.65],"extremo_tierra":[24.4,1.05,26.8]},{"id":"A_v_-z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-0.5149,29.4131,-0.56],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"B_v_-z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-1.0661,18.9272,-0.65],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"plataforma_+z","tipo":"viento de plataforma","diametro_in":0.5625,"extremo_mastil":[0.9646,20.5151,1.2],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"interno_+z","tipo":"viento interno corona → apoyo del carrier","diametro_in":1,"extremo_mastil":[-0.9441,31.6426,0.9],"extremo_carrier":[-14.3668,3.0734,0.9]},{"id":"plataforma_-z","tipo":"viento de plataforma","diametro_in":0.5625,"extremo_mastil":[0.9646,20.5151,-1.2],"extremo_tierra":[24.4,1.05,26.8]},{"id":"interno_-z","tipo":"viento interno corona → apoyo del carrier","diametro_in":1,"extremo_mastil":[-0.9441,31.6426,-0.9],"extremo_carrier":[-14.3668,3.0734,-0.9]},{"id":"pirosalva","tipo":"línea de escape (pirosalva) desde el piso de enganche","diametro_in":1.125,"extremo_mastil":[1.0269,21.5332,-1.2],"extremo_tierra":[25.8529,0.5,-19.8195]}]};
+window.__TACKER_SK575_META={"izaje":[{"id":"cil1","nodos":{"camisa":"sk575_izaje_cil1_camisa","etapas":["sk575_izaje_cil1_etapa1","sk575_izaje_cil1_etapa2","sk575_izaje_cil1_vastago"]},"pivote_carrier":[-5.1046,2.3582,0.6],"empuje_mastil":[-2.4625,6.4422,0.6],"eje_unitario":[0.543181,0.839616,0],"largo_modelado_m":4.8641,"largo_cerrado_m":1.524,"largo_extendido_m":4.8641,"carrera_m":3.3401,"carrera_etapas_m":[1.08763,1.11938,1.13335],"nota_carreras":"las 3 carreras del plano suman 131,51\" contra 131,5\" de carrera total (redondeo del plano)","fuente_largos":"src-plano-hyco","confianza_largos":"A","confianza_pivotes":"C (coordenadas de montaje de los cilindros no documentadas: informe §5; perno superior y dirección estimados por foto)"},{"id":"cil2","nodos":{"camisa":"sk575_izaje_cil2_camisa","etapas":["sk575_izaje_cil2_etapa1","sk575_izaje_cil2_etapa2","sk575_izaje_cil2_vastago"]},"pivote_carrier":[-5.1046,2.3582,-0.6],"empuje_mastil":[-2.4625,6.4422,-0.6],"eje_unitario":[0.543181,0.839616,0],"largo_modelado_m":4.8641,"largo_cerrado_m":1.524,"largo_extendido_m":4.8641,"carrera_m":3.3401,"carrera_etapas_m":[1.08763,1.11938,1.13335],"nota_carreras":"las 3 carreras del plano suman 131,51\" contra 131,5\" de carrera total (redondeo del plano)","fuente_largos":"src-plano-hyco","confianza_largos":"A","confianza_pivotes":"C (coordenadas de montaje de los cilindros no documentadas: informe §5; perno superior y dirección estimados por foto)"}],"vientos":[{"id":"A_carrier_+z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-0.7629,29.4814,0.56],"extremo_tierra":[-27.4,1.05,26.8]},{"id":"B_carrier_+z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-1.4937,19.0065,0.65],"extremo_tierra":[-27.4,1.05,26.8]},{"id":"A_carrier_-z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[-0.7629,29.4814,-0.56],"extremo_tierra":[-27.4,1.05,-26.8]},{"id":"B_carrier_-z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-1.4937,19.0065,-0.65],"extremo_tierra":[-27.4,1.05,-26.8]},{"id":"A_v_+z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[0.3551,29.4131,0.56],"extremo_tierra":[24.4,1.05,26.8]},{"id":"B_v_+z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-0.1961,18.9272,0.65],"extremo_tierra":[24.4,1.05,26.8]},{"id":"A_v_-z","tipo":"viento A","diametro_in":0.75,"extremo_mastil":[0.3551,29.4131,-0.56],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"B_v_-z","tipo":"viento B","diametro_in":0.625,"extremo_mastil":[-0.1961,18.9272,-0.65],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"plataforma_+z","tipo":"viento de plataforma","diametro_in":0.5625,"extremo_mastil":[1.8346,20.5151,1.2],"extremo_tierra":[24.4,1.05,-26.8]},{"id":"interno_+z","tipo":"viento interno corona → apoyo del carrier","diametro_in":1,"extremo_mastil":[-0.9441,31.6958,0.9],"extremo_carrier":[-13.4968,3.0734,0.9]},{"id":"plataforma_-z","tipo":"viento de plataforma","diametro_in":0.5625,"extremo_mastil":[1.8346,20.5151,-1.2],"extremo_tierra":[24.4,1.05,26.8]},{"id":"interno_-z","tipo":"viento interno corona → apoyo del carrier","diametro_in":1,"extremo_mastil":[-0.9441,31.6958,-0.9],"extremo_carrier":[-13.4968,3.0734,-0.9]},{"id":"pirosalva","tipo":"línea de escape (pirosalva) desde el piso de enganche","diametro_in":1.125,"extremo_mastil":[1.8969,21.5332,-1.2],"extremo_tierra":[26.7229,0.5,-19.8195]}]};
 /* meshoptimizer (MIT, three/examples/jsm/libs/meshopt_decoder.module.js) */
 (()=>{// This file is part of meshoptimizer library and is distributed under the terms of MIT License.
 // Copyright (C) 2016-2026, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
@@ -8315,7 +8315,7 @@ window.__rigExt.onPost(() => {
       add: ['mastil', 'aparejo', 'enganche', 'vientos'],
       geo: true,
       texto:
-        'Aparece el mástil con aparejo, piso del enganchador y vientos. Izamiento (secuencia indicada por el usuario): pistón de izaje del 1.er tramo de 0 a 90°, el 2.º pistón extiende el tramo embutido y se tensan los vientos. Usá el control de abajo; plomo y verificación estructural no se representan.',
+        'Aparece el mástil con aparejo, piso del enganchador y vientos. Izamiento (secuencia indicada por el usuario): pistón de izaje del 1.er tramo de 0 a 90°, el 2.º pistón extiende el tramo embutido y se tensan los vientos. El piso del enganchador viaja rebatido contra el mástil y se despliega al telescopar el 2.º tramo (al final queda horizontal; movimiento ilustrativo). Usá el control de abajo; plomo y verificación estructural no se representan.',
     },
     {
       n: 7,
@@ -8879,7 +8879,9 @@ window.__rigExt.onPost((R) => {
  * QUÉ MUEVE: rota `mastil_pivote` alrededor del pivote de la base (la pose final es la del V2, con su leve inclinación), desliza el
  * tramo superior (reticulado, corona y luminarias del 2.º tramo) a lo largo del eje, anima los cilindros de izaje del SK-575
  * (camisa, 2 etapas y vástago; regla de `sk575_izaje.meta.json`), tiende los vientos entre los extremos de `sk575_vientos.meta.json`
- * y oculta lo que todavía no está montado (aparejo, piso del enganchador, vientos). En 100 % el visor queda exactamente como antes
+ * y oculta lo que todavía no está montado (aparejo, vientos). El piso de enganche (sub-nodo `sk575_enganche`, origen en su bisagra)
+ * viaja rebatido contra el mástil y, cuando el 2.º tramo lo saca por encima del 1.º, baja a horizontal con un pequeño sobrepaso
+ * amortiguado (`plegado()`, lo aplica 84 sobre la bisagra; ilustrativo, no es cálculo). En 100 % el visor queda exactamente como antes
  * y la pose dinámica empalma con la final (sin saltos). NO es una simulación: no hay cargas, presiones, velocidades ni tiempos
  * reales. Largos del cilindro HYCO: plano (A, src-plano-hyco); pivotes de montaje: C (no documentados); pistón interno del 2.º
  * tramo y ángulo de transporte: ilustrativos (V2 procedural previo).
@@ -8887,7 +8889,8 @@ window.__rigExt.onPost((R) => {
  * Limitación conocida: el cable del malacate hacia la corona está fusionado con el acero del malacate: se oculta (con el resto del acero
  * del malacate) mientras dura el izamiento y reaparece al montar la corona.
  *
- * API: `window.__tackerErect = { set(p), play(), pause(), progress(), fases }` con p en [0, 1]. La UI aparece en el paso 6.
+ * API: `window.__tackerErect = { set(p), play(), pause(), progress(), fases, largos(), plegado() }` con p en [0, 1];
+ * `plegado()` = giro del piso de enganche sobre su bisagra respecto de la pose de trabajo (rad, + = rebatido hacia arriba). La UI aparece en el paso 6.
  */
 window.__rigExt.onPost((R) => {
   const T = R.three
@@ -9123,7 +9126,26 @@ window.__rigExt.onPost((R) => {
       c.line.geometry.attributes.position.needsUpdate = true
     }
   }
-  const tardios = [G.aparejo, G.enganche].filter(Boolean)
+  const tardios = [G.aparejo].filter(Boolean)
+
+  // ───────── piso de enganche: rebatido contra el mástil hasta que el 2.º tramo lo saca por encima del 1.º ─────────
+  // Plegado = paralelo al eje del mástil (90° − 3,5°: el piso SK está nivelado con el mástil inclinado). Se libera cuando su bisagra
+  // (68' = 20,629 m) pasa el tope del 1.er tramo (16,4 m, cad/sk575/modelo.py) con el tramo embutido E; baja "por inercia" (caída
+  // acelerada) y en la fase 3 oscila amortiguado hasta quedar horizontal. Ilustrativo: sin dinámica, masas ni tiempos reales.
+  const PLEGADO = Math.PI / 2 - (3.5 * Math.PI) / 180
+  const EXT_LIBRE = 1 - (20.629 - 16.4) / E
+  const SOBREPASO = (8 * Math.PI) / 180
+  let plegado = 0
+  function plegadoEn(pp, ext) {
+    if (pp >= 1) return 0
+    if (pp < PHASE.extendEnd) {
+      if (ext <= EXT_LIBRE) return PLEGADO
+      const u = (ext - EXT_LIBRE) / (1 - EXT_LIBRE)
+      return PLEGADO * (1 - u * u)
+    }
+    const w = (pp - PHASE.extendEnd) / (1 - PHASE.extendEnd)
+    return -SOBREPASO * Math.exp(-4 * w) * Math.sin(3 * Math.PI * w)
+  }
 
   let p = 1
   let raf = 0
@@ -9159,6 +9181,7 @@ window.__rigExt.onPost((R) => {
     P.rotation.z = -theta
     sup.position.y = completo ? 0 : -E * (1 - ext)
     if (conducto) conducto.visible = completo || p >= PHASE.extendEnd
+    plegado = plegadoEn(p, ext)
     for (const g of tardios) g.visible = completo || p >= PHASE.extendEnd
     const vientosTendidos = p >= PHASE.extendEnd
     gVientos.visible = vientosTendidos && !completo
@@ -9244,7 +9267,7 @@ window.__rigExt.onPost((R) => {
       <input type="range" id="er-range" min="0" max="100" step="1" value="100" aria-label="Avance del izamiento (100 = montado)">
     </div>
     <div id="er-fase" aria-live="polite"></div>
-    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Ilustrativo: sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
+    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Piso de enganche: viaja rebatido contra el mástil y baja a horizontal cuando el 2.º tramo lo saca por encima del 1.º (bisagra y movimiento ilustrativos, no documentados). Ilustrativo: la animación no es cálculo ni simulación dinámica; sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
   // Vive dentro del menú "Montaje" de la barra, debajo de la secuencia (sin paneles flotantes).
   if (window.__rigToolbar) window.__rigToolbar.add('montaje', box)
   else document.body.appendChild(box)
@@ -9291,6 +9314,7 @@ window.__rigExt.onPost((R) => {
     progress: () => p,
     fases: PHASE,
     largos: () => [...largos],
+    plegado: () => plegado,
   }
 })
 
@@ -9931,10 +9955,13 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     const rel = () => new M4().copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld)
     const base = rel().invert().multiply(n.matrix) // pose armada de n respecto del tramo
     const m = new M4()
+    // plegado sobre la bisagra (origen del nodo, eje lateral Z del glTF): lo calcula 81 (`plegado()`, ilustrativo)
+    const giro = new M4()
     n.matrixAutoUpdate = false
     const previo = R.scene.onBeforeRender
     R.scene.onBeforeRender = function (...a) {
-      m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base)
+      giro.makeRotationZ(window.__tackerErect?.plegado?.() || 0)
+      m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base).multiply(giro)
       // tolerancia: el producto con la inversa no repite bits y 80-perf rehace la sombra ante cualquier cambio
       if (m.elements.some((v, i) => Math.abs(v - n.matrix.elements[i]) > 1e-7)) {
         n.matrix.copy(m)

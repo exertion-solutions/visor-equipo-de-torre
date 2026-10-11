@@ -22,7 +22,7 @@
     "archivo": "public/models/tacker10/sk575_tiros.glb",
     "optimize": "npm run gltf:optimize -- sk575_tiros.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 2296,
-    "triangulos_publicados": 712,
+    "triangulos_publicados": 708,
     "segmentos_aristas": 1176,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

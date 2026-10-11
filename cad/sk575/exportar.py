@@ -36,7 +36,7 @@ TOL_DEF = (0.006, 0.3)
 
 # Qué representa cada componente y con qué confianza de geometría (A/B/C). Detalle de cotas y fuentes en el informe.
 INFO = {
-    "sk575_mastil": ("C", "Mástil SK 104-330 inclinado 3,5°, corona en voladizo, piso de enganche a 68'"),
+    "sk575_mastil": ("C", "Mástil SK 104-330 inclinado 3,5°, corona centrada sobre el reticulado (pozo a 76\" del pie, C6), piso de enganche a 68'"),
     "sk575_carrier": ("C", "Carrier SK-575: bastidor 40 ft, 5 ejes, cabina, motor, tanques, gatos y T-sill"),
     "sk575_cuadro": ("C", "Cuadro de maniobras DWA575-01: tambores 42×12 y 42×8, discos, embragues, consola"),
     "sk575_izaje": ("B", "Cilindros de izaje HYCO 50162-813-13150 (3 etapas, 60\" → 191,5\")"),
@@ -51,7 +51,9 @@ INFO = {
     "sk575_piletas": ("C", "Piletas de circulación, preparación y ensayo + trip tank"),
     "sk575_manifold": ("C", "Manifold de ahogo M1–M12 y líneas de choke/ahogo"),
     "sk575_bomba": ("C", "Bomba triplex sobre patín"),
-    "sk575_acumulador": ("C", "Acumulador del BOP"),
+    "sk575_acumulador": ("C", "Acumulador del BOP: huella 8 × 2,4 m (layout WS10), 5 botellones 3.000 psi (folleto); botellones, "
+                             "válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 "
+                             "(src-ref-rigmfg-4650, genérica: no es el equipo instalado)"),
 }
 
 
@@ -79,7 +81,8 @@ def verificar(g, spec):
         ("inclinación del mástil (placa API)", g["LEAN"], s["mast"]["leanDeg"], 1e-9),
         ("base del mástil 4'-0\"", g["ZB"], s["mast"]["baseHeightM"], 0.001),
         ("piso de enganche 68'", g["ZM"], s["mast"]["rackingBoardM"], 0.002),
-        ("pozo a 76\" del pie delantero", g["WXP"] - (g["MX"] + 0.87), s["mast"]["wellFromFrontLegM"], 1e-6),
+        ("pozo a 76\" del pie del mástil (eje de la bisagra MX, C6)", g["WXP"] - g["MX"], s["mast"]["wellFromFrontLegM"], 1e-6),
+        ("corona centrada sobre el reticulado |MC - MX| (< 0,15 m)", abs(g["MC"] - g["MX"]), 0.0, 0.15),
         ("altura del piso de trabajo", g["ZP"], s["workFloor"]["heightM"], 1e-9),
         ("largo del piso", g["X1"] - g["X0"], s["workFloor"]["sizeM"][0], 1e-9),
         ("ancho del piso con laterales", 2 * g["YL"], s["workFloor"]["sizeM"][1], 1e-9),
@@ -138,7 +141,8 @@ def gl(p, wxp):
     return [round(p[0] - wxp, 4), round(p[2], 4), round(-p[1], 4)]
 
 
-def malla(shapes, mat, o):
+def malla(shapes, mat, o, wxp):
+    """Vértices en el marco del nodo: CAD → glTF del pozo (x − WXP, z, −y) menos el origen `o` del nodo (ya en ese marco)."""
     tol, ang = TOL.get(mat, TOL_DEF)
     V, F = [], []
     for sh in shapes:
@@ -146,7 +150,7 @@ def malla(shapes, mat, o):
             assert so.is_valid, "sólido inválido en %s" % mat
             vs, ts = so.tessellate(tol, ang)
             base = len(V)
-            V += [(v.X - o[0], v.Z - o[1], -v.Y - o[2]) for v in vs]
+            V += [(v.X - wxp - o[0], v.Z - o[1], -v.Y - o[2]) for v in vs]
             F += [(base + a, base + b, base + c) for a, b, c in ts]
     return np.array(V, dtype=float), np.array(F, dtype=np.int64)
 
@@ -178,7 +182,7 @@ def exportar(solo=None):
                 scene.graph.update(frame_to=nodo, frame_from=cid, matrix=trimesh.transformations.translation_matrix(o))
             segs, tris_nodo = [], 0
             for mat, shapes in sorted(mats.items()):
-                V, F = malla(shapes, mat, o)
+                V, F = malla(shapes, mat, o, wxp)
                 if not len(F):
                     continue
                 # process=False: sin soldar vértices entre caras B-rep → normales suaves dentro de cada cara y filo entre
@@ -230,11 +234,41 @@ def exportar(solo=None):
 SUBNODOS = {
     "sk575_cabina": "Cabina de manejo (one-man cab), vidrios, espejo, escalones y luces de techo (geometría C)",
     "sk575_motor": "Motor Detroit S60 bajo capot, radiador, filtro de aire, escape, transmisión Allison y cardán (C)",
-    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; va con el 2.º "
+    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; origen = bisagra del borde "
+                      "interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º "
                       "tramo del mástil (geometría C)",
     "sk575_izaje_orejas_carrier": "Pedestales de los cilindros en el carrier (fijos)",
     "sk575_izaje_orejas_mastil": "Orejas de los cilindros en el mástil (giran con el mástil)",
 }
+_REF = " — referencia CPC S/N 4650 (src-ref-rigmfg-4650), genérica, C"
+SUBNODOS.update({
+    "sk575_acum_rack": "Bastidor de botellones: parantes C, travesaños L, abrazaderas de banda y cabezal" + _REF,
+    "sk575_acum_manifold": "Manifold de botellones 4\" de 6 bocas 5.000 psi, aislación esférica 1\", manómetro de banco con "
+                           "aislación y purga aguja, alivio 3/4\" a 3.300 psi (p33 §2.2-2.4)" + _REF,
+    "sk575_acum_deposito": "Depósito con boca de llenado 4\", tapa de inspección, visor de nivel y purga (p33 §2.1, p98); "
+                           "medidas C" + _REF,
+    "sk575_acum_bloque_valvulas": "Bloque de válvulas, filtro en T 1\" y panel de 3 manómetros de 6\" (p34 §3.0 F, H)" + _REF,
+    "sk575_acum_reguladora_anular": "Reguladora anular serie 3100 1\" con motor neumático y manija en T (p33 §3.0 A, p94 K)" + _REF,
+    "sk575_acum_reguladora_manifold": "Reguladora del manifold serie 2100 1\" con volante, salida 1.500 psi (p33 §3.0 B)" + _REF,
+    "sk575_acum_valvula_3vias_bypass": "Selectora 1\" de 3 vías del by-pass LP/HP (p34 §3.0 E, p95 P)" + _REF,
+    "sk575_acum_succion_descarga": "Succión de bombas: esclusa 1-1/2\" y filtro en Y (triplex), colector con válvula de línea, "
+                                   "by-pass, aislación y filtro en Y por neumática; retenciones 5.000 psi y colector de "
+                                   "descarga (p35 §4.5-4.6, §5.3; p94 A-C; p95 W, AB)" + _REF,
+    "sk575_acum_electrico": "Arrancador NEMA 7 con luz de marcha, caja eléctrica (PLC S7-222 y fuente PULS adentro, no "
+                            "modelados), presostatos hidroeléctrico e hidroneumático, alarma local con 3 pilotos y silencio, "
+                            "baliza, bocina XP, flotante N/C y transmisor XP (p14, p35 §4.3-4.4, p36 §8.1, p94 N, p95 S)" + _REF,
+    "sk575_acum_puertos": "Riel de conexiones 1\" NPT de las funciones y toma de aire 1-1/2\" NPT (p97)" + _REF,
+    "sk575_acum_bomba_electrica":"Bomba triplex con motor XP y guarda de correa dentada, descarga con retención (p34-35 §4)" + _REF,
+})
+for _k in range(1, 6):
+    SUBNODOS["sk575_acum_botellon_%d" % _k] = ("Botellón %d: vejiga 11 gal 3.000 psi, carga superior, válvula de gas con protector, "
+                                                "purga individual (p23, p33, p98); Ø 0,236 × 1,30 m derivado de 11 gal + plano p17. "
+                                                "Cantidad 5 y 3.000 psi: src-folleto" % _k + _REF)
+    SUBNODOS["sk575_acum_valvula_4vias_%d" % _k] = ("Selectora %d: 1\" 4 vías / 3 posiciones, sello de corte rotativo, 3.000 psi, "
+                                                     "con sector indicador (p34 §3.0 C-D); funciones = anular, 2 rams, HCR CL2, HCR KL2 "
+                                                     "(src-esquema-ahogo)" % _k + _REF)
+for _k in (1, 2):
+    SUBNODOS["sk575_acum_bomba_neumatica_%d" % _k] = "Bomba neumática %d 40:1 (p35 §5.1; la unidad de referencia tiene 3)" % _k + _REF
 for _k in (1, 2):
     SUBNODOS["sk575_izaje_cil%d_camisa" % _k] = "Cilindro %d: camisa, ojo del pie, puerto de extensión y manguera" % _k
     SUBNODOS["sk575_izaje_cil%d_etapa1" % _k] = "Cilindro %d: etapa Ø8,12\" (carrera 42,82\")" % _k

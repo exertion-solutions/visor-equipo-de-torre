@@ -28,7 +28,7 @@
       "tipo": "viento A",
       "diametro_in": 0.75,
       "extremo_mastil": [
-        -1.6329,
+        -0.7629,
         29.4814,
         0.56
       ],
@@ -43,7 +43,7 @@
       "tipo": "viento B",
       "diametro_in": 0.625,
       "extremo_mastil": [
-        -2.3637,
+        -1.4937,
         19.0065,
         0.65
       ],
@@ -58,7 +58,7 @@
       "tipo": "viento A",
       "diametro_in": 0.75,
       "extremo_mastil": [
-        -1.6329,
+        -0.7629,
         29.4814,
         -0.56
       ],
@@ -73,7 +73,7 @@
       "tipo": "viento B",
       "diametro_in": 0.625,
       "extremo_mastil": [
-        -2.3637,
+        -1.4937,
         19.0065,
         -0.65
       ],
@@ -88,7 +88,7 @@
       "tipo": "viento A",
       "diametro_in": 0.75,
       "extremo_mastil": [
-        -0.5149,
+        0.3551,
         29.4131,
         0.56
       ],
@@ -103,7 +103,7 @@
       "tipo": "viento B",
       "diametro_in": 0.625,
       "extremo_mastil": [
-        -1.0661,
+        -0.1961,
         18.9272,
         0.65
       ],
@@ -118,7 +118,7 @@
       "tipo": "viento A",
       "diametro_in": 0.75,
       "extremo_mastil": [
-        -0.5149,
+        0.3551,
         29.4131,
         -0.56
       ],
@@ -133,7 +133,7 @@
       "tipo": "viento B",
       "diametro_in": 0.625,
       "extremo_mastil": [
-        -1.0661,
+        -0.1961,
         18.9272,
         -0.65
       ],
@@ -148,7 +148,7 @@
       "tipo": "viento de plataforma",
       "diametro_in": 0.5625,
       "extremo_mastil": [
-        0.9646,
+        1.8346,
         20.5151,
         1.2
       ],
@@ -164,11 +164,11 @@
       "diametro_in": 1,
       "extremo_mastil": [
         -0.9441,
-        31.6426,
+        31.6958,
         0.9
       ],
       "extremo_carrier": [
-        -14.3668,
+        -13.4968,
         3.0734,
         0.9
       ]
@@ -178,7 +178,7 @@
       "tipo": "viento de plataforma",
       "diametro_in": 0.5625,
       "extremo_mastil": [
-        0.9646,
+        1.8346,
         20.5151,
         -1.2
       ],
@@ -194,11 +194,11 @@
       "diametro_in": 1,
       "extremo_mastil": [
         -0.9441,
-        31.6426,
+        31.6958,
         -0.9
       ],
       "extremo_carrier": [
-        -14.3668,
+        -13.4968,
         3.0734,
         -0.9
       ]
@@ -208,12 +208,12 @@
       "tipo": "línea de escape (pirosalva) desde el piso de enganche",
       "diametro_in": 1.125,
       "extremo_mastil": [
-        1.0269,
+        1.8969,
         21.5332,
         -1.2
       ],
       "extremo_tierra": [
-        25.8529,
+        26.7229,
         0.5,
         -19.8195
       ]
@@ -229,7 +229,7 @@
     "archivo": "public/models/tacker10/sk575_vientos.glb",
     "optimize": "npm run gltf:optimize -- sk575_vientos.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 23908,
-    "triangulos_publicados": 5432,
+    "triangulos_publicados": 5438,
     "segmentos_aristas": 882,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

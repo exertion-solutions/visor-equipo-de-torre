@@ -25,7 +25,7 @@
     "archivo": "public/models/tacker10/sk575_bomba.glb",
     "optimize": "npm run gltf:optimize -- sk575_bomba.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 11290,
-    "triangulos_publicados": 8906,
+    "triangulos_publicados": 8864,
     "segmentos_aristas": 192,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

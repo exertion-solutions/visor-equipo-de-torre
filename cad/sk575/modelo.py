@@ -106,7 +106,11 @@ comp("sk575_mastil")
 # ───────────────────────── mástil ─────────────────────────
 MX = -1.0                      # centro del mástil en X
 LEAN, ZB = 3.5, 48 * 0.0254            # placa API: 3,5° desde la vertical; base montada 4'-0" sobre el suelo
-WXP = MX + 0.87 + 76 * 0.0254   # eje del pozo: 76" del pie delantero (SK DKA104-330-08, Derrick Info 3 p5)
+# eje del pozo: 76" (1,9304 m) del PIE del mástil = eje de la bisagra/pivote MX (SK DKA104-330-08, Derrick Info 3 p5).
+# Interpretación (informe C6, 2026-10-11): medidos desde la cara delantera del reticulado (MX + 0,87) la corona quedaba en
+# voladizo ~0,9 m para llegar a plomo del pozo; con 3,5° y ~30,5 m de mástil la punta se corre ≈ 1,86 m (≈ 73"), casi
+# exactamente 76": medidos desde el pie/bisagra, la corona queda centrada sobre el reticulado y las poleas a plomo del pozo.
+WXP = MX + 76 * 0.0254
 ZP = 3.606                     # altura del piso de trabajo: 3606 [12'] (plano 8123-1002-2611)
 H_INF, H_SUP, SOLAPE = 16.4, 15.2992, 1.0
 H = H_INF + H_SUP
@@ -142,7 +146,7 @@ sup = tramo(H_INF - SOLAPE, H, 1.30, 1.10, 9, 0.06)
 for c in range(4):                                       # guías del telescópico
     add("amarillo", bar(inf[10][c], sup[0][c], 0.05, sq=True))
 
-# corona en voladizo hacia el pozo: con el mástil inclinado, el centro de poleas queda a plomo sobre WXP (CG corona 76")
+# corona centrada sobre el tope del 2.º tramo: con el mástil inclinado, el centro de poleas queda a plomo sobre WXP (≈ MX)
 MC = MX + (WXP - MX - (H + 0.75 - ZB) * sin(LEAN * pi / 180)) / cos(LEAN * pi / 180)
 add("rojo", box(MC - 0.9, MC + 0.9, -0.9, 0.9, H, H + 0.15, f=0.03))
 for sx in (-0.7, 0.7):
@@ -163,11 +167,10 @@ add("acero", Pos(MC, 0, H + 0.75) * Rot(90, 0, 0) * Cylinder(0.05, 1.3))      # 
 for y in (-0.62, 0.62):                                                          # bancadas
     add("rojo", box(MC - 0.25, MC + 0.25, y - 0.05, y + 0.05, H + 0.15, H + 0.95, f=0.02))
 
-for sy in (-0.5, 0.5):                                                         # ménsulas del voladizo
-    add("rojo", bar((MX + 0.55, sy, H - 1.6), (MC + 0.85, sy, H), 0.05, sq=True))
-    add("rojo", bar((MX + 0.55, sy, H), (MC + 0.85, sy, H), 0.06, sq=True))
 
 # piso de enganche (monkey board) del lado +X, con cartel: sub-nodo propio (va con el 2.º tramo del mástil)
+# Bisagra en el borde interior (cara del mástil), eje lateral Y: origen del nodo = bisagra (el visor lo pliega contra el mástil
+# en transporte e izado y lo baja al telescopar el 2.º tramo; ilustrativo). Se nivela con el mástil inclinado (estético, C).
 comp("sk575_mastil/sk575_enganche")
 ZM, XF = 20.629, MX + 0.68     # piso de enganche a 68' (plano 8123-1002-2611 / Engineering Report SK 2021)
 add("grating", box(XF, XF + 1.9, -1.2, 1.2, ZM, ZM + 0.08, f=0.02))
@@ -179,6 +182,9 @@ railing([(XF, -1.2, ZM + 0.08), (XF + 1.9, -1.2, ZM + 0.08), (XF + 1.9, 1.2, ZM 
 add("rojo", box(XF, XF + 2.2, -1.30, -1.25, ZM + 0.2, ZM + 1.15, f=0.01))
 txt = extrude(Text("TACKER 10", font_size=0.5, font_style=FontStyle.BOLD), amount=0.02)
 add("blanco", Pos(XF + 1.1, -1.30, ZM + 0.67) * Rot(90, 0, 0) * txt)
+for k, v in parts.items():     # contra-rotación sobre la bisagra: con el mástil a 3,5° el piso queda horizontal
+    if k[0] == "sk575_mastil/sk575_enganche":
+        v[:] = [Pos(XF, 0, ZM) * Rot(0, -LEAN, 0) * Pos(-XF, 0, -ZM) * s for s in v]
 comp("sk575_mastil")
 
 # luminarias: 5 debajo y 7 encima del piso de enganche (Libro DROPS)
@@ -202,6 +208,9 @@ def M(x, y, z):
     """Punto del mástil vertical → mástil inclinado."""
     a = LEAN * pi / 180
     return (MX + (x - MX) * cos(a) + (z - ZB) * sin(a), y, ZB - (x - MX) * sin(a) + (z - ZB) * cos(a))
+
+
+ORIGEN["sk575_enganche"] = M(XF, 0, ZM)                 # bisagra del piso de enganche (pivote del plegado)
 
 comp("sk575_carrier")
 # ───────────────────────── carrier ─────────────────────────
@@ -1043,15 +1052,575 @@ add("acero", bar((BX + 5.15, BY + 0.6, 1.15), (BX + 5.15, BY + 1.8, 1.15), 0.06)
 add("acero_oscuro", Pos(BX + 5.15, BY + 1.95, 1.15) * Sphere(0.22))           # amortiguador de pulsaciones
 
 comp("sk575_acumulador")
-# acumulador del BOP (8 × 2,4) con botellas y canasto de herramientas
-AX, AY = WXP - 24.6, -5.9
-add("acero_oscuro", box(AX, AX + 8, AY, AY + 2.4, 0, 0.2))
-for k in range(16):
-    x = AX + 0.5 + (k % 8) * 0.38
-    y = AY + 0.6 + (k // 8) * 0.4
-    add("rojo", Pos(x, y, 0.2) * fillet(Cylinder(0.14, 1.3, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.06))
-add("rojo", box(AX + 3.7, AX + 5.0, AY + 0.3, AY + 2.1, 0.2, 1.4, f=0.03))   # depósito + bombas
-add("acero_oscuro", box(AX + 3.75, AX + 4.95, AY + 0.25, AY + 0.3, 1.45, 1.9))
-for k in range(6):
-    add("acero", bar((AX + 3.85 + k * 0.18, AY + 0.25, 1.75), (AX + 3.85 + k * 0.18, AY + 0.05, 1.85), 0.012))   # palancas
-railing([(AX + 5.3, AY, 0.2), (AX + 8, AY, 0.2), (AX + 8, AY + 2.4, 0.2), (AX + 5.3, AY + 2.4, 0.2)], h=1.2, step=0.9)
+# ───────────────────────── acumulador del BOP (unidad de cierre API 16D) ─────────────────────────
+"""Acumulador del BOP sobre la huella del layout (8 × 2,4 m, src-layout-ws10) con 5 botellones a 3.000 psi (src-folleto).
+El resto es REFERENCIA GENÉRICA (confianza C, no es el equipo instalado): manual O&M de la unidad de cierre CPC S/N 4650
+(Rig Manufacturing / Consolidated Pressure Control, API 16D, 07/2011; fuente src-ref-rigmfg-4650):
+  · botellón 11 gal 3.000 psi de vejiga, carga superior, prueba 4.500 psi, precarga 1.000 psi ........ p33 §2.3, p23 §5.1.3
+  · válvula de purga individual por botellón ......................................................... p23 §5.1.3.4
+  · válvula de carga de N2 arriba con protector (se retira para cargar) .............................. p98
+  · Ø y largo del botellón: DERIVADOS de 11 gal (p7/p33) + relación largo/Ø ≈ 5,5 medida en el plano p17
+    (sin cotas; la tabla "Bottle Dimensions" p138 está en el Part 2, no relevado) → BOT_D, BOT_L (C)
+  · manifold de botellones de tubo 4" maquinado, 6 bocas, 5.000 psi; aislación esférica 1"; purga aguja 1/2" p33 §2.2
+  · válvula de alivio 3/4" tarada a 3.300 psi ........................................................ p33 §2.4
+  · selectoras 1" de 4 vías / 3 posiciones, rotativas de sello de corte, acero inoxidable, 3.000 psi .. p34 §3.0 C-D
+  · válvula de 3 vías del by-pass (presión regulada / 3.000 psi), palanca LP/HP ...................... p34 §3.0 E, p95 P
+  · reguladora anular serie 3100 1" (motor neumático + ajuste manual, manija en T) ..................... p33 §3.0 A, p94 K
+  · reguladora del manifold serie 2100 1" (manual, salida 1.500 psi) ................................. p33 §3.0 B
+  · 3 manómetros de 6" con glicerina: acumulador 0-6.000, manifold 0-6.000, anular 0-3.000 psi ........ p34 §3.0 F
+  · cañería 1" Sch 160 + filtro en T ................................................................... p34 §3.0 H
+  · bomba triplex eléctrica con correa dentada + motor XP; bombas neumáticas 40:1 ....................... p34-35 §4-5
+  · depósito de acero con bafles, boca de inspección/llenado 4" ........................................ p33 §2.1, p98
+Cantidad de selectoras = funciones del stack modelado (anular, 2 rams, HCR de choke CL2 y de ahogo KL2: src-esquema-ahogo);
+2 bombas neumáticas (la unidad 4650 tiene 3). Dimensiones de válvulas, reguladoras, bombas y depósito: proporciones de las
+fotos p94-95 y de la página CAMTOP (src-ref-rigmfg-4650 / referencia), confianza C. Ilustrativo: no es cálculo."""
+AX, AY = WXP - 24.6, -5.9                     # esquina del patín (layout WS10)
+ACUM_L, ACUM_W = 8.0, 2.4                     # huella del layout (src-layout-ws10) — NO cambiar
+N_BOT = 5                                     # botellones (src-folleto) — NO cambiar
+BOT_GAL = 11                                  # volumen nominal por botellón (ref. p33)
+BOT_LD = 5.5                                  # largo/Ø de la envolvente medido en el plano p17 (C)
+BOT_T = 0.055                                 # espesor de pared / Ø (estimado para 3.000 psi, C)
+
+
+def _vol_interno(D):
+    """Volumen interno (m3) de una envolvente cilíndrica con casquetes semiesféricos, Ø exterior D y largo BOT_LD·D."""
+    ri, Li = D / 2 * (1 - 2 * BOT_T), BOT_LD * D - D * 2 * BOT_T
+    return pi * ri * ri * (Li - 2 * ri) + 4 / 3 * pi * ri ** 3
+
+
+_D = 0.2
+for _ in range(60):                            # Ø exterior que da 11 gal internos (bisección por punto fijo)
+    _D *= (BOT_GAL * 0.00378541 / _vol_interno(_D)) ** (1 / 3)
+BOT_D, BOT_L = round(_D, 3), round(BOT_LD * _D, 3)   # ≈ 0,236 m × 1,30 m (C, derivado)
+assert abs(_vol_interno(_D) - BOT_GAL * 0.00378541) < 1e-6
+BOT_P = 0.34                                  # paso entre botellones (C)
+ZPAT = 0.21                                   # cara superior del piso del patín
+MAN_D, MAN_Z = 4.5 * IN, 0.36                 # manifold de botellones: tubo 4" (OD 4,5" estimado) y altura de su eje
+BOT_Z0 = MAN_Z + MAN_D / 2 + 0.07             # base de la envolvente (niple + adaptador sobre la boca del manifold)
+YB_ = AY + 0.62                               # fila de botellones
+XB0 = AX + 0.42                               # primer botellón
+TQ = (AX + 2.3, AX + 3.7, AY + 0.45, AY + 1.85, ZPAT, 0.86)   # depósito x0, x1, y0, y1, z0, z1 (C)
+HDR_Y, HDR_Z = AY + 1.98, 1.06                # bloque de válvulas (frente hacia +Y, lado del equipo)
+N_SEL = 5                                     # selectoras 4 vías: anular, ram sup., ram inf., HCR CL2, HCR KL2
+SEL_P = 0.19                                  # paso entre selectoras (C)
+GAUGE_D = 6 * IN                              # manómetros de 6" (p34)
+
+
+def codo(p, u1, u2, r, rc):
+    """Codo a 90° de radio de curvatura rc en la esquina p (entra en dirección u1, sale en u2)."""
+    u1, u2 = Vector(*u1).normalized(), Vector(*u2).normalized()
+    c = Vector(*p) - u1 * rc + u2 * rc
+    return Plane(origin=c, x_dir=-u2, z_dir=(-u2).cross(u1)) * toro(rc, r, 90)
+
+
+def toro(R, r, ang=360, n=14):
+    """Toro facetado (sección de n lados, < 28° entre caras → sin aristas): mucho más liviano que Torus al teselar."""
+    return revolve(Pos(R, 0, 0) * (Plane.XZ * RegularPolygon(r, n)), Axis.Z, ang)
+
+
+def caneria(mat, pts, r, rc=None, uniones=()):
+    """Cañería por puntos con codos de radio rc en cada quiebre a 90° y uniones hexagonales en los tramos indicados."""
+    rc = rc or 2.5 * r
+    pts = [Vector(*p) for p in pts]
+    ini = pts[0]
+    for i in range(1, len(pts)):
+        a, p = pts[i - 1], pts[i]
+        u1 = (p - a).normalized()
+        fin = p
+        if i < len(pts) - 1:
+            u2 = (pts[i + 1] - p).normalized()
+            if abs(u1.dot(u2)) < 1e-6:
+                fin = p - u1 * rc
+                add(mat, codo(p, u1, u2, r, rc))
+        add(mat, bar(ini, fin, r))
+        if i - 1 in uniones:                              # unión doble (tuerca hexagonal) a mitad del tramo
+            m = (ini + fin) * 0.5
+            add(mat, Plane(origin=m, z_dir=u1) * extrude(RegularPolygon(r * 1.9, 6), r * 1.6, both=True))
+        ini = p + (pts[i + 1] - p).normalized() * rc if fin != p else p
+
+
+def hexa(mat, p, eje, s, h):
+    """Prisma hexagonal (tuerca, adaptador) de entre-caras s y alto h sobre el eje dado."""
+    add(mat, Plane(origin=p, z_dir=eje) * chamfer(extrude(RegularPolygon(s / 3 ** 0.5, 6, major_radius=True), h).edges().group_by(Axis.Z)[-1], s * 0.08))
+
+
+def botellon(k):
+    """Botellón de vejiga (ref. p33/p23/p98): envolvente con casquetes semiesféricos, boca de gas con válvula y protector,
+    boca de fluido con adaptador hexagonal, niple a la boca del manifold y válvula de purga individual."""
+    x, y = XB0 + k * BOT_P, YB_
+    comp("sk575_acumulador/sk575_acum_botellon_%d" % (k + 1), (x, y, BOT_Z0))
+    R, L = BOT_D / 2, BOT_L
+    with BuildSketch(Plane.XZ) as pf:                     # perfil (r, z) revolucionado
+        with BuildLine():
+            Polyline((0, 0), (0.05, 0), (0.05, 0.035))
+            ThreePointArc((0.05, 0.035), (R * 0.72, R * 0.33), (R, R))
+            Line((R, R), (R, L - R))
+            ThreePointArc((R, L - R), (R * 0.72, L - R * 0.33), (0.035, L - 0.02))
+            Polyline((0.035, L - 0.02), (0.035, L + 0.025), (0, L + 0.025), (0, 0))
+        make_face()
+    add("rojo", Pos(x, y, BOT_Z0) * revolve(pf.sketch, axis=Axis.Z))
+    # boca de gas: válvula de carga (hex) + protector roscado (p98)
+    hexa("acero", Vector(x, y, BOT_Z0 + L + 0.025), (0, 0, 1), 0.045, 0.03)
+    add("acero_oscuro", Pos(x, y, BOT_Z0 + L + 0.055) * chamfer(Cylinder(0.026, 0.065, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().group_by(Axis.Z)[-1], 0.008))
+    # boca de fluido: adaptador hexagonal + niple a la boca del manifold
+    hexa("acero", Vector(x, y, BOT_Z0 - 0.045), (0, 0, 1), 0.075, 0.045)
+    add("acero", bar((x, y, MAN_Z), (x, y, BOT_Z0 - 0.045), 0.021))
+    # válvula de purga individual (p23 §5.1.3.4): cuerpo + vástago con manija en T hacia el frente (−Y)
+    add("acero", Pos(x, y - 0.06, BOT_Z0 - 0.022) * chamfer(Box(0.04, 0.04, 0.04).edges(), 0.005))
+    add("acero", bar((x, y - 0.08, BOT_Z0 - 0.022), (x, y - 0.13, BOT_Z0 - 0.022), 0.006))
+    add("acero_oscuro", bar((x - 0.035, y - 0.13, BOT_Z0 - 0.022), (x + 0.035, y - 0.13, BOT_Z0 - 0.022), 0.006))
+
+
+def rack():
+    """Bastidor de botellones: parantes C, abrazaderas de banda con orejas y bulón, travesaños delantero y trasero."""
+    comp("sk575_acumulador/sk575_acum_rack", (XB0, YB_, ZPAT))
+    x0, x1 = XB0 - BOT_P * 0.62, XB0 + (N_BOT - 1) * BOT_P + BOT_P * 0.62
+    R = BOT_D / 2
+    for x in (x0, x1):
+        for s in (-1, 1):
+            add("rojo", upn((x, YB_ + s * (R + 0.04), ZPAT), (x, YB_ + s * (R + 0.04), BOT_Z0 + BOT_L - 0.25), (-1 if x == x1 else 1, 0, 0), h=0.08, bw=0.04, t=0.006))
+    for z in (BOT_Z0 + 0.35, BOT_Z0 + BOT_L - 0.32):
+        for s in (-1, 1):                                 # travesaños de ángulo L
+            add("rojo", bar((x0, YB_ + s * (R + 0.04), z), (x1, YB_ + s * (R + 0.04), z), 0.025, ang=(0, -s, -1)))
+        for k in range(N_BOT):
+            x = XB0 + k * BOT_P
+            band = Pos(x, YB_, z) * (Cylinder(R + 0.006, 0.045) - Cylinder(R + 0.0005, 0.06))
+            add("acero_oscuro", band)
+            for s in (-1, 1):                             # orejas atornilladas al travesaño
+                add("acero_oscuro", Pos(x + s * (R * 0.55), YB_ + s * 0 + (R + 0.02) * (1 if s > 0 else -1), z) * Box(0.03, 0.035, 0.045))
+                hexa("acero", Vector(x + s * (R * 0.55), YB_ + (R + 0.0375) * (1 if s > 0 else -1), z), (0, 1 if s > 0 else -1, 0), 0.019, 0.012)
+    # cabezal superior (guarda de las válvulas de gas)
+    zt = BOT_Z0 + BOT_L + 0.16
+    for s in (-1, 1):
+        add("rojo", bar((x0, YB_ + s * (R + 0.04), BOT_Z0 + BOT_L - 0.25), (x0, YB_ + s * (R + 0.04), zt), 0.022))
+        add("rojo", bar((x1, YB_ + s * (R + 0.04), BOT_Z0 + BOT_L - 0.25), (x1, YB_ + s * (R + 0.04), zt), 0.022))
+        add("rojo", bar((x0, YB_ + s * (R + 0.04), zt), (x1, YB_ + s * (R + 0.04), zt), 0.022))
+    for x in (x0, x1):
+        add("rojo", bar((x, YB_ - R - 0.04, zt), (x, YB_ + R + 0.04, zt), 0.022))
+
+
+def manifold_botellones():
+    """Manifold de botellones 4" de 6 bocas (5 botellones + salida), aislación esférica 1", manómetro de banco con su válvula
+    de aislación, purga aguja 1/2" y válvula de alivio 3/4" tarada a 3.300 psi (ref. p33, p94 G-J, p95 X-Z)."""
+    comp("sk575_acumulador/sk575_acum_manifold", (XB0, YB_, MAN_Z))
+    x1r = XB0 + (N_BOT - 1) * BOT_P + BOT_P * 0.62           # parante del rack (lado depósito)
+    xa, xb = XB0 - 0.2, x1r + 0.17
+    tubo = Pos((xa + xb) / 2, YB_, MAN_Z) * Rot(0, 90, 0) * Cylinder(MAN_D / 2, xb - xa)
+    add("acero", tubo)
+    for x in (xa, xb):                                    # tapas maquinadas con chaflán
+        add("acero", Pos(x, YB_, MAN_Z) * Rot(0, 90, 0) * chamfer(Cylinder(MAN_D / 2 + 0.008, 0.025).edges(), 0.006))
+    for k in range(N_BOT + 1):                            # bocas (boss) de 6 puertos
+        x = XB0 + k * BOT_P if k < N_BOT else x1r + 0.1
+        add("acero", Pos(x, YB_, MAN_Z + MAN_D / 2 - 0.005) * Cylinder(0.032, 0.03, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    for x in (xa + 0.12, xb - 0.2):                       # cunas de apoyo
+        add("rojo", Pos(x, YB_, ZPAT) * Box(0.08, 0.16, MAN_Z - MAN_D / 2 - ZPAT, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    # salida (6.ª boca) → esférica de aislación 1" → al bloque de válvulas
+    xo = x1r + 0.1                                        # salida entre el rack y el depósito
+    zo = MAN_Z + MAN_D / 2 + 0.06
+    add("acero", Pos(xo, YB_, zo) * chamfer(Box(0.07, 0.07, 0.07).edges(), 0.01))           # esférica (cuerpo)
+    add("rojo", bar((xo, YB_, zo + 0.035), (xo, YB_, zo + 0.06), 0.008))
+    add("rojo", Pos(xo, YB_ + 0.08, zo + 0.065) * Box(0.025, 0.18, 0.012))                    # palanca
+    caneria("acero", [(xo, YB_, zo + 0.035), (xo, YB_, HDR_Z), (xo, HDR_Y, HDR_Z), (TQ[0] - 0.05, HDR_Y, HDR_Z)], 0.0167, uniones=(0, 1))
+    # manómetro del banco (J) con válvula de aislación (G) y purga aguja (H) en el extremo
+    add("acero", bar((xa, YB_, MAN_Z), (xa - 0.12, YB_, MAN_Z), 0.011))
+    add("acero", Pos(xa - 0.12, YB_, MAN_Z) * chamfer(Box(0.04, 0.04, 0.04).edges(), 0.005))
+    add("acero_oscuro", bar((xa - 0.12, YB_ - 0.02, MAN_Z), (xa - 0.12, YB_ - 0.08, MAN_Z), 0.005))
+    add("acero_oscuro", Pos(xa - 0.12, YB_ - 0.08, MAN_Z) * Cylinder(0.018, 0.008, rotation=(90, 0, 0)))   # volantito aguja
+    add("acero", bar((xa - 0.12, YB_, MAN_Z + 0.02), (xa - 0.12, YB_, MAN_Z + 0.2), 0.007))
+    manometro(Vector(xa - 0.12, YB_, MAN_Z + 0.2 + 0.0635 / 2 + 0.02), (-1, 0, 0), 2.5 * IN)
+    # entrada para bomba alternativa: válvula 1" de paso total con tapón (p33 §2.6)
+    xq = XB0 - 0.12
+    add("acero", bar((xq, YB_ + MAN_D / 2 - 0.01, MAN_Z), (xq, YB_ + 0.2, MAN_Z), 0.0167))
+    bola((xq, YB_ + 0.13, MAN_Z), (0, 1, 0), r=0.02, palanca=(-1, 0, 0))
+    hexa("acero_oscuro", Vector(xq, YB_ + 0.2, MAN_Z), (0, 1, 0), 0.04, 0.025)
+    # válvula de alivio 3/4" (3.300 psi) con descarga al depósito
+    xp = XB0 + 0.5 * BOT_P
+    yp = YB_ + MAN_D / 2 + 0.07                               # cuerpo fuera de los parantes del rack
+    add("acero", Pos(xp, yp - 0.03, MAN_Z) * Rot(90, 0, 0) * Cylinder(0.016, 0.14))
+    bola((xp, yp + 0.0, MAN_Z), (0, 1, 0), r=0.014, palanca=(1, 0, 0))          # aislación del PRV (fig. 2 ítem X)
+    hexa("acero", Vector(xp, yp + 0.04, MAN_Z), (0, 1, 0), 0.05, 0.035)
+    add("acero", Pos(xp, yp + 0.1, MAN_Z) * chamfer(Box(0.05, 0.05, 0.06).edges(), 0.006))
+    add("amarillo", Pos(xp, yp + 0.1, MAN_Z + 0.03) * Cylinder(0.02, 0.12, align=(Align.CENTER, Align.CENTER, Align.MIN)))   # bonete tarado
+    add("amarillo", Pos(xp, yp + 0.1, MAN_Z + 0.15) * chamfer(Cylinder(0.024, 0.03, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().group_by(Axis.Z)[-1], 0.006))
+    caneria("acero", [(xp + 0.025, yp + 0.1, MAN_Z), (TQ[0] - 0.25, yp + 0.1, MAN_Z), (TQ[0] - 0.25, yp + 0.1, TQ[5] + 0.05),
+                      (TQ[0] + 0.1, yp + 0.1, TQ[5] + 0.05), (TQ[0] + 0.1, yp + 0.1, TQ[5])], 0.0133)
+
+
+def manometro(c, n, d):
+    """Manómetro de cara d (caja inoxidable, bisel, dial blanco, aguja) con la cara hacia n."""
+    n = Vector(*n).normalized()
+    pl = Plane(origin=c, z_dir=n, x_dir=Vector(0, 0, 1).cross(n) if abs(n.Z) < 0.9 else Vector(1, 0, 0))
+    r = d / 2
+    add("acero", pl * Pos(0, 0, -0.045) * Cylinder(r + 0.004, 0.045, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero", pl * (Cylinder(r + 0.007, 0.012, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Cylinder(r - 0.004, 0.03)))   # bisel
+    add("blanco", pl * Pos(0, 0, 0.003) * Cylinder(r - 0.004, 0.004, align=(Align.CENTER, Align.CENTER, Align.MAX)))
+    add("acero_oscuro", pl * Pos(0.25 * r, 0.25 * r, 0.0045) * Rot(0, 0, 45) * Box(0.75 * r, 0.006, 0.003))
+    add("acero_oscuro", pl * Pos(0, 0, 0.005) * Cylinder(0.008, 0.004))
+
+
+def selectora(i, x, tipo="4vias"):
+    """Selectora 1" rotativa de sello de corte (ref. p34): placa base atornillada al bloque, cuerpo inoxidable con eje hacia
+    el operador (+Y), cubo, palanca de 3 posiciones (neutro = vertical) con empuñadura y sector indicador."""
+    nm = "sk575_acum_valvula_%s_%s" % (tipo, i)
+    y0, z = HDR_Y + 0.045, HDR_Z
+    comp("sk575_acumulador/" + nm, (x, y0, z))
+    add("acero", Pos(x, y0, z) * Box(0.13, 0.02, 0.13, align=(Align.CENTER, Align.MIN, Align.CENTER)))     # placa base
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            hexa("acero", Vector(x + sx * 0.048, y0 + 0.02, z + sz * 0.048), (0, 1, 0), 0.014, 0.009)
+    cuerpo = Pos(x, y0 + 0.02, z) * Rot(-90, 0, 0) * Cylinder(0.052, 0.085, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    add("acero", chamfer(cuerpo.edges().sort_by(Axis.Y)[-1], 0.008))
+    add("acero", Pos(x, y0 + 0.105, z) * Rot(-90, 0, 0) * Cylinder(0.024, 0.04, align=(Align.CENTER, Align.CENTER, Align.MIN)))   # cubo
+    yh = y0 + 0.135
+    ang = {"4vias": 0, "3vias": -35}[tipo]
+    pl = Plane(origin=(x, yh, z), x_dir=(-1, 0, 0), z_dir=(0, 1, 0))
+    palanca = pl * Rot(0, 0, ang) * Pos(0, 0.13, 0.006) * Box(0.026, 0.27, 0.012)
+    add("acero_oscuro", palanca)
+    add("acero_oscuro", pl * Rot(0, 0, ang) * Pos(0, 0.26, 0.006) * Rot(90, 0, 0) * chamfer(Cylinder(0.016, 0.09).edges(), 0.006))
+    # sector indicador (abre / neutro / cierra) detrás de la palanca
+    sector = (Circle(0.088) - Circle(0.036)) & Pos(0, 0.1) * Rectangle(0.3, 0.2)
+    add("blanco", Plane(origin=(x, y0 + 0.1, z), x_dir=(-1, 0, 0), z_dir=(0, 1, 0)) * extrude(sector, 0.004))
+    for a in (-50, 0, 50):                                # marcas de posición
+        add("acero_oscuro", Plane(origin=(x, y0 + 0.104, z), x_dir=(-1, 0, 0), z_dir=(0, 1, 0)) * Rot(0, 0, a) * Pos(0, 0.075, 0) * Box(0.006, 0.02, 0.002))
+    if tipo == "4vias":                                   # interruptores de posición (fig. 2 ítem T, p95) para el remoto
+        add("acero_oscuro", Pos(x, y0 + 0.06, z + 0.075) * chamfer(Box(0.07, 0.05, 0.045).edges(), 0.005))
+        add("acero", bar((x + 0.035, y0 + 0.06, z + 0.075), (x + 0.07, y0 + 0.06, z + 0.06), 0.004))
+    # salidas A (abre) y B (cierra): 1" Sch 160 hacia abajo hasta el riel de conexiones del patín (p97)
+    for dx in (-0.035, 0.035):
+        caneria("acero", [(x + dx, y0 - 0.03, z - 0.065), (x + dx, y0 - 0.03, 0.32), (x + dx, AY + ACUM_W - 0.095, 0.32)], 0.0167, uniones=(0,))
+
+
+def reguladora(tipo, x):
+    """Reguladora 1" montada en placa: cuerpo, bonete con resorte y ajuste. 3100 (anular): motor neumático lateral con caja de
+    engranajes + manija en T alta (ref. p33 A, p94 K). 2100 (manifold): volante manual (ref. p33 B)."""
+    comp("sk575_acumulador/sk575_acum_reguladora_%s" % tipo, (x, HDR_Y, HDR_Z))
+    y, z = HDR_Y - 0.1, HDR_Z + 0.06
+    add("acero", Pos(x, y, z) * chamfer(Box(0.12, 0.12, 0.14, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.01))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            hexa("acero", Vector(x + sx * 0.045, y + sy * 0.045, z + 0.14), (0, 0, 1), 0.016, 0.01)
+    add("acero", Pos(x, y, z + 0.14) * Cylinder(0.045, 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("rojo", Pos(x, y, z + 0.2) * chamfer(Cylinder(0.038, 0.16, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().group_by(Axis.Z)[-1], 0.01))
+    if tipo == "anular":
+        add("acero", bar((x, y, z + 0.36), (x, y, z + 0.62), 0.012))                         # vástago de ajuste
+        add("acero_oscuro", bar((x - 0.1, y, z + 0.62), (x + 0.1, y, z + 0.62), 0.011))       # manija en T
+        for s in (-1, 1):
+            add("acero_oscuro", Pos(x + s * 0.1, y, z + 0.62) * Rot(0, 90, 0) * chamfer(Cylinder(0.016, 0.06).edges(), 0.006))
+        add("acero", Pos(x, y, z + 0.4) * chamfer(Box(0.1, 0.08, 0.08).edges(), 0.008))      # caja de engranajes
+        add("aluminio", Pos(x + 0.1, y, z + 0.4) * Rot(0, 90, 0) * chamfer(Cylinder(0.04, 0.1).edges(), 0.008))   # motor neumático
+        caneria("acero", [(x + 0.15, y, z + 0.4), (x + 0.2, y, z + 0.4), (x + 0.2, y, z + 0.1)], 0.005)
+    else:
+        add("acero", bar((x, y, z + 0.36), (x, y, z + 0.44), 0.01))
+        add("acero_oscuro", Pos(x, y, z + 0.44) * toro(0.08, 0.009, n=10))
+        for a in range(0, 360, 120):
+            add("acero_oscuro", bar((x, y, z + 0.44), (x + 0.08 * cos(a * pi / 180), y + 0.08 * sin(a * pi / 180), z + 0.44), 0.006))
+    caneria("acero", [(x, y, z), (x, y, HDR_Z - 0.04), (x, HDR_Y - 0.04, HDR_Z - 0.04)], 0.0167)
+
+
+def deposito():
+    """Depósito de fluido de acero con bafles (internos, no modelados), boca de inspección/llenado 4" con tapa, tapa de
+    inspección abulonada, visor de nivel y purga (ref. p33 §2.1, p94 D-F, p98). Medidas C."""
+    x0, x1, y0, y1, z0, z1 = TQ
+    comp("sk575_acumulador/sk575_acum_deposito", ((x0 + x1) / 2, (y0 + y1) / 2, z0))
+    t = box(x0, x1, y0, y1, z0, z1, f=0.02)
+    add("rojo", t)
+    add("rojo", box(x0 - 0.015, x1 + 0.015, y0 - 0.015, y1 + 0.015, z1 - 0.012, z1 + 0.004))      # pestaña de tapa
+    xc, yc = x0 + 0.3, y0 + 0.3                                                                   # boca 4" (D)
+    add("rojo", Pos(xc, yc, z1) * Cylinder(0.065, 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero_oscuro", Pos(xc, yc, z1 + 0.06) * chamfer(Cylinder(0.075, 0.03, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().group_by(Axis.Z)[-1], 0.01))
+    for a in (0, 90):
+        add("acero_oscuro", Pos(xc, yc, z1 + 0.095) * Rot(0, 0, a) * Box(0.12, 0.016, 0.012))
+    # tapa de inspección abulonada en el lateral −Y
+    pc, w, h = Vector((x0 + x1) / 2, y0, (z0 + z1) / 2), 0.55, 0.36
+    add("rojo", Pos(pc.X, y0 - 0.006, pc.Z) * chamfer(Box(w, 0.012, h).edges().filter_by(Axis.Y), 0.03))
+    for i in range(6):
+        for zz in (-h / 2 + 0.03, h / 2 - 0.03):
+            hexa("acero", Vector(pc.X - w / 2 + 0.04 + i * (w - 0.08) / 5, y0 - 0.012, pc.Z + zz), (0, -1, 0), 0.014, 0.008)
+    for zz in (-0.06, 0.06):
+        for xx in (-w / 2 + 0.03, w / 2 - 0.03):
+            hexa("acero", Vector(pc.X + xx, y0 - 0.012, pc.Z + zz), (0, -1, 0), 0.014, 0.008)
+    # visor de nivel en el lateral +X
+    add("acero", Pos(x1 + 0.025, y0 + 0.2, (z0 + z1) / 2) * Box(0.025, 0.04, 0.42))
+    add("vidrio", Pos(x1 + 0.038, y0 + 0.2, (z0 + z1) / 2) * Box(0.004, 0.018, 0.36))
+    # purga inferior + succión de bombas
+    caneria("acero", [(x1, y0 + 0.5, z0 + 0.07), (x1 + 0.2, y0 + 0.5, z0 + 0.07)], 0.024)
+    add("acero", Pos(x1 + 0.2, y0 + 0.5, z0 + 0.07) * chamfer(Box(0.07, 0.07, 0.07).edges(), 0.01))
+    add("rojo", bar((x1 + 0.2, y0 + 0.5, z0 + 0.105), (x1 + 0.2, y0 + 0.5, z0 + 0.13), 0.008))
+    add("rojo", Pos(x1 + 0.2, y0 + 0.4, z0 + 0.135) * Box(0.02, 0.2, 0.01))
+
+
+def bloque_valvulas():
+    """Bloque de válvulas (manifold de control) sobre el depósito, panel de 3 manómetros de 6" y soportes."""
+    comp("sk575_acumulador/sk575_acum_bloque_valvulas", ((TQ[0] + TQ[1]) / 2, HDR_Y, HDR_Z))
+    xa, xb = TQ[0] + 0.05, TQ[1] - 0.05
+    add("acero", Pos((xa + xb) / 2, HDR_Y, HDR_Z) * chamfer(Box(xb - xa, 0.09, 0.09).edges().filter_by(Axis.X), 0.006))
+    for x in (TQ[0] + 0.21, TQ[0] + 1.33):                                            # ménsulas sobre el depósito
+        add("rojo", upn((x, HDR_Y, TQ[5]), (x, HDR_Y, HDR_Z - 0.045), (0, 1, 0), h=0.09, bw=0.04, t=0.006))
+    # panel de manómetros detrás del bloque
+    pz0, pz1 = HDR_Z + 0.2, HDR_Z + 0.6
+    px0, px1 = TQ[0] + 0.45, TQ[0] + 1.05
+    add("rojo", box(px0, px1, HDR_Y - 0.36, HDR_Y - 0.35, pz0, pz1))
+    for x in (px0 + 0.04, px1 - 0.04):
+        add("rojo", upn((x, HDR_Y - 0.37, TQ[5]), (x, HDR_Y - 0.37, pz1), (0, -1, 0), h=0.06, bw=0.03, t=0.005))
+    for i in range(3):                                                                # acumulador / manifold / anular
+        manometro(Vector(px0 + 0.1 + i * 0.2, HDR_Y - 0.345 + 0.05, (pz0 + pz1) / 2), (0, 1, 0), GAUGE_D)
+    for i in range(3):                                                                # tubing de los manómetros
+        x = px0 + 0.1 + i * 0.2
+        caneria("acero", [(x, HDR_Y - 0.37, (pz0 + pz1) / 2), (x, HDR_Y - 0.42, (pz0 + pz1) / 2), (x, HDR_Y - 0.42, HDR_Z), (x, HDR_Y - 0.045, HDR_Z)], 0.005)
+    # purga del bloque al depósito (fig. 1 ítem L; 6.000 psi, p34 G): aguja con manija en T y retorno
+    xl = xb - 0.17
+    add("acero", Pos(xl, HDR_Y - 0.02, HDR_Z + 0.045) * Cylinder(0.018, 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero", bar((xl, HDR_Y - 0.02, HDR_Z + 0.105), (xl, HDR_Y - 0.02, HDR_Z + 0.16), 0.005))
+    add("acero_oscuro", bar((xl - 0.04, HDR_Y - 0.02, HDR_Z + 0.16), (xl + 0.04, HDR_Y - 0.02, HDR_Z + 0.16), 0.005))
+    caneria("acero", [(xl, HDR_Y - 0.045, HDR_Z - 0.02), (xl, HDR_Y - 0.15, HDR_Z - 0.02), (xl, HDR_Y - 0.15, TQ[5])], 0.006)
+    # acumulador del by-pass (fig. 2 ítem O): botellón chico sobre el extremo del bloque (medidas C)
+    xo_, zo_ = xb - 0.01, HDR_Z + 0.045
+    add("acero", Pos(xo_, HDR_Y, zo_) * Cylinder(0.02, 0.05, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("rojo", Pos(xo_, HDR_Y, zo_ + 0.05) * chamfer(Cylinder(0.05, 0.3, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.02))
+    hexa("acero", Vector(xo_, HDR_Y, zo_ + 0.35), (0, 0, 1), 0.03, 0.03)
+    # filtro en T 1" 5.000 psi a la entrada del bloque (p34 H)
+    add("acero", Pos(xa - 0.06, HDR_Y, HDR_Z) * Rot(0, 90, 0) * Cylinder(0.035, 0.1))
+    add("acero", Pos(xa - 0.06, HDR_Y, HDR_Z - 0.035) * Cylinder(0.03, 0.09, align=(Align.CENTER, Align.CENTER, Align.MAX)))
+    hexa("acero", Vector(xa - 0.06, HDR_Y, HDR_Z - 0.125), (0, 0, -1), 0.05, 0.025)
+
+
+def bomba_electrica():
+    """Bomba triplex eléctrica (ref. p34 §4.1: émbolos 1-1/4", correa dentada; p35 §4.2 motor XP) con guarda de correa,
+    motor con aletas, base de perfiles y descarga con válvula de retención. Medidas C."""
+    x0, y0 = AX + 3.95, AY + 1.35
+    comp("sk575_acumulador/sk575_acum_bomba_electrica", (x0 + 0.6, y0 + 0.35, ZPAT))
+    zb = ZPAT + 0.112
+    for yy in (y0, y0 + 0.62):                                                     # base de perfiles + chapa
+        add("rojo", box(x0, x0 + 1.25, yy, yy + 0.08, ZPAT, zb - 0.012))
+    add("rojo", box(x0, x0 + 1.25, y0, y0 + 0.7, zb - 0.012, zb))
+    # motor XP (eje Y): carcasa con aletas, tapas, cubreventilador, patas y caja de bornes
+    mx, my, mz = x0 + 0.95, y0 + 0.33, zb + 0.2
+    add("acero_oscuro", Pos(mx, my, mz) * Rot(90, 0, 0) * Cylinder(0.15, 0.42))
+    for i in range(7):
+        add("acero_oscuro", Pos(mx, my - 0.18 + i * 0.06, mz) * Rot(90, 0, 0) * Cylinder(0.165, 0.012))
+    for s in (-1, 1):
+        add("acero_oscuro", Pos(mx, my + s * 0.225, mz) * Rot(90, 0, 0) * chamfer(Cylinder(0.14, 0.03).edges(), 0.01))
+    add("acero_oscuro", Pos(mx, my - 0.3, mz) * Rot(90, 0, 0) * chamfer(Cylinder(0.145, 0.13).edges().group_by(Axis.Z)[-1], 0.03))
+    add("acero_oscuro", Pos(mx, my, zb) * Box(0.3, 0.36, 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero_oscuro", Pos(mx + 0.17, my, mz + 0.05) * chamfer(Box(0.06, 0.14, 0.12).edges(), 0.008))
+    # triplex (cigüeñal eje Y): cárter, extremo de fluido con 3 émbolos y tapas de válvula, guarda de correa entre poleas
+    tx, ty = x0 + 0.4, y0 + 0.33
+    add("rojo", Pos(tx, ty, zb) * chamfer(Box(0.32, 0.36, 0.26, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.02))
+    zf = zb + 0.13
+    add("acero", Pos(tx - 0.29, ty, zf) * chamfer(Box(0.14, 0.34, 0.16).edges(), 0.01))
+    for k in (-1, 0, 1):
+        add("acero", bar((tx - 0.16, ty + k * 0.1, zf), (tx - 0.22, ty + k * 0.1, zf), 0.016))
+        hexa("acero", Vector(tx - 0.29, ty + k * 0.1, zf + 0.08), (0, 0, 1), 0.05, 0.03)
+    zt = zb + 0.13
+    sk = (Pos(tx, zt) * Circle(0.16) + Pos(mx, mz) * Circle(0.11)
+          + Polygon((tx, zt + 0.16), (mx, mz + 0.11), (mx, mz - 0.11), (tx, zt - 0.16), align=None))
+    add("rojo", Plane(origin=(0, y0 + 0.72, 0), x_dir=(1, 0, 0), z_dir=(0, -1, 0)) * extrude(sk, 0.12))
+    for x, z in ((tx, zt), (mx, mz)):
+        add("acero", Pos(x, y0 + 0.555, z) * Rot(90, 0, 0) * Cylinder(0.025, 0.06))   # ejes hasta la guarda
+    # descarga con retención 1" 5.000 psi (p35 §4.6) al extremo del bloque de válvulas
+    xd = tx - 0.42
+    caneria("acero", [(tx - 0.36, ty, zf), (xd, ty, zf), (xd, ty, HDR_Z), (xd, HDR_Y, HDR_Z), (TQ[1] - 0.05, HDR_Y, HDR_Z)], 0.0167, uniones=(1, 3))
+    add("acero", Pos(xd, ty, zf + 0.3) * chamfer(Box(0.06, 0.06, 0.09).edges(), 0.008))
+
+
+def bomba_neumatica(i, x):
+    """Bomba neumática 40:1 (ref. p35 §5.1): motor de aire con tapas y tirantes, sección de fluido inferior, válvula de aire
+    y silenciador. Medidas C."""
+    y = AY + 1.05
+    comp("sk575_acumulador/sk575_acum_bomba_neumatica_%d" % i, (x, y, ZPAT))
+    add("rojo", Pos(x, y, ZPAT) * Box(0.26, 0.26, 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero", Pos(x, y, ZPAT + 0.02) * Cylinder(0.045, 0.32, align=(Align.CENTER, Align.CENTER, Align.MIN)))  # sección de fluido
+    hexa("acero", Vector(x, y, ZPAT + 0.12), (0, 0, 1), 0.1, 0.04)
+    za = ZPAT + 0.34
+    for zz in (za, za + 0.2):
+        add("aluminio", Pos(x, y, zz) * chamfer(Box(0.24, 0.24, 0.035, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().filter_by(Axis.Z), 0.02))
+    add("aluminio", Pos(x, y, za + 0.035) * Cylinder(0.1, 0.165, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            add("acero", bar((x + sx * 0.095, y + sy * 0.095, za), (x + sx * 0.095, y + sy * 0.095, za + 0.25), 0.007))
+    add("acero", Pos(x, y, za + 0.235) * Cylinder(0.03, 0.05, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero_oscuro", Pos(x + 0.14, y, za + 0.1) * Rot(0, 90, 0) * chamfer(Cylinder(0.025, 0.08).edges(), 0.008))   # silenciador
+    caneria("acero", [(x, y - 0.12, za + 0.15), (x, AY + 0.28, za + 0.15), (x, AY + 0.28, ZPAT + 0.08)], 0.012)   # aire
+    caneria("acero", [(x, y + 0.045, ZPAT + 0.25), (x, y + 0.2, ZPAT + 0.25)], 0.009)                          # descarga
+
+
+def neumatica_frl():
+    """Filtro y lubricador de aire de las bombas neumáticas (ref. p94 E) + colector de aire con entrada 1-1/2" NPT (p97)."""
+    x, y = AX + 3.85, AY + 0.28
+    comp("sk575_acumulador/sk575_acum_bomba_neumatica_1")
+    caneria("acero", [(x - 0.1, y, ZPAT + 0.08), (AX + 4.75, y, ZPAT + 0.08)], 0.02)
+    for k, dx in enumerate((-0.14, 0.0, 0.14)):                   # trampa de agua, filtro y lubricador (p35 §5.3, p94 E)
+        add("acero", Pos(x + dx, y, ZPAT + 0.55) * Box(0.08, 0.08, 0.06))
+        add("acero_oscuro", Pos(x + dx, y, ZPAT + 0.52) * Cylinder(0.03, 0.14, align=(Align.CENTER, Align.CENTER, Align.MAX)))
+    caneria("acero", [(x - 0.2, y, ZPAT + 0.55), (x + 0.2, y, ZPAT + 0.55), (x + 0.2, y, ZPAT + 0.08)], 0.012)
+    add("rojo", bar((x - 0.24, y, ZPAT), (x - 0.24, y, ZPAT + 0.7), 0.02, sq=True))
+
+
+def esclusa(mat, p, eje, r=0.024, k=1.0):
+    """Válvula esclusa (gate) roscada: cuerpo, bonete hacia +Z y volante. eje = dirección del flujo."""
+    p = Vector(*p)
+    add(mat, Plane(origin=p, z_dir=eje) * extrude(RegularPolygon(r * 1.7, 6), r * 1.6, both=True))
+    add(mat, Pos(p) * Cylinder(r * 1.25, r * 3.4 * k, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("acero", bar(p + Vector(0, 0, r * 3.4 * k), p + Vector(0, 0, r * 5 * k), r * 0.25))
+    add("rojo", Pos(p + Vector(0, 0, r * 5 * k)) * toro(r * 2.2, r * 0.3, n=10))
+    for a in (0, 120, 240):
+        add("rojo", bar(p + Vector(0, 0, r * 5 * k), p + Vector(r * 2.2 * cos(a * pi / 180), r * 2.2 * sin(a * pi / 180), r * 5 * k), r * 0.2))
+
+
+def bola(p, eje, r=0.018, palanca=(0, 0, 1)):
+    """Válvula esférica roscada: cuerpo hexagonal, bonete y palanca plana hacia `palanca`."""
+    p, u = Vector(*p), Vector(*palanca)
+    add("acero", Plane(origin=p, z_dir=eje) * extrude(RegularPolygon(r * 1.9, 6), r * 1.8, both=True))
+    add("acero", Pos(p) * Cylinder(r * 0.9, r * 2.6, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    t = p + Vector(0, 0, r * 2.9)
+    add("rojo", bar(t, t + u * r * 8, r * 0.4, sq=True))
+
+
+def filtro_y(p, eje, r=0.024):
+    """Filtro en Y roscado: cuerpo sobre el eje del flujo y pierna a 45° hacia abajo con tapón hexagonal (ref. p94 A, p95 W)."""
+    p, u = Vector(*p), Vector(*eje).normalized()
+    add("acero", Plane(origin=p, z_dir=u) * Cylinder(r * 1.5, r * 5))
+    d = (u * 0.7071 + Vector(0, 0, -0.7071)).normalized()
+    add("acero", bar(p, p + d * r * 4.5, r * 1.2))
+    hexa("acero", p + d * r * 4.5, d, r * 2.2, r * 1.2)
+
+
+def succion_y_descarga():
+    """Succión y descarga de las bombas (ref. p35 §4.5-4.6 y §5.3; p94 A-C; p95 W, AB): triplex con válvula de succión 1-1/2" y
+    filtro en Y de malla 20; bombas neumáticas con colector de succión, válvula de la línea de succión, esclusa de by-pass,
+    esclusa de aislación y filtro en Y por bomba; descarga de cada neumática con retención 5.000 psi al colector de descarga."""
+    x1 = TQ[1]
+    comp("sk575_acumulador/sk575_acum_succion_descarga", (x1, AY + 1.2, 0.3))
+    # triplex: salida del depósito → esclusa 1-1/2" (AB) → filtro en Y (W) → entrada del extremo de fluido
+    tyy, xf = AY + 1.68, AX + 3.95 + 0.4 - 0.29
+    caneria("acero", [(x1, tyy, 0.3), (xf, tyy, 0.3), (xf, tyy, 0.37)], 0.024)
+    esclusa("acero", (x1 + 0.07, tyy, 0.3), (1, 0, 0), r=0.024, k=0.8)
+    filtro_y((x1 + 0.2, tyy, 0.3), (1, 0, 0))
+    # neumáticas: colector de succión con válvula de línea (B) + esclusa de by-pass, ramal por bomba con aislación (C) y filtro (A)
+    ys, zs = AY + 0.82, 0.3
+    caneria("acero", [(x1, ys, zs), (AX + 4.7, ys, zs)], 0.02)
+    esclusa("acero", (x1 + 0.08, ys, zs), (1, 0, 0), r=0.02, k=0.8)                                # línea de succión (B)
+    esclusa("acero", (AX + 4.7, ys, zs), (1, 0, 0), r=0.02, k=0.8)                                  # by-pass (p35 §5.3)
+    for x in (AX + 4.1, AX + 4.55):
+        caneria("acero", [(x - 0.12, ys, zs), (x - 0.12, AY + 1.05, zs), (x - 0.045, AY + 1.05, zs)], 0.012)
+        esclusa("acero", (x - 0.12, ys + 0.07, zs), (0, 1, 0), r=0.012, k=1.2)                         # aislación (C)
+        filtro_y((x - 0.12, ys + 0.16, zs), (0, 1, 0), r=0.014)                                         # filtro en Y (A)
+    # descarga de las neumáticas: retención 5.000 psi por bomba y colector al vertical de descarga de la triplex
+    xd, zc = AX + 3.95 + 0.4 - 0.42, 0.95
+    for x in (AX + 4.1, AX + 4.55):
+        caneria("acero", [(x, AY + 1.25, ZPAT + 0.25), (x, AY + 1.25, zc)], 0.009)
+        add("acero", Pos(x, AY + 1.25, ZPAT + 0.5) * chamfer(Box(0.04, 0.04, 0.07).edges(), 0.006))      # retención
+        add("acero", Pos(x, AY + 1.25, ZPAT + 0.5) * Box(0.05, 0.012, 0.012))                            # flecha de flujo
+    caneria("acero", [(AX + 4.55, AY + 1.25, zc), (xd, AY + 1.25, zc), (xd, AY + 1.68, zc)], 0.012)
+
+
+def caja_xp(p, w, d, h, n_bul=3, eje=(-1, 0, 0)):
+    """Caja a prueba de explosión: cuerpo con tapa de brida abulonada hacia `eje` (−X por defecto)."""
+    p = Vector(*p)
+    add("rojo", Pos(p) * chamfer(Box(w, d, h).edges(), 0.012))
+    add("rojo", Pos(p + Vector(-w / 2 - 0.012, 0, 0)) * Box(0.024, d + 0.03, h + 0.03))
+    for zz in [h / 2 + 0.005 - i * (h + 0.01) / (n_bul - 1) for i in range(n_bul)]:
+        for yy in (-(d + 0.01) / 2, (d + 0.01) / 2):
+            hexa("acero", p + Vector(-w / 2 - 0.024, yy, zz), (-1, 0, 0), 0.016, 0.01)
+
+
+def electrico_y_alarmas():
+    """Eléctrico y alarmas (ref. p35 §4.3-4.4, p36 §8.1, p94 N, p95 S, plano eléctrico p14): arrancador NEMA 7 con luz de
+    "bomba en marcha", caja eléctrica (PLC Siemens S7-222 y fuente PULS SL5.300 adentro, no modeladas), presostatos
+    hidroeléctrico (triplex) e hidroneumático (neumáticas), panel de alarma local con 3 pilotos (baja presión de acumulador,
+    bajo nivel, bajo aire) y pulsador de silencio, baliza Div 2 y bocina XP en mástil, interruptor de flotante N/C en el
+    depósito y transmisor de presión XP en el manifold de botellones. Medidas C."""
+    comp("sk575_acumulador/sk575_acum_electrico", (AX + 5.12, AY + 0.7, ZPAT))
+    x = AX + 5.12
+    for y in (AY + 0.4, AY + 1.0):                                                   # postes
+        add("rojo", bar((x, y, ZPAT), (x, y, 1.75), 0.03, sq=True))
+    add("rojo", bar((x, AY + 0.4, 1.0), (x, AY + 1.0, 1.0), 0.02, sq=True))
+    caja_xp((x - 0.09, AY + 0.4, 1.12), 0.12, 0.34, 0.4)                             # arrancador (N)
+    add("luz", Pos(x - 0.17, AY + 0.4, 1.38) * Rot(0, 90, 0) * Cylinder(0.022, 0.03))  # "pump running"
+    add("acero", Pos(x - 0.17, AY + 0.4, 1.38) * Rot(0, 90, 0) * (Cylinder(0.03, 0.015) - Cylinder(0.022, 0.02)))
+    caja_xp((x - 0.1, AY + 1.0, 1.25), 0.14, 0.42, 0.6, n_bul=4)                    # caja eléctrica (S)
+    add("acero", bar((x - 0.1, AY + 1.0, 0.95), (x - 0.1, AY + 1.0, ZPAT + 0.05), 0.016))   # conducto
+    # panel de alarma local: 3 pilotos + pulsador de silencio
+    caja_xp((x - 0.09, AY + 0.7, 1.55), 0.1, 0.24, 0.2, n_bul=2)
+    for i, yy in enumerate((-0.07, 0.0, 0.07)):
+        add("luz", Pos(x - 0.17, AY + 0.7 + yy, 1.6) * Rot(0, 90, 0) * Cylinder(0.014, 0.02))
+    add("acero_oscuro", Pos(x - 0.165, AY + 0.7, 1.5) * Rot(0, 90, 0) * Cylinder(0.018, 0.02))
+    # baliza Div 2 y bocina XP arriba de los postes
+    add("acero_oscuro", Pos(x, AY + 0.4, 1.75) * Cylinder(0.05, 0.04, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("rojo", Pos(x, AY + 0.4, 1.79) * chamfer(Cylinder(0.04, 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges().group_by(Axis.Z)[-1], 0.015))
+    for a in (0, 90):
+        add("acero_oscuro", Pos(x, AY + 0.4, 1.84) * Rot(0, 0, a) * Box(0.09, 0.006, 0.1))   # jaula
+    add("acero_oscuro", Pos(x, AY + 1.0, 1.82) * Rot(0, 90, 0) * Cylinder(0.045, 0.1))
+    add("acero_oscuro", Pos(x - 0.09, AY + 1.0, 1.82) * Rot(0, -90, 0) * Cone(0.03, 0.075, 0.08))   # bocina
+    # presostatos: hidroeléctrico (triplex, 2.750-3.150 psi) e hidroneumático (neumáticas), con tubing al bloque
+    for k, yy in enumerate((HDR_Y - 0.28, HDR_Y - 0.5)):
+        xp = TQ[1] - 0.09
+        add("acero", Pos(xp, yy, TQ[5]) * Box(0.05, 0.05, 0.22, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+        caja_xp((xp, yy, TQ[5] + 0.3), 0.1, 0.1, 0.14, n_bul=2, eje=(-1, 0, 0))
+        caneria("acero", [(xp, yy, TQ[5] + 0.23), (xp, yy, TQ[5] + 0.1), (xp, HDR_Y - 0.045, TQ[5] + 0.1)], 0.004)
+    # interruptor de flotante N/C sobre el depósito y transmisor XP en el manifold de botellones
+    add("acero", Pos(TQ[0] + 0.25, TQ[3] - 0.25, TQ[5]) * Cylinder(0.04, 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+    add("rojo", Pos(TQ[0] + 0.25, TQ[3] - 0.25, TQ[5] + 0.06) * chamfer(Box(0.09, 0.09, 0.08, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.008))
+    xt = XB0 + 2.5 * BOT_P
+    add("acero", bar((xt, YB_ + MAN_D / 2 + 0.02, MAN_Z), (xt, YB_ + 0.2, MAN_Z), 0.008))
+    add("acero", Pos(xt, YB_ + 0.24, MAN_Z) * Rot(90, 0, 0) * Cylinder(0.03, 0.08))
+    add("rojo", Pos(xt, YB_ + 0.24, MAN_Z + 0.06) * Rot(90, 0, 0) * Cylinder(0.04, 0.06))
+
+
+def puertos():
+    """Riel de conexiones (ref. p97): salidas 1" NPT de las funciones sobre el lateral del patín y toma de aire 1-1/2" NPT."""
+    comp("sk575_acumulador/sk575_acum_puertos", ((TQ[0] + TQ[1]) / 2, AY + ACUM_W - 0.1, 0.3))
+    y = AY + ACUM_W - 0.095
+    add("rojo", bar((TQ[0] + 0.15, y, 0.24), (TQ[1] + 0.05, y, 0.24), 0.04, ang=(0, -1, 1)))
+    add("rojo", box(TQ[0] + 0.15, TQ[1] + 0.05, y - 0.006, y + 0.004, 0.24, 0.4))
+    for x in _xs[1:N_SEL + 1]:
+        for dx in (-0.035, 0.035):
+            hexa("acero", Vector(x + dx, y + 0.004, 0.32), (0, 1, 0), 0.04, 0.035)          # cupla 1" NPT
+            hexa("acero_oscuro", Vector(x + dx, y + 0.039, 0.32), (0, 1, 0), 0.03, 0.015)   # tapón
+    # toma de aire 1-1/2" NPT (rotulada "AIR") al colector del filtro/lubricador
+    caneria("acero", [(AX + 4.75, AY + 0.28, ZPAT + 0.08), (AX + 4.75, AY + 0.1, ZPAT + 0.08)], 0.024)
+    hexa("acero", Vector(AX + 4.75, AY + 0.1, ZPAT + 0.08), (0, -1, 0), 0.06, 0.04)
+
+
+def patin():
+    """Patín de caño (fig. 2, p95): largueros de caño con extremos curvados, travesaños, piso de chapa, orejas de izaje."""
+    comp("sk575_acumulador")
+    for y in (AY + 0.12, AY + ACUM_W - 0.12):
+        add("rojo", bar((AX + 0.1, y, 0.11), (AX + ACUM_L - 0.1, y, 0.11), 0.084))
+        for x in (AX + 0.1, AX + ACUM_L - 0.1):          # tapas de los largueros
+            add("rojo", Pos(x, y, 0.11) * Rot(0, 90, 0) * chamfer(Cylinder(0.084, 0.02).edges(), 0.008))
+    for i in range(9):
+        x = AX + 0.25 + i * (ACUM_L - 0.5) / 8
+        add("rojo", upn((x, AY + 0.12, 0.13), (x, AY + ACUM_W - 0.12, 0.13), (1, 0, 0), h=0.15, bw=0.05))
+    add("acero_oscuro", box(AX + 0.15, AX + 5.25, AY + 0.15, AY + ACUM_W - 0.15, ZPAT - 0.006, ZPAT))
+    for x in (AX + 0.6, AX + ACUM_L - 0.6):
+        for y in (AY + 0.12, AY + ACUM_W - 0.12):
+            oreja = (Box(0.12, 0.02, 0.07) + Pos(0, 0, 0.035) * Rot(90, 0, 0) * Cylinder(0.06, 0.02)
+                     - Pos(0, 0, 0.035) * Rot(90, 0, 0) * Cylinder(0.028, 0.05))
+            add("rojo", Pos(x, y, 0.235) * oreja)                                              # oreja de izaje
+    # canasto de herramientas (último tramo de la huella)
+    railing([(AX + 5.3, AY, ZPAT), (AX + ACUM_L, AY, ZPAT), (AX + ACUM_L, AY + ACUM_W, ZPAT), (AX + 5.3, AY + ACUM_W, ZPAT)], h=1.2, step=0.9)
+    add("grating", box(AX + 5.3, AX + ACUM_L - 0.05, AY + 0.15, AY + ACUM_W - 0.15, ZPAT - 0.006, ZPAT))
+
+
+patin()
+rack()
+for _k in range(N_BOT):
+    botellon(_k)
+manifold_botellones()
+deposito()
+bloque_valvulas()
+_xs = [TQ[0] + 0.3 + i * SEL_P for i in range(N_SEL + 1)]
+reguladora("anular", TQ[0] + 0.12)
+for _i, _x in enumerate(_xs[1:N_SEL + 1]):
+    selectora(_i + 1, _x)
+selectora("bypass", _xs[0], tipo="3vias")
+reguladora("manifold", TQ[1] - 0.2)
+bomba_electrica()
+for _i, _x in enumerate((AX + 4.1, AX + 4.55)):
+    bomba_neumatica(_i + 1, _x)
+neumatica_frl()
+succion_y_descarga()
+electrico_y_alarmas()
+puertos()
+comp("sk575_acumulador")

@@ -25,7 +25,7 @@
     "archivo": "public/models/tacker10/sk575_llave.glb",
     "optimize": "npm run gltf:optimize -- sk575_llave.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 4636,
-    "triangulos_publicados": 4132,
+    "triangulos_publicados": 4134,
     "segmentos_aristas": 712,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

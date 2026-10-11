@@ -10,7 +10,9 @@
  * QUÉ MUEVE: rota `mastil_pivote` alrededor del pivote de la base (la pose final es la del V2, con su leve inclinación), desliza el
  * tramo superior (reticulado, corona y luminarias del 2.º tramo) a lo largo del eje, anima los cilindros de izaje del SK-575
  * (camisa, 2 etapas y vástago; regla de `sk575_izaje.meta.json`), tiende los vientos entre los extremos de `sk575_vientos.meta.json`
- * y oculta lo que todavía no está montado (aparejo, piso del enganchador, vientos). En 100 % el visor queda exactamente como antes
+ * y oculta lo que todavía no está montado (aparejo, vientos). El piso de enganche (sub-nodo `sk575_enganche`, origen en su bisagra)
+ * viaja rebatido contra el mástil y, cuando el 2.º tramo lo saca por encima del 1.º, baja a horizontal con un pequeño sobrepaso
+ * amortiguado (`plegado()`, lo aplica 84 sobre la bisagra; ilustrativo, no es cálculo). En 100 % el visor queda exactamente como antes
  * y la pose dinámica empalma con la final (sin saltos). NO es una simulación: no hay cargas, presiones, velocidades ni tiempos
  * reales. Largos del cilindro HYCO: plano (A, src-plano-hyco); pivotes de montaje: C (no documentados); pistón interno del 2.º
  * tramo y ángulo de transporte: ilustrativos (V2 procedural previo).
@@ -18,7 +20,8 @@
  * Limitación conocida: el cable del malacate hacia la corona está fusionado con el acero del malacate: se oculta (con el resto del acero
  * del malacate) mientras dura el izamiento y reaparece al montar la corona.
  *
- * API: `window.__tackerErect = { set(p), play(), pause(), progress(), fases }` con p en [0, 1]. La UI aparece en el paso 6.
+ * API: `window.__tackerErect = { set(p), play(), pause(), progress(), fases, largos(), plegado() }` con p en [0, 1];
+ * `plegado()` = giro del piso de enganche sobre su bisagra respecto de la pose de trabajo (rad, + = rebatido hacia arriba). La UI aparece en el paso 6.
  */
 window.__rigExt.onPost((R) => {
   const T = R.three
@@ -254,7 +257,26 @@ window.__rigExt.onPost((R) => {
       c.line.geometry.attributes.position.needsUpdate = true
     }
   }
-  const tardios = [G.aparejo, G.enganche].filter(Boolean)
+  const tardios = [G.aparejo].filter(Boolean)
+
+  // ───────── piso de enganche: rebatido contra el mástil hasta que el 2.º tramo lo saca por encima del 1.º ─────────
+  // Plegado = paralelo al eje del mástil (90° − 3,5°: el piso SK está nivelado con el mástil inclinado). Se libera cuando su bisagra
+  // (68' = 20,629 m) pasa el tope del 1.er tramo (16,4 m, cad/sk575/modelo.py) con el tramo embutido E; baja "por inercia" (caída
+  // acelerada) y en la fase 3 oscila amortiguado hasta quedar horizontal. Ilustrativo: sin dinámica, masas ni tiempos reales.
+  const PLEGADO = Math.PI / 2 - (3.5 * Math.PI) / 180
+  const EXT_LIBRE = 1 - (20.629 - 16.4) / E
+  const SOBREPASO = (8 * Math.PI) / 180
+  let plegado = 0
+  function plegadoEn(pp, ext) {
+    if (pp >= 1) return 0
+    if (pp < PHASE.extendEnd) {
+      if (ext <= EXT_LIBRE) return PLEGADO
+      const u = (ext - EXT_LIBRE) / (1 - EXT_LIBRE)
+      return PLEGADO * (1 - u * u)
+    }
+    const w = (pp - PHASE.extendEnd) / (1 - PHASE.extendEnd)
+    return -SOBREPASO * Math.exp(-4 * w) * Math.sin(3 * Math.PI * w)
+  }
 
   let p = 1
   let raf = 0
@@ -290,6 +312,7 @@ window.__rigExt.onPost((R) => {
     P.rotation.z = -theta
     sup.position.y = completo ? 0 : -E * (1 - ext)
     if (conducto) conducto.visible = completo || p >= PHASE.extendEnd
+    plegado = plegadoEn(p, ext)
     for (const g of tardios) g.visible = completo || p >= PHASE.extendEnd
     const vientosTendidos = p >= PHASE.extendEnd
     gVientos.visible = vientosTendidos && !completo
@@ -375,7 +398,7 @@ window.__rigExt.onPost((R) => {
       <input type="range" id="er-range" min="0" max="100" step="1" value="100" aria-label="Avance del izamiento (100 = montado)">
     </div>
     <div id="er-fase" aria-live="polite"></div>
-    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Ilustrativo: sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
+    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Piso de enganche: viaja rebatido contra el mástil y baja a horizontal cuando el 2.º tramo lo saca por encima del 1.º (bisagra y movimiento ilustrativos, no documentados). Ilustrativo: la animación no es cálculo ni simulación dinámica; sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
   // Vive dentro del menú "Montaje" de la barra, debajo de la secuencia (sin paneles flotantes).
   if (window.__rigToolbar) window.__rigToolbar.add('montaje', box)
   else document.body.appendChild(box)
@@ -422,5 +445,6 @@ window.__rigExt.onPost((R) => {
     progress: () => p,
     fases: PHASE,
     largos: () => [...largos],
+    plegado: () => plegado,
   }
 })
