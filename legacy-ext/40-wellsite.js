@@ -2606,16 +2606,18 @@
    * BOP + acumulador + choke manifold. Grado C (geometría SK-575) / Fuente en conflicto (C2). Se aplica cuando el módulo de producto arranca (`tacker:boot`).
    */
   const META_BOP = {
-    // CONF. = confianza de la GEOMETRÍA que se ve (modelo SK-575, C); la de cada dato va en el texto (src/data/rigs/tacker10.ts, sk575_bop / sk575_manifold).
-    grade: 'C',
+    // CONF. = confianza de la GEOMETRÍA que se ve; la de cada dato va en el texto (src/data/rigs/tacker10.ts, sk575_bop / sk575_manifold).
+    grade: 'B',
     status: 'Fuente en conflicto',
     basis:
-      'Geometría: modelo de referencia SK-575 (C, src-modelo-sk575) · Datos: folleto (src-folleto), manuales BOP 11" (src-manual-bop-11), esquema KL/CL y manifold (src-esquema-ahogo), escala B20-9908 (src-choke-b20)',
+      'Stack: plano TACKER 8127-1110-004 rev 4 (src-plano-bop-8127; alturas A, anchos y líneas medidos C) · Datos: folleto (src-folleto) · ' +
+      'manifold: esquema M1–M12 (src-esquema-ahogo) con escala B20-9908 (src-choke-b20)',
     note:
-      'Diámetro nominal: Fuente en conflicto: folleto 7-1/16" 5M (B) · el modelo está dibujado a 11" 5M (manuales Xinde; aplicabilidad al TKR-10 no confirmada). ' +
-      'Acumulador de 5 botellas (folleto, A). Manifold de ahogo M1–M12: disposición de un esquema sin identificar y escala tomada de otro equipo ' +
-      '(Thrubore B20-9908, TKR-08): no es el manifold del TKR-10. Geometría aproximada, no as-built. ' +
-      'Pendientes: placa del BOP instalado, identidad del manifold, color del BOP/acumulador, presión de trabajo del choke y ruteo choke/kill.',
+      'Stack estándar WS 7-1/16": ram simple, cruz, doble ram + shear (10.000 psi) y anular (5.000 psi), 3,731 m. ' +
+      'Presión: Fuente en conflicto con el folleto (7-1/16" 5.000 psi). Base a nivel de terreno con cabezal en sótano y choke hacia las piletas: ' +
+      'interpretación pendiente de relevar. Acumulador de 5 botellas (folleto, A). Manifold de ahogo: disposición de un esquema sin identificar ' +
+      'y escala de otro equipo (TKR-08): no es el manifold del TKR-10. Geometría aproximada, no as-built. ' +
+      'Pendientes: placa del BOP instalado, cota real del cabezal / sótano, identidad del manifold y color del BOP/acumulador.',
   }
   const applyMeta = () => {
     const meta = window.__TACKER_META

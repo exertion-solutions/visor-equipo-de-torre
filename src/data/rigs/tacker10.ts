@@ -271,34 +271,47 @@ const SK575_COMPONENTS: Component[] = [
   ),
   sk575(
     'sk575_bop',
-    'Conjunto BOP (carretel, doble ram, anular, KL/CL)',
+    'Stack BOP estándar 7-1/16" (ram simple, cruz, doble ram + shear, anular) con líneas de choke y kill',
     'well-control',
-    ['src-folleto', 'src-manual-bop-11', 'src-esquema-ahogo'],
-    'Dibujado a 11" (manuales de la carpeta del usuario); el diámetro nominal está en conflicto con el folleto (7-1/16"). Cuerpos y bridas ilustrativos.',
+    ['src-plano-bop-8127', 'src-folleto', 'src-manual-bop-11'],
+    'Alturas de los 5 tramos rotuladas en el plano 8127-1110-004; anchos, bonetes y líneas medidos sobre el plano (C). Base a nivel de terreno con cabezal en sótano y choke hacia las piletas: interpretación pendiente de relevar.',
     [
       {
         ...spec(
           'nominalBore',
           'Diámetro nominal / presión',
-          '7-1/16" 5.000 psi',
+          '7-1/16" · rams 10.000 psi · anular 5.000 psi',
           'B',
-          'src-folleto',
+          'src-plano-bop-8127',
         ),
         conflicts: [
           {
+            sourceId: 'src-folleto',
+            value: '7-1/16" 5.000 psi',
+            note: 'Mismo diámetro; el folleto da 5.000 psi para el conjunto. El plano es el estándar de flota WS: confirmar con la placa del BOP instalado',
+          },
+          {
             sourceId: 'src-manual-bop-11',
             value: '11" 5.000 psi',
-            note: 'El modelo 3D usa 11"; aplicabilidad de esos manuales al TKR-10 no confirmada',
+            note: 'Manuales de otra unidad; el modelo 3D ya no usa 11" (C2 cerrado por el plano 8127)',
           },
         ],
       },
+      spec(
+        'stackHeightM',
+        'Alto del stack (tramos 0,792 · 0,760 · 1,232 · 0,127 · 0,815; las parciales suman 3,726)',
+        3.731,
+        'A',
+        'src-plano-bop-8127',
+        'm',
+      ),
       spec('accumulatorBottles', 'Acumulador (botellas)', 5, 'A', 'src-folleto'),
       spec(
         'killChokeLines',
-        'Líneas KL / CL',
-        'KL1/KL2 2-1/16" 5M · CL1/CL2 4-1/16" 5M',
-        'C',
-        'src-esquema-ahogo',
+        'Líneas de choke / kill',
+        'Choke 3-1/16" 10k (HCR + manual) · Kill 2-1/16" 10k (manuales + retenciones, WECO 1502 / 602)',
+        'B',
+        'src-plano-bop-8127',
       ),
     ],
   ),
@@ -624,6 +637,15 @@ export const TACKER10_RIG: Rig = {
       title:
         'Planillas de inspección SOP 1110 (API RP 8B / SPEC 8C): amelas 150 t y elevador de cierre central — APROBADA',
       ref: 'Imágenes provistas por el usuario 2026-10-09',
+      verified: true,
+    },
+    {
+      id: 'src-plano-bop-8127',
+      kind: 'layout',
+      title:
+        'Plano TACKER 8127-1110-004 "Esquema típico stack BOP estándar 7-1/16" 10 KSI" (Well Service, estándar de flota)',
+      ref: 'C:\\Users\\jcastro\\cad\\8127-0011 EnsamblajeBOP STACK WS STD 30092026.PDF',
+      revision: 'rev 4, 30/09/2026',
       verified: true,
     },
     {

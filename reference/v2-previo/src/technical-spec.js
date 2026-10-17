@@ -72,5 +72,11 @@ export const TACKER_10 = Object.freeze({
       sandDrumIn: Object.freeze([42, 8]), sandBarrelIn: Object.freeze([16, 43.75]), discAssistIn: 48.5,
     }),
     hoisting: Object.freeze({ linksT: 150, linksLengthIn: 73, linksDiaIn: 3, elevatorBoreIn: 3.21875, src: 'src-insp-sop1110' }),
+    // Plano TACKER 8127-1110-004 rev 4 "Esquema típico stack BOP estándar 7-1/16\" 10 ksi" (WS STD). Parciales de abajo hacia arriba:
+    // ram simple + carretel · cruz · doble ram + shear · carretel 10k→5k · anular 5k. Suman 3,726; el total rotulado dice 3,731.
+    bopStack: Object.freeze({
+      src: 'src-plano-bop-8127', boreIn: 7.0625, ramsPsi: 10000, annularPsi: 5000,
+      sectionsM: Object.freeze([0.792, 0.76, 1.232, 0.127, 0.815]), totalM: 3.731,
+    }),
   }),
 });

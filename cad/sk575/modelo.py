@@ -637,71 +637,172 @@ for k in range(8):                                                              
     add("cable", bar(M(MC + 0.3, y, H + 0.75), (WXP, y * 0.5, ZA + 0.85), 0.0127))
 
 comp("sk575_bop")
-# ───────────────────────── BOP bajo el piso (manuales Xinde: 2FZ28-35II / FH28-35I) ─────────────────────────
-# Doble ram 11" 5M: alto 1374, largo con vástagos 2830, ancho 817, cilindros Ø241, bridas Ø585 R54, salidas 3-1/8" (p.1/p.10).
-# Anular 11" 5M: alto 1056, cuerpo Ø1138, bridas Ø585, cabeza troncocónica con espárragos (p.1/p.7).
-def brida(z, d=0.585, e=0.07, n=12, r_b=0.2413):
+# ───────────────────────── Stack BOP estándar WS 7-1/16" 10 ksi (plano TACKER 8127-1110-004 rev 4) ─────────────────────────
+# Plano "ESQUEMA TÍPICO STACK BOP ESTÁNDAR - 7 1/16" 10 KSI" (DJLeyria, 30/09/2026, 1:30; src-plano-bop-8127, no se versiona).
+# Cotas rotuladas (A), de abajo hacia arriba: 792 ram simple [1] + carretel [2] · 760 cruz con salidas (sin número en la
+# lista: "13" falta) · 1232 doble ram + shear [6] · 127 carretel 10k→5k [7] · 815 anular 5k [8]. Las parciales suman 3,726 m;
+# el total rotulado dice 3,731 (5 mm): se usan las parciales. Anchos, alturas internas, bonetes y líneas: medidos sobre el plano
+# (render a 1:30, 3,53 mm/px, contrastado con las 5 cotas y con la brida 7-1/16" 10k ≈ 0,48 m) → confianza C.
+# Base del stack a nivel de terreno (cabezal en sótano) y choke hacia las piletas (+Y), kill hacia −Y, bonetes a lo largo del
+# carrier (X): decisiones del usuario 2026-10-17, interpretación pendiente de relevar en el equipo (C12).
+# Lo que el plano dibuja sobre el anular (adaptador con válvula de palanca) no figura en la lista de ítems: no se modela.
+BOP_H = (0.792, 0.760, 1.232, 0.127, 0.815)                                          # parciales rotuladas (m)
+BOP_Z = [0.0]
+for h_ in BOP_H:
+    BOP_Z.append(BOP_Z[-1] + h_)
+Z1, Z2, Z3, Z4, Z5 = BOP_Z[1:]                                                        # 0,792 · 1,552 · 2,784 · 2,911 · 3,726
+D10, D5 = 0.48, 0.41                                                                  # bridas 7-1/16" 10k / 5k (medidas, C)
+ZKL = 0.44                                                                             # eje de la línea de kill frente al ram [1]
+ZCH = 1.165                                                                           # eje de las salidas de la cruz
+YK = -0.54                                                                            # T de kill [10]/[14] (lado −Y)
+
+
+def brida(z, d=0.585, e=0.07, n=12, r_b=0.2413, mat="azul"):
     """Brida API con bulones (n espárragos con tuerca hexagonal en ambas caras)."""
-    add("azul", Pos(WXP, 0, z) * fillet(Cylinder(d / 2, e, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.006))
+    add(mat, Pos(WXP, 0, z) * fillet(Cylinder(d / 2, e, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.006))
     for k in range(n):
         a = 2 * pi * (k + 0.5) / n
         x, y = WXP + r_b * cos(a), r_b * sin(a)
-        add("acero", Pos(x, y, z - 0.03) * Cylinder(0.024, e + 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN)))
-        for zz in (z - 0.035, z + e):
-            add("acero_oscuro", Pos(x, y, zz) * extrude(RegularPolygon(0.042, 6), 0.035))
+        add("acero", Pos(x, y, z - 0.03) * Cylinder(0.019, e + 0.06, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+        for zz in (z - 0.03, z + e):
+            add("acero_oscuro", Pos(x, y, zz) * extrude(RegularPolygon(0.034, 6), 0.03))
 
 
-# cabezal de pozo / carretel hasta la base del stack
-add("azul", Pos(WXP, 0, 0) * Cylinder(0.4, 0.35, align=(Align.CENTER, Align.CENTER, Align.MIN)))
-add("azul", Pos(WXP, 0, 0.35) * Cylinder(0.2, 0.25, align=(Align.CENTER, Align.CENTER, Align.MIN)))
-Z_SP = 0.6                                                                           # carretel de perforación 11" 5M
-brida(Z_SP)
-add("azul", Pos(WXP, 0, Z_SP + 0.07) * Cylinder(0.22, 0.31, align=(Align.CENTER, Align.CENTER, Align.MIN)))
-add("azul", Pos(WXP, 0, Z_SP + 0.24) * Rot(90, 0, 0) * Cylinder(0.12, 0.44))
-Z_RAM = Z_SP + 0.45
-brida(Z_RAM - 0.07)
-brida(Z_RAM)
-# doble ram: cuerpo + 2 bonetes por lado (uno por cavidad) con cilindro de operación y vástago de traba
-cuerpo = box(WXP - 0.408, WXP + 0.408, -0.62, 0.62, Z_RAM + 0.07, Z_RAM + 1.304, f=0.03)
-cuerpo -= Pos(WXP, 0, Z_RAM) * Cylinder(0.14, 3)                                     # paso 11"
-add("rojo", cuerpo)
-for zc in (Z_RAM + 0.38, Z_RAM + 0.99):                                              # cavidades
-    for s in (-1, 1):
-        add("rojo", Pos(WXP, s * 0.62, zc) * Rot(90, 0, 0) * fillet(Cylinder(0.3, 0.1).edges(), 0.015))   # bonete
-        add("rojo", Pos(WXP, s * 0.87, zc) * Rot(90, 0, 0) * fillet(Cylinder(0.1206, 0.42).edges(), 0.012))  # cilindro Ø241
-        add("acero", bar((WXP, s * 1.08, zc), (WXP, s * 1.415, zc), 0.028))               # vástago de traba (total 2830)
-        add("acero_oscuro", Pos(WXP, s * 1.415, zc) * Rot(90, 0, 0) * Torus(0.09, 0.012))  # volante
-    for s in (-1, 1):                                                                # salidas laterales 3-1/8" con brida ciega
-        add("rojo", Pos(WXP + s * 0.408, 0, zc) * Rot(0, 90, 0) * Cylinder(0.08, 0.12))
-        add("azul", Pos(WXP + s * 0.49, 0, zc) * Rot(0, 90, 0) * Cylinder(0.135, 0.045))
-brida(Z_RAM + 1.304)
-# anular: carcasa inferior Ø1138 con canto redondeado + cuello a brida, cabeza troncocónica, orejas de izaje
-Z_AN = Z_RAM + 1.374
-brida(Z_AN)
-an = Pos(WXP, 0, Z_AN + 0.07) * Cylinder(0.3, 0.12, align=(Align.CENTER, Align.CENTER, Align.MIN))
-an += Pos(WXP, 0, Z_AN + 0.17) * fillet(Cylinder(0.569, 0.5, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.12)
-an += Pos(WXP, 0, Z_AN + 0.67) * Cone(0.52, 0.31, 0.32, align=(Align.CENTER, Align.CENTER, Align.MIN))
-an -= Pos(WXP, 0, Z_AN) * Cylinder(0.14, 3)
+def cuello(z0, z1, r):
+    add("rojo", Pos(WXP, 0, z0) * Cylinder(r, z1 - z0, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+
+
+def eje(p, d, r, L, mat="rojo"):
+    """Cilindro de radio r y largo L desde el punto p en la dirección d ('x+', 'x-', 'y+', 'y-', 'z+', 'z-')."""
+    s_ = 1 if d[1] == "+" else -1
+    q = list(p)
+    q["xyz".index(d[0])] += s_ * L
+    add(mat, bar(p, tuple(q), r))
+
+
+def ram(zc, x_bon, r_bon, x_cil, r_cil, x_vas, r_vas, booster=False):
+    """Par de bonetes de una cavidad a lo largo de X: bonete, cilindro de operación y vástago de traba con volante."""
+    for s_ in (-1, 1):
+        eje((WXP + s_ * 0.49, 0, zc), "x" + "+-"[s_ < 0], r_bon, x_bon - 0.49)
+        eje((WXP + s_ * x_bon, 0, zc), "x" + "+-"[s_ < 0], r_cil, x_cil - x_bon)
+        if booster:                                                                   # anillos del cilindro del shear
+            for xr in (x_bon + 0.02, x_cil - 0.03):
+                add("rojo", Pos(WXP + s_ * xr, 0, zc) * Rot(0, 90, 0) * Cylinder(r_bon, 0.04))
+        eje((WXP + s_ * x_cil, 0, zc), "x" + "+-"[s_ < 0], r_vas, x_vas - x_cil, "acero")
+        add("acero_oscuro", Pos(WXP + s_ * x_vas, 0, zc) * Rot(0, 90, 0) * Torus(0.07, 0.01))
+    for s_ in (-1, 1):                                                                # salidas laterales ciegas (vistas de frente)
+        add("rojo", Pos(WXP, s_ * 0.255, zc) * Rot(90, 0, 0) * Cylinder(0.1, 0.03))
+
+
+def compuerta(p, d, L, r=0.07, volante="z", rv=0.2, lado=1):
+    """Válvula esclava manual en línea (dirección d desde p, largo L): cuerpo, bridas y volante sobre su vástago."""
+    s_ = 1 if d[1] == "+" else -1
+    i = "xyz".index(d[0])
+    c = list(p)
+    c[i] += s_ * L / 2
+    dims = [0.22, 0.22, 0.26]
+    dims[i] = L * 0.45
+    add("rojo", Pos(*c) * fillet(Box(*dims).edges(), 0.02))
+    for f_ in (-1, 1):
+        q = list(c)
+        q[i] += f_ * L * 0.4
+        add("rojo", Pos(*q) * (Rot(0, 90, 0), Rot(90, 0, 0), Rot(0, 0, 0))[i] * Cylinder(r * 1.9, 0.05))
+    j = "xyz".index(volante)
+    t = list(c)
+    t[j] += lado * (0.13 + 0.2)
+    add("acero", bar(tuple(c), tuple(t), 0.018))
+    rot = {"x": Rot(0, 90, 0), "y": Rot(90, 0, 0), "z": Rot(0, 0, 0)}[volante]
+    add("acero_oscuro", Pos(*t) * rot * Torus(rv, 0.016))
+    for a in (0, 120, 240):
+        add("acero_oscuro", Pos(*t) * rot * Rot(0, 0, a) * Pos(rv / 2, 0, 0) * Box(rv, 0.025, 0.02))
+
+
+def check(p, d, L, r=0.07):
+    """Válvula de retención: cuerpo con domo de tapa."""
+    s_ = 1 if d[1] == "+" else -1
+    i = "xyz".index(d[0])
+    c = list(p)
+    c[i] += s_ * L / 2
+    eje(p, d, r * 1.6, L)
+    add("rojo", Pos(c[0], c[1], c[2] + r * 1.6) * Cylinder(r * 1.1, 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+
+
+# cabezal de pozo en sótano (interpretación del usuario): bajo el terreno, sin cota
+add("azul", Pos(WXP, 0, -0.6) * Cylinder(0.4, 0.35, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+add("azul", Pos(WXP, 0, -0.25) * Cylinder(0.2, 0.25, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+
+# [1] ram simple 7-1/16" 10k + [2] carretel (tramo 792)
+brida(0.0, d=D10, e=0.12, r_b=0.2, mat="rojo")
+cuello(0.12, 0.2, 0.17)
+add("rojo", box(WXP - 0.49, WXP + 0.49, -0.255, 0.255, 0.2, 0.6, f=0.025))
+ram(0.4, 0.67, 0.14, 0.865, 0.09, 1.04, 0.035)
+cuello(0.6, 0.64, 0.17)
+brida(0.64, d=D10, e=0.07, r_b=0.2, mat="rojo")
+cuello(0.71, Z1 - 0.07, 0.17)
+brida(Z1 - 0.07, d=D10, e=0.07, r_b=0.2, mat="rojo")
+# cruz con salidas 4-1/16" (tramo 760)
+brida(Z1, d=D10, e=0.068, r_b=0.2, mat="rojo")
+cuello(Z1 + 0.068, 0.988, 0.17)
+add("rojo", box(WXP - 0.24, WXP + 0.24, -0.18, 0.18, 0.988, 1.341, f=0.02))
+cuello(1.341, Z2 - 0.087, 0.17)
+brida(Z2 - 0.087, d=D10, e=0.087, r_b=0.2, mat="rojo")
+# choke (+Y): [3] cross-over 4-1/16"→3-1/16" · [4] HCR 3-1/16" 10k · [5] compuerta manual 3-1/16" 10k
+eje((WXP, 0.18, ZCH), "y+", 0.08, 0.07)
+add("rojo", Pos(WXP, 0.29, ZCH) * Rot(90, 0, 0) * Cylinder(0.15, 0.09))                                   # [3]
+eje((WXP, 0.335, ZCH), "y+", 0.06, 0.3)
+add("rojo", Pos(WXP, 0.74, ZCH) * fillet(Box(0.26, 0.28, 0.3).edges(), 0.03))                              # [4] cuerpo
+add("rojo", Pos(WXP, 0.74, ZCH + 0.15) * fillet(Cylinder(0.095, 0.47, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.02))
+add("acero", bar((WXP, 0.74, ZCH - 0.15), (WXP, 0.74, ZCH - 0.31), 0.02))                                # indicador
+eje((WXP, 0.88, ZCH), "y+", 0.06, 0.12)
+compuerta((WXP, 1.0, ZCH), "y+", 0.66, volante="z", rv=0.24)                                               # [5]
+# kill (−Y): [9] cross-over 4-1/16"→2-1/16" · [10] T con [11] brida ciega · [12] compuerta hacia abajo · [14] T con [15] ciega
+eje((WXP, -0.18, ZCH), "y-", 0.08, 0.07)
+add("rojo", Pos(WXP, -0.3, ZCH) * Rot(90, 0, 0) * Cylinder(0.13, 0.08))                                    # [9]
+eje((WXP, -0.34, ZCH), "y-", 0.045, 0.1)
+add("rojo", Pos(WXP, YK, ZCH) * fillet(Box(0.21, 0.23, 0.21).edges(), 0.015))                              # [10]
+add("rojo", Pos(WXP, YK - 0.14, ZCH) * Rot(90, 0, 0) * Cylinder(0.1, 0.05))                                # [11]
+compuerta((WXP, YK, ZCH - 0.105), "z-", ZCH - 0.105 - ZKL - 0.1, volante="y", rv=0.2, lado=-1)             # [12]
+add("rojo", Pos(WXP, YK, ZKL) * fillet(Box(0.2, 0.32, 0.2).edges(), 0.015))                                 # [14]
+add("rojo", Pos(WXP, YK, ZKL - 0.12) * Cylinder(0.1, 0.05))                                                 # [15]
+# línea de kill frente al ram [1] a lo largo de X: [16]/[19] compuertas · [17]/[20] retenciones · [18] WECO 1502 / [21] WECO 602
+for s_, tags in ((1, ("16", "17", "18")), (-1, ("19", "20", "21"))):
+    d_ = "x" + ("+" if s_ > 0 else "-")
+    compuerta((WXP + s_ * 0.1, YK, ZKL), d_, 0.56, r=0.05, volante="y", rv=0.21, lado=-1)
+    check((WXP + s_ * 0.66, YK, ZKL), d_, 0.26, r=0.05)
+    eje((WXP + s_ * 0.92, YK, ZKL), d_, 0.05, 0.12)
+    add("rojo", Pos(WXP + s_ * 1.06, YK, ZKL) * Rot(0, 90, 0) * Cylinder(0.075, 0.07))                     # unión WECO
+    eje((WXP + s_ * 1.095, YK, ZKL), d_, 0.04, 0.05, "acero")
+# [6] doble ram + shear 7-1/16" 10k (tramo 1232): shear abajo (cilindros con booster), pipe ram arriba
+brida(Z2, d=D10, e=0.088, r_b=0.2, mat="rojo")
+cuello(Z2 + 0.088, 1.765, 0.14)
+add("rojo", box(WXP - 0.49, WXP + 0.49, -0.255, 0.255, 1.765, 2.584, f=0.025))
+ram(1.955, 0.70, 0.16, 0.99, 0.12, 1.37, 0.045, booster=True)
+ram(2.37, 0.67, 0.14, 0.865, 0.09, 1.04, 0.035)
+cuello(2.584, Z3 - 0.084, 0.14)
+brida(Z3 - 0.084, d=D10, e=0.084, r_b=0.2, mat="rojo")
+# [7] carretel 7-1/16" 10k → 5k (tramo 127)
+brida(Z3, d=D10, e=0.07, r_b=0.2, mat="rojo")
+add("rojo", Pos(WXP, 0, Z3 + 0.07) * Cylinder(D10 / 2 - 0.02, Z4 - Z3 - 0.07, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+# [8] anular 7-1/16" 5k (tramo 815): brida, cuello, cuerpo Ø0,66, cabeza troncocónica, brida superior y orejas
+brida(Z4, d=D5, e=0.1, r_b=0.17, mat="rojo")
+cuello(Z4 + 0.1, 3.106, 0.115)
+an = Pos(WXP, 0, 3.106) * fillet(Cylinder(0.33, 0.459, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.05)
+an += Pos(WXP, 0, 3.565) * Cone(0.29, 0.24, 0.115, align=(Align.CENTER, Align.CENTER, Align.MIN))
+an -= Pos(WXP, 0, Z4) * Cylinder(0.09, 2)
 add("rojo", an)
-for k in range(16):                                                                  # bulones de unión carcasas
-    a = 2 * pi * k / 16
-    add("acero_oscuro", Pos(WXP + 0.55 * cos(a), 0.55 * sin(a), Z_AN + 0.6) * Cylinder(0.025, 0.06))
-for s in (-1, 1):
-    add("acero_oscuro", Pos(WXP, s * 0.5, Z_AN + 0.86) * Rot(0, 90, 0) * Torus(0.07, 0.022))   # orejas de izaje
-for s in (-1, 1):                                                                    # puertos hidráulicos 1" NPT
-    add("acero", Pos(WXP + 0.58, s * 0.12, Z_AN + 0.42) * Rot(0, 90, 0) * Cylinder(0.025, 0.08))
-brida(Z_AN + 1.0, d=0.62, e=0.056)                                                   # cara con espárragos
-LN = ZP - 0.02 - (Z_AN + 1.056)                                                      # niple campana hasta el piso
-add("acero", Pos(WXP, 0, Z_AN + 1.056) * (Cylinder(0.17, LN, align=(Align.CENTER, Align.CENTER, Align.MIN))
-                                         - Cylinder(0.15, LN + 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN))))   # niple campana
+add("rojo", Pos(WXP, 0, 3.68) * (Cylinder(0.24, Z5 - 3.68, align=(Align.CENTER, Align.CENTER, Align.MIN)) - Cylinder(0.09, 1)))
+for s_ in (-1, 1):
+    add("rojo", Pos(WXP + s_ * 0.27, 0, 3.66) * box(-0.04, 0.04, -0.012, 0.012, -0.05, 0.05))                 # orejas de izaje
+    add("acero", Pos(WXP - 0.34, s_ * 0.08, 3.37) * Rot(0, 90, 0) * Cylinder(0.025, 0.06))                 # puertos hidráulicos
 
-# mesa-cuña neumática (spider) para tubing 2-3/8"–3-1/2"
-add("acero_oscuro", Pos(WXP, 0, ZP + 0.03) * (fillet(Cylinder(0.32, 0.28, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.03)
+# mesa-cuña neumática (spider) para tubing 2-3/8"–3-1/2", apoyada sobre el piso o sobre la brida superior del anular
+ZSB = max(ZP + 0.03, Z5)
+add("acero_oscuro", Pos(WXP, 0, ZSB) * (fillet(Cylinder(0.32, 0.28, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.03)
                                               - Cylinder(0.11, 1)))
 for k in range(3):
     a = 2 * pi * k / 3
-    add("acero", Pos(WXP + 0.13 * cos(a), 0.13 * sin(a), ZP + 0.31) * Rot(0, 0, a * 180 / pi) * box(-0.04, 0.04, -0.06, 0.06, 0, 0.305 * 0.5, f=0.01))
-add("rojo", Pos(WXP + 0.38, 0, ZP + 0.18) * Rot(0, 90, 0) * fillet(Cylinder(0.07, 0.25).edges(), 0.01))   # actuador neumático
+    add("acero", Pos(WXP + 0.13 * cos(a), 0.13 * sin(a), ZSB + 0.28) * Rot(0, 0, a * 180 / pi) * box(-0.04, 0.04, -0.06, 0.06, 0, 0.305 * 0.5, f=0.01))
+add("rojo", Pos(WXP + 0.38, 0, ZSB + 0.15) * Rot(0, 90, 0) * fillet(Cylinder(0.07, 0.25).edges(), 0.01))   # actuador neumático
 
 comp("sk575_llave")
 # ───────────────────────── llave hidráulica colgada ─────────────────────────
@@ -775,7 +876,7 @@ manguera((WXP + 1.1, -0.15, ZL + 0.6), (WXP + 1.4, -1.2, ZP + 0.2), (X1 - 0.2, -
 comp("sk575_carrier")
 # ───────────────────────── mangueras hidráulicas carrier → piso ─────────────────────────
 for y in (-0.35, 0.0, 0.35):
-    manguera((-2.3, y, ZK + 0.05), (-1.6, y * 1.6, 0.4), (X0 + 0.1, y * 2, ZP - 0.2))
+    manguera((-2.3, y, ZKL + 0.05), (-1.6, y * 1.6, 0.4), (X0 + 0.1, y * 2, ZP - 0.2))
 comp("sk575_planchada")
 # planchada de 12 m (pipe rack) + rampa a la puerta en V. Posición respecto del pozo medida del vector de LAYOUT-WS10-0001
 # (4,66 pt/m calibrado con los anclajes 27,4 + 24,4 m): planchada a 4,96…16,96 m del pozo; caballetes transversales a 7,45 y
@@ -1026,20 +1127,13 @@ for path in (vent, gol):
     for p, q in zip(path, path[1:]):
         add("azul", bar(p, q, 0.045), Pos(*q) * Sphere(0.055))
 
-comp("sk575_bop")
-# carretel de perforación bajo los rams con líneas de choke (+Y) y de ahogo (−Y) — esquema "Conjunto de BOP y válvulas"
-# CL1 manual + CL2 HCR 4-1/16" 5M hacia el manifold; KL1 manual + KL2 HCR 2-1/16" 5M desde la bomba.
-ZC = Z_SP + 0.24                                                            # eje de salidas del carretel
-for s, (k, t1, t2) in ((1, (1.15, "CL1", "CL2")), (-1, (0.85, "KL1", "KL2"))):
-    add("azul", Pos(WXP, s * 0.3, ZC) * Rot(90, 0, 0) * Cylinder(0.07 * k, 0.2))
-    valvula(WXP, s * 0.62, ZC, "y", k=k, tag=t1, stem="x")
-    valvula(WXP, s * 1.12, ZC, "y", hid=True, k=k, tag=t2, stem="x")
 comp("sk575_manifold")
-# línea de choke 3" desde CL2 hasta M9 (a ras del suelo) y línea de ahogo desde la bomba triplex hasta KL2
-fl = [(WXP, 1.45, ZC), (WXP, 2.0, ZC), (WXP, 2.0, 0.15), (WXP, 6.0, 0.15), (CX, 6.0, 0.15), (CX, CY - 0.75, 0.15), (CX, CY - 0.75, CZ),
+# línea de choke desde la compuerta [5] (plano 8127) hasta M9 (a ras del suelo) y línea de ahogo desde la bomba triplex hasta la
+# unión WECO 1502 [18] de la línea de kill del stack
+fl = [(WXP, 1.68, ZCH), (WXP, 2.0, ZCH), (WXP, 2.0, 0.15), (WXP, 6.0, 0.15), (CX, 6.0, 0.15), (CX, CY - 0.75, 0.15), (CX, CY - 0.75, CZ),
       (CX, CY - 0.62, CZ)]
 BX, BY = WXP - 19.2, 14.3                                                   # bomba triplex (ver abajo)
-kl = [(WXP, -1.35, ZC), (WXP, -1.7, ZC), (WXP, -1.7, 0.1), (WXP + 4.0, -1.7, 0.1), (WXP + 4.0, 13.4, 0.1),
+kl = [(WXP + 1.15, YK, ZKL), (WXP + 1.4, YK, ZKL), (WXP + 1.4, YK, 0.1), (WXP + 4.0, YK, 0.1), (WXP + 4.0, 13.4, 0.1),
       (BX + 5.15, 13.4, 0.1), (BX + 5.15, BY + 0.1, 0.1), (BX + 5.15, BY + 0.1, 1.15), (BX + 5.15, BY + 0.6, 1.15)]
 for path, r in ((fl, 0.045), (kl, 0.03)):
     for p, q in zip(path, path[1:]):
