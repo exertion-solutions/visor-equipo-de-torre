@@ -331,7 +331,7 @@ def meta_vientos(g, wxp):
         ),
         extremos_mastil="Con el mástil armado (inclinado 3,5°). Alturas de amarre (A 29,5 m, B 19,0 m), plataforma, corona y "
                         "pirosalva: C (no documentadas, informe §5). Diámetros A 3/4\" y B 5/8\": src-placa-api; plataforma "
-                        "9/16\" e internos 1\": Rig Up p3; pirosalva: valor del modelo (C).",
+                        "9/16\" e internos 1\": Rig Up p3; pirosalva: anclaje en el eje a 45 m del pozo (src-layout-ws10; fuente en conflicto: LAYOUT TKR-10 2025 = 30 m, YPF ~35°), amarre C.",
     )
 
 

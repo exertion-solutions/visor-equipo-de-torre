@@ -59,3 +59,8 @@ docs/references/enganche/*.png
 .claude/worktrees/
 __pycache__/
 *.pyc
+
+# documentos y fotos sueltos en la raíz (planos TACKER, imágenes de terceros): nunca al repo público
+/*.pdf
+/*.PDF
+/*.avif

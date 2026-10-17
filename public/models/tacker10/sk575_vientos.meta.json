@@ -213,9 +213,9 @@
         -1.2
       ],
       "extremo_tierra": [
-        26.7229,
+        45,
         0.5,
-        -19.8195
+        0
       ]
     }
   ],
@@ -224,12 +224,12 @@
     "confianza": "B",
     "conflicto": "C4 · Fuente en conflicto: folleto 20 m · spec 25 ± 3 m · layout WS10 27,4 / 24,4 ± 3 m (± 26,8 lat.) · placa 94' (28,7 m) / 82' (25 m), 68' lat. El modelo dibuja WS10; no es diseño de anclaje ni distancia de exclusión."
   },
-  "extremos_mastil": "Con el mástil armado (inclinado 3,5°). Alturas de amarre (A 29,5 m, B 19,0 m), plataforma, corona y pirosalva: C (no documentadas, informe §5). Diámetros A 3/4\" y B 5/8\": src-placa-api; plataforma 9/16\" e internos 1\": Rig Up p3; pirosalva: valor del modelo (C).",
+  "extremos_mastil": "Con el mástil armado (inclinado 3,5°). Alturas de amarre (A 29,5 m, B 19,0 m), plataforma, corona y pirosalva: C (no documentadas, informe §5). Diámetros A 3/4\" y B 5/8\": src-placa-api; plataforma 9/16\" e internos 1\": Rig Up p3; pirosalva: anclaje en el eje a 45 m del pozo (src-layout-ws10; fuente en conflicto: LAYOUT TKR-10 2025 = 30 m, YPF ~35°), amarre C.",
   "publicado": {
     "archivo": "public/models/tacker10/sk575_vientos.glb",
     "optimize": "npm run gltf:optimize -- sk575_vientos.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 23908,
-    "triangulos_publicados": 5438,
+    "triangulos_publicados": 5260,
     "segmentos_aristas": 882,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

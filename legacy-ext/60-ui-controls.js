@@ -168,7 +168,15 @@ window.__rigExt.onPost(() => {
   const hint = $('hint')
   const stage = $('stage')
   if (hint && stage) {
-    const COVERS = ['tree', 'detail', 'cad-inspector', 'v2-qhse', 'legend', 'cad-status']
+    const COVERS = [
+      'tree',
+      'detail',
+      'cad-inspector',
+      'v2-qhse',
+      'legend',
+      'cad-status',
+      'vp-panel',
+    ]
     const overlaps = (a, b) =>
       a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
     const updateHint = () => {

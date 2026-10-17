@@ -28,7 +28,9 @@ const LANZAR = {
 const problemas = []
 
 const vigilar = (p) => {
-  p.on('console', (m) => m.type() === 'error' && problemas.push(m.text()))
+  p.on('console', (m) => {
+    if (m.type() === 'error') problemas.push(m.text())
+  })
   p.on('pageerror', (e) => problemas.push(e.message))
 }
 const abrir = async (viewport) => {
@@ -848,6 +850,169 @@ test('QHSE: un único panel lateral; "SIN VALIDAR" y el aviso del A2 siguen visi
   }
   assert.deepEqual(abierto, esperado)
   assert.deepEqual(plegado, esperado)
+})
+
+// Recorrido en primera persona (87-recorridos.js): cada viewpoint, volver, caminata con colisión, doble clic y recorrido guiado.
+test('recorridos: cada viewpoint ubica la cámara, resalta el equipo y muestra la ficha; volver restaura', async (t) => {
+  if (skip) return t.skip(skip)
+  const antes = await page.evaluate(() => ({
+    pos: window.__rig.camera().position.toArray(),
+    ortho: !!window.__rig.view.ortho,
+  }))
+  try {
+    const r = await page.evaluate(() => {
+      const VP = window.__tackerVp
+      return VP.list().map((v) => {
+        VP.go(v.id, { instant: true })
+        const cam = window.__rig.camera()
+        let velos = 0
+        window.__rig.scene.traverse((o) => o.userData.vpVelo && velos++)
+        return {
+          id: v.id,
+          err: cam.position.distanceTo(new window.__rig.three.Vector3(...v.camPos)),
+          persp: cam.isPerspectiveCamera,
+          velos,
+          pide: v.objeto3D.length > 0,
+          ficha:
+            !document.getElementById('vp-ficha').hidden &&
+            document.getElementById('vp-nombre').textContent === v.nombre,
+        }
+      })
+    })
+    assert.equal(r.length, 14)
+    for (const v of r) {
+      assert.ok(v.err < 0.05, `${v.id}: cámara a ${v.err.toFixed(3)} m del viewpoint`)
+      assert.ok(v.persp && v.ficha, v.id)
+      assert.equal(v.velos > 0, v.pide, `${v.id}: resaltado`)
+    }
+    await page.evaluate(() => {
+      document.getElementById('vp-toggle').click()
+      window.__tackerVp.go('acumulador', { instant: true })
+    })
+    await cuadro()
+    await snap('11-viewpoint-acumulador')
+  } finally {
+    await page.evaluate(() => {
+      window.__tackerVp.back({ instant: true })
+      document.getElementById('vp-panel').classList.add('collapsed')
+    })
+  }
+  const despues = await page.evaluate(() => {
+    let velos = 0
+    window.__rig.scene.traverse((o) => o.userData.vpVelo && velos++)
+    return {
+      pos: window.__rig.camera().position.toArray(),
+      ortho: !!window.__rig.view.ortho,
+      velos,
+    }
+  })
+  assert.equal(despues.ortho, antes.ortho)
+  assert.equal(despues.velos, 0)
+  assert.ok(
+    Math.hypot(...despues.pos.map((v, i) => v - antes.pos[i])) < 0.05,
+    'volver restaura la cámara',
+  )
+})
+
+test('recorridos: doble clic sobre el manifold resuelve su viewpoint', async (t) => {
+  if (skip) return t.skip(skip)
+  try {
+    const id = await page.evaluate(async () => {
+      const VP = window.__tackerVp
+      VP.go('manifold', { instant: true })
+      await new Promise((r) => requestAnimationFrame(r))
+      const R = window.__rig
+      const p = new R.three.Vector3(6.2, 0.7, -11.2).project(R.camera())
+      const b = R.renderer.domElement.getBoundingClientRect()
+      return VP.pick(b.left + ((p.x + 1) / 2) * b.width, b.top + ((1 - p.y) / 2) * b.height)?.id
+    })
+    assert.equal(id, 'manifold')
+  } finally {
+    await page.evaluate(() => window.__tackerVp.back({ instant: true }))
+  }
+})
+
+test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a OrbitControls', async (t) => {
+  if (skip) return t.skip(skip)
+  try {
+    const andar = (ms) =>
+      page.evaluate(async (ms) => {
+        const VP = window.__tackerVp
+        const c = window.__rig.camera()
+        const a = c.position.clone()
+        VP.keys.add('KeyW')
+        await new Promise((r) => setTimeout(r, ms))
+        VP.keys.delete('KeyW')
+        return { d: a.distanceTo(c.position), y: c.position.y, z: c.position.z }
+      }, ms)
+    await page.evaluate(() => {
+      const VP = window.__tackerVp
+      // headless concede el Pointer Lock y lo suelta enseguida (= ESC): se camina con teclado, ESC por keydown
+      window.__rig.renderer.domElement.requestPointerLock = () =>
+        Promise.reject(new Error('sin lock'))
+      VP.go('bomba', { instant: true }) // mira hacia −Z, a la bomba
+      VP.walk(true)
+    })
+    // 1,5 s: el headless puede dar ~2 cuadros/s y el paso está topado a 0,25 s por cuadro; con 0,5 s podía no llegar ningún cuadro
+    const corto = await andar(1500)
+    assert.ok(Math.abs(corto.y - 1.7) < 1e-6, `altura ${corto.y}`)
+    assert.ok(
+      corto.d > 0.05 && corto.d <= 1.4 * 1.5 + 0.05,
+      `≤ 1,4 m/s: ${corto.d.toFixed(2)} m en 1,5 s`,
+    )
+    const largo = await andar(3500) // la bomba está a ~3 m: sin colisión la atravesaría
+    assert.ok(largo.z > -14.5, `atravesó la bomba: z = ${largo.z.toFixed(2)}`)
+    await snap('12-caminata-bomba')
+    await page.keyboard.press('Escape')
+    const r = await page.evaluate(() => ({
+      walking: window.__tackerVp.walking(),
+      orbit: window.__rig.controls().enabled,
+    }))
+    assert.deepEqual(r, { walking: false, orbit: true })
+  } finally {
+    await page.evaluate(() => {
+      window.__tackerVp.walk(false)
+      window.__tackerVp.back({ instant: true })
+    })
+  }
+})
+
+test('recorridos: el recorrido guiado vive en Entrenamiento (anterior / siguiente / reproducir / pausa)', async (t) => {
+  if (skip) return t.skip(skip)
+  try {
+    await page.evaluate(() =>
+      document.querySelector('#v2-modebar button[data-m="training"]').click(),
+    )
+    const r = await page.evaluate(() => {
+      const VP = window.__tackerVp
+      const visible = getComputedStyle(document.getElementById('vp-tour')).display !== 'none'
+      VP.tour.next()
+      const a = VP.current()
+      VP.tour.next()
+      const b = VP.current()
+      VP.tour.prev()
+      const c = VP.current()
+      VP.tour.play()
+      const auto = VP.tour.state().auto
+      VP.tour.pause()
+      return { visible, a, b, c, auto, pausado: VP.tour.state().auto }
+    })
+    assert.deepEqual(r, {
+      visible: true,
+      a: 'acceso',
+      b: 'acumulador',
+      c: 'acceso',
+      auto: true,
+      pausado: false,
+    })
+    const fuera = await page.evaluate(() => {
+      document.querySelector('#v2-modebar button[data-m="explore"]').click()
+      return getComputedStyle(document.getElementById('vp-tour')).display
+    })
+    assert.equal(fuera, 'none')
+  } finally {
+    await page.evaluate(() => window.__tackerVp.back({ instant: true }))
+  }
 })
 
 test('consola sin errores durante toda la sesión', (t) => {

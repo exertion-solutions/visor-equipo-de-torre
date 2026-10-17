@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "unidades": "m",
+  "marco": "V2: origen en la boca de pozo a nivel de terreno, +X hacia el mástil, carrier hacia −X, Y arriba",
+  "aviso": "Recorrido visual en primera persona. Las posiciones de cámara son una elección visual (2–4 m del equipo), no puestos de trabajo ni distancias de seguridad. Altura de ojos = cota del piso + 1,70 m. No hay zonas de exclusión documentadas: no se representan.",
+  "alturaOjos": 1.7,
+  "pisos": {
+    "terreno": { "cota": 0, "fuente": "origen del marco (boca de pozo a nivel de terreno)" },
+    "pisoTrabajo": {
+      "cota": 3.61,
+      "fuente": "src-plano-8123 (3.606 m, 12'); cara superior del piso del modelo SK-575"
+    },
+    "pisoEnganche": {
+      "cota": 20.63,
+      "fuente": "src-plano-8123 (20.629 m, 68'); solo visual, no implica acceso"
+    }
+  },
+  "locacion": {
+    "min": [-45, -30.5],
+    "max": [33.5, 30.5],
+    "fuente": "vallado del entorno del V2 (layout TKR-10, ilustrativo)"
+  },
+  "caminata": { "velocidad": 1.4, "radio": 0.35 },
+  "transicion": { "ms": 1800 },
+  "recorrido": {
+    "paradas": ["acceso", "acumulador", "manifold", "bop", "piso-trabajo"],
+    "segundosPorParada": 8
+  },
+  "viewpoints": [
+    {
+      "id": "acceso",
+      "nombre": "Acceso a la locación",
+      "objeto3D": [],
+      "piso": "terreno",
+      "camPos": [-26, 1.7, -24],
+      "target": [0, 8, 0],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "acumulador",
+      "nombre": "Acumulador del BOP (Koomey)",
+      "objeto3D": ["sk575_acumulador", "sk575_acum"],
+      "piso": "terreno",
+      "camPos": [-20.5, 1.7, 0.8],
+      "target": [-20.5, 0.9, 4.6],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "manifold",
+      "nombre": "Manifold de ahogo / choke",
+      "objeto3D": ["sk575_manifold"],
+      "piso": "terreno",
+      "camPos": [6.2, 1.7, -6.8],
+      "target": [6.2, 0.7, -11.2],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "bop",
+      "nombre": "BOP",
+      "objeto3D": ["sk575_bop"],
+      "piso": "terreno",
+      "camPos": [0.2, 1.7, 4.3],
+      "target": [0.2, 1.8, 0],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "piso-trabajo",
+      "nombre": "Piso de trabajo",
+      "objeto3D": ["sk575_piso"],
+      "piso": "pisoTrabajo",
+      "camPos": [3.2, 5.31, 1.2],
+      "target": [0, 4.3, 0],
+      "fov": 65,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "llave",
+      "nombre": "Llave hidráulica",
+      "objeto3D": ["sk575_llave"],
+      "piso": "pisoTrabajo",
+      "camPos": [3, 5.31, -1.2],
+      "target": [0.6, 5.2, 0],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "piso-enganche",
+      "nombre": "Piso de enganche",
+      "objeto3D": ["sk575_enganche"],
+      "piso": "pisoEnganche",
+      "camPos": [2, 22.33, 0],
+      "target": [0, 21.3, 0],
+      "fov": 65,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "cuadro",
+      "nombre": "Cuadro de maniobras / malacate",
+      "objeto3D": ["sk575_cuadro"],
+      "piso": "terreno",
+      "camPos": [-6.3, 1.7, -4.3],
+      "target": [-6.3, 2.2, 0],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "planchada",
+      "nombre": "Planchada y caballetes",
+      "objeto3D": ["sk575_planchada", "sk575_tiros"],
+      "piso": "terreno",
+      "camPos": [10, 1.7, -6.5],
+      "target": [8, 1.5, -1],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "bomba",
+      "nombre": "Bomba triplex",
+      "objeto3D": ["sk575_bomba"],
+      "piso": "terreno",
+      "camPos": [-16.2, 1.7, -11.2],
+      "target": [-16.2, 1.2, -15.5],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "piletas",
+      "nombre": "Piletas y trip tank",
+      "objeto3D": ["sk575_piletas"],
+      "piso": "terreno",
+      "camPos": [-0.5, 1.7, -11.2],
+      "target": [-6.5, 1.5, -17.5],
+      "fov": 70,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "carrier",
+      "nombre": "Carrier, cabina y motor",
+      "objeto3D": ["sk575_carrier", "sk575_cabina", "sk575_motor"],
+      "piso": "terreno",
+      "camPos": [-13, 1.7, 4.6],
+      "target": [-12.5, 2, 0.5],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "mastil",
+      "nombre": "Mástil y vientos",
+      "objeto3D": ["sk575_mastil", "sk575_izaje", "sk575_vientos"],
+      "piso": "terreno",
+      "camPos": [14, 1.7, 12],
+      "target": [-1, 14, 0],
+      "fov": 70,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    },
+    {
+      "id": "pozo-vecino",
+      "nombre": "Árbol de pozo vecino (ilustrativo)",
+      "objeto3D": ["sk575_pozo_vecino"],
+      "piso": "terreno",
+      "camPos": [11, 1.7, 8.3],
+      "target": [11, 1.3, 5],
+      "fov": 60,
+      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+    }
+  ]
+}
