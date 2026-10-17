@@ -41,7 +41,7 @@ INFO = {
     "sk575_cuadro": ("C", "Cuadro de maniobras DWA575-01: tambores 42×12 y 42×8, discos, embragues, consola"),
     "sk575_izaje": ("B", "Cilindros de izaje HYCO 50162-813-13150 (3 etapas, 60\" → 191,5\")"),
     "sk575_aparejo": ("C", "Aparejo-gancho, 8 líneas, amelas 150 t y elevador de cierre central"),
-    "sk575_bop": ("C", "Stack BOP (carretel + doble ram + anular) con válvulas KL/CL; diámetro en conflicto"),
+    "sk575_bop": ("B", "Stack BOP estándar 7-1/16\" 10 ksi del plano 8127-1110-004: alturas rotuladas (A); anchos, bonetes y líneas medidos sobre el plano (C)"),
     "sk575_llave": ("C", "Llave hidráulica de tubing colgada"),
     "sk575_piso": ("B", "Piso pulling 2600 × 3304 a 3606 mm, subestructura, escaleras a 45°"),
     "sk575_planchada": ("C", "Planchada 12 m, rampa de la V, caballetes y línea de alta presión"),
@@ -94,6 +94,10 @@ def verificar(g, spec):
         ("cilindro HYCO extendido", g["HYCO_EXT"], s["raisingCylinder"]["extendedIn"], 1e-9),
         ("carrera HYCO (3 etapas; el plano suma 131,51)", sum(g["HYCO_CARRERAS"]), s["raisingCylinder"]["strokeIn"], 0.011),
         ("cilindro HYCO cerrado", g["HYCO_EXT"] - sum(g["HYCO_CARRERAS"]), s["raisingCylinder"]["closedIn"], 0.011),
+    ] + [
+        ("stack BOP tramo %d (plano 8127)" % (i + 1), g["BOP_H"][i], s["bopStack"]["sectionsM"][i], 1e-9) for i in range(5)
+    ] + [
+        ("stack BOP total (parciales 3,726 vs rotulado 3,731)", g["Z5"], s["bopStack"]["totalM"], 0.006),
     ]
     fallas = []
     for nombre, obt, esp, tol in checks:

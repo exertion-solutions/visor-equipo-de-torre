@@ -56,7 +56,7 @@ describe('TACKER10_RIG', () => {
     expect(conflictsOf('piso_trabajo', 'modelHeightM')).toContain('src-plano-8123')
     expect(conflictsOf('sk575_piso', 'floorHeightM')).toEqual(['src-folleto', 'src-legacy-v2'])
     expect(conflictsOf('sk575_aparejo', 'lines')).toEqual(['src-folleto'])
-    expect(conflictsOf('sk575_bop', 'nominalBore')).toEqual(['src-manual-bop-11'])
+    expect(conflictsOf('sk575_bop', 'nominalBore')).toEqual(['src-folleto', 'src-manual-bop-11'])
     expect(conflictsOf('sk575_carrier', 'wheelbaseFt')).toEqual(['src-parts-sk575'])
     expect(conflictsOf('sk575_vientos', 'anchorDistance')).toEqual([
       'src-layout',
