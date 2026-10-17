@@ -65,3 +65,5 @@ __pycache__/
 **/*.PDF
 # excepciones puntuales que sí deban subirse: !ruta/archivo.pdf
 /*.avif
+# imagen de catálogo de proveedor (marca de agua): solo local, la usa iou.py
+cad/examples/choke_manifold_ilustrativo/ref.png

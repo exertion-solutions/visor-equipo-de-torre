@@ -1,6 +1,7 @@
 import numpy as np, trimesh
 from PIL import Image, ImageDraw
 from scipy.ndimage import binary_opening
+# ref.png = imagen de catálogo de un proveedor: NO se versiona (marca de agua de terceros). Copiala local en esta carpeta.
 im = np.array(Image.open("ref.png").convert("RGB")).astype(int)
 H, W = im.shape[:2]; x0, y0, x1, y1 = 104, 218, 395, 470
 reg = im[y0:y1, x0:x1]

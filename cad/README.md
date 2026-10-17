@@ -57,7 +57,7 @@ Confianza de geometría B (izaje, piso) o C (resto); **no es as-built**.
 
 ## Ejemplos
 
-`examples/choke_manifold_ilustrativo/`: choke manifold genérico reconstruido de una imagen de proveedor.
+`examples/choke_manifold_ilustrativo/`: choke manifold genérico reconstruido de una imagen de proveedor (`ref.png`, solo local: no se versiona).
 **No es Tacker 10**, escala PENDIENTE (unidades = px), IoU 0,58. Solo ilustrativo; no usar en el visor.
 
 ## Próximos candidatos (necesitan dato fuente)
