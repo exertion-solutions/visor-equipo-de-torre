@@ -17,7 +17,7 @@
  * Convención: 1 u = 1 m · origen = boca de pozo · +X hacia el mástil · carrier hacia −X · Z lateral · Y arriba.
  * Datos documentados (FOLLETO TACKER 10 rev. 26/06/2024, LAYOUT TKR-10 11/07/2025, Libro DROPS Rev.03): BOP 7 1/16" 5000 psi anular+doble,
  * acumulador de 5 botellones (8×2,4 m), aparejo IDECO 110 t con 6 líneas, amelas 150 t, elevador 100 t, bomba triplex 6×2,4 m,
- * pileta de ensayo 12×2,4 m (40 m³) con cubicador 3,5 m³, caballetes de 2 m (4,5 t), planchada 12×2,4 m, anclaje de pirosalva a 30 m.
+ * pileta de ensayo 12×2,4 m (40 m³) con cubicador 3,5 m³, caballetes de 2 m (4,5 t), planchada 12×2,4 m, anclaje de pirosalva a 45 m (LAYOUT-WS10-0001; LAYOUT TKR-10 2025: 30 m, fuente en conflicto).
  * Todo lo demás (alturas, colores, detalle de forma) es ESTÉTICO y aproximado; no es as-built ni apto para fabricación.
  *
  * CONFLICTO DOCUMENTAL (aparejo): el folleto y el informe técnico dicen 6 líneas; el Libro DROPS (BP-3) dice "8 líneas de cable
@@ -2235,7 +2235,9 @@
       )
     }
 
-    // ── tráilers, tanques y usinas según LAYOUT TKR-10 (12×2,4 m; fila a 31,6 m del pozo hacia el carrier; z: izquierda del plano = +z)
+    // ── tráilers, tanques y usinas según LAYOUT-WS10-0001 (12×2,4 m; columna a 40 m del pozo hacia el carrier, cota "40"
+    //    rotulada; z = lateral del plano, +z = lado opuesto a las piletas). Posiciones medidas del vector del PDF (C).
+    //    alongX: tráiler con el largo según x (fila laboratorio · taller · depósito · usinas, arriba en el plano).
     const trailer = (cx, cz, opts = {}) => {
       const {
         len = 12,
@@ -2244,51 +2246,60 @@
         stripe = C.BLUE,
         parts = 1,
         wheels = true,
+        alongX = false,
       } = opts
-      S.box('#3a3e45', len + 0.2, 0.25, wid - 0.2, cx, 0.5, cz, PI / 2) // bastidor
-      S.box(body, wid, 2.6, len, cx, 1.925, cz) // caja (long. a lo largo de z)
-      S.box(stripe, wid + 0.02, 0.32, len + 0.02, cx, 1.15, cz)
-      S.box('#7b8087', wid + 0.12, 0.1, len + 0.12, cx, 3.27, cz) // techo
+      // caja local: u = transversal, w = longitudinal (z del tráiler)
+      const B = (col, du, h, dw, u, y, w) =>
+        alongX ? S.box(col, dw, h, du, cx + w, y, cz + u) : S.box(col, du, h, dw, cx + u, y, cz + w)
+      if (alongX)
+        S.box('#3a3e45', len + 0.2, 0.25, wid - 0.2, cx, 0.5, cz) // bastidor
+      else S.box('#3a3e45', len + 0.2, 0.25, wid - 0.2, cx, 0.5, cz, PI / 2)
+      B(body, wid, 2.6, len, 0, 1.925, 0) // caja
+      B(stripe, wid + 0.02, 0.32, len + 0.02, 0, 1.15, 0)
+      B('#7b8087', wid + 0.12, 0.1, len + 0.12, 0, 3.27, 0) // techo
       if (wheels)
-        for (const dz of [-3.6, -2.7])
-          for (const sx of [-1, 1])
-            S.cyl('#15171c', 0.42, 0.42, 0.3, cx + sx * (wid / 2 - 0.05), 0.42, cz + dz, 'x', 12) // ruedas traseras
+        for (const dw of [-3.6, -2.7])
+          for (const su of [-1, 1]) {
+            const u = su * (wid / 2 - 0.05)
+            if (alongX) S.cyl('#15171c', 0.42, 0.42, 0.3, cx + dw, 0.42, cz + u, 'z', 12)
+            else S.cyl('#15171c', 0.42, 0.42, 0.3, cx + u, 0.42, cz + dw, 'x', 12) // ruedas traseras
+          }
       for (let k = 0; k < parts; k++) {
-        const pz = cz - len / 2 + ((k + 0.5) * len) / parts
-        for (const sx of [-1, 1]) {
-          S.box(C.GLASS, 0.03, 0.75, 1.1, cx + sx * (wid / 2 + 0.01), 2.2, pz - 0.9)
-          S.box('#565b63', 0.03, 1.9, 0.9, cx + sx * (wid / 2 + 0.01), 1.55, pz + 1.0) // puerta
+        const pw = -len / 2 + ((k + 0.5) * len) / parts
+        for (const su of [-1, 1]) {
+          B(C.GLASS, 0.03, 0.75, 1.1, su * (wid / 2 + 0.01), 2.2, pw - 0.9)
+          B('#565b63', 0.03, 1.9, 0.9, su * (wid / 2 + 0.01), 1.55, pw + 1.0) // puerta
         }
-        if (parts === 1 || k === 0) S.box('#4a4f57', 0.8, 0.4, 0.7, cx, 3.5, pz) // equipo de A/A
+        if (parts === 1 || k === 0) B('#4a4f57', 0.8, 0.4, 0.7, 0, 3.5, pw) // equipo de A/A
       }
       if (parts > 1)
         for (let k = 1; k < parts; k++)
-          S.box('#2b2f36', wid + 0.04, 2.6, 0.04, cx, 1.925, cz - len / 2 + (k * len) / parts)
+          B('#2b2f36', wid + 0.04, 2.6, 0.04, 0, 1.925, -len / 2 + (k * len) / parts)
     }
-    const LX = -31.6
-    trailer(LX, 20.9, { stripe: '#9a9d94' }) // jefe de equipo
-    trailer(LX, 6.1, { stripe: '#9a9d94' }) // encargado de turno / personal
-    trailer(LX - 8.1, 20.9, { stripe: '#9a9d94' }) // descanso CR
-    trailer(LX, -23.3, { parts: 4, stripe: C.RED, wheels: false }) // laboratorio · taller · depósito · usinas
-    // tanques de combustible (12.465 l) y agua (8.300 l) sobre patín
-    S.box('#3a3e45', 12.2, 0.25, 2.2, LX, 0.5, -8.6, PI / 2)
+    const LX = -41.2 // eje de la columna (borde interior a 40 m del pozo)
+    trailer(LX, -4.5, { stripe: '#9a9d94' }) // encargado de turno / personal
+    trailer(LX, 8.5, { stripe: '#9a9d94' }) // jefe de equipo
+    trailer(LX, 21.5, { stripe: '#9a9d94' }) // inspector
+    trailer(-34.0, -29.6, { parts: 4, stripe: C.RED, wheels: false, alongX: true }) // laboratorio · taller · depósito · usinas
+    // tanques de combustible (12.465 l) y agua (8.300 l) sobre patín (WS10: tanque de combustible y agua, z −23,5…−11,5)
+    S.box('#3a3e45', 12.2, 0.25, 2.2, LX, 0.5, -17.5, PI / 2)
     for (const [dz, r, L, col] of [
       [-3.3, 0.95, 5.4, '#c9cdc8'],
       [2.9, 0.88, 4.2, '#9fb7c7'],
     ]) {
-      S.cyl(col, r, r, L, LX, 1.65, -8.6 + dz, 'z', 20)
-      S.box(C.RED, 2 * r + 0.02, 0.28, 0.04, LX, 1.65, -8.6 + dz)
-      S.cyl('#7b8087', 0.2, 0.2, 0.2, LX, 2.7, -8.6 + dz, 'y', 10)
+      S.cyl(col, r, r, L, LX, 1.65, -17.5 + dz, 'z', 20)
+      S.box(C.RED, 2 * r + 0.02, 0.28, 0.04, LX, 1.65, -17.5 + dz)
+      S.cyl('#7b8087', 0.2, 0.2, 0.2, LX, 2.7, -17.5 + dz, 'y', 10)
     }
-    // usina (grupo electrógeno John Deere, cabina insonorizada) junto al laboratorio
-    S.box('#c5c9c3', 2.0, 2.2, 3.6, LX + 3.6, 1.3, -21.5)
-    S.cyl('#3a3e45', 0.08, 0.08, 1.2, LX + 3.0, 3.9, -20.4, 'y', 8)
-    for (let k = 0; k < 4; k++)
-      S.box('#2b2f36', 0.04, 0.9, 0.12, LX + 4.62, 1.4, -22.9 + k * 0.28 * 2)
+    // usina (grupo electrógeno John Deere, cabina insonorizada) junto al módulo "usinas" de la fila
+    S.box('#c5c9c3', 3.6, 2.2, 2.0, -29.6, 1.3, -26.6)
+    S.cyl('#3a3e45', 0.08, 0.08, 1.2, -30.7, 3.9, -26.0, 'y', 8)
+    for (let k = 0; k < 4; k++) S.box('#2b2f36', 0.12, 0.9, 0.04, -31.0 + k * 0.56, 1.4, -25.58)
 
-    // ── anclaje de pirosalva a 30 m del pozo (LAYOUT TKR-10, eje del equipo hacia el lado de la planchada)
-    S.box(C.CONC, 1.2, 0.3, 1.2, 30, 0.17, 0)
-    S.loop('#4d5057', 30, 0.5, 0, 0.22, 'zy', 0, PI * 2, 0.03, 14)
+    // ── anclaje de pirosalva a 45 m del pozo en el eje del equipo, lado planchada (LAYOUT-WS10-0001, cota "45").
+    //    Fuente en conflicto: LAYOUT TKR-10 (2025) lo pone a 30 m. Coincide con el anclaje del modelo SK-575 (sk575_vientos).
+    S.box(C.CONC, 1.2, 0.3, 1.2, 45, 0.17, 0)
+    S.loop('#4d5057', 45, 0.5, 0, 0.22, 'zy', 0, PI * 2, 0.03, 14)
 
     // ── torres de iluminación blancas (estéticas): 4, apuntando al equipo
     const towers = [

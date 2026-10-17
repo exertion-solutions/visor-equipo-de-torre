@@ -777,31 +777,37 @@ comp("sk575_carrier")
 for y in (-0.35, 0.0, 0.35):
     manguera((-2.3, y, ZK + 0.05), (-1.6, y * 1.6, 0.4), (X0 + 0.1, y * 2, ZP - 0.2))
 comp("sk575_planchada")
-# planchada de 12 m (pipe rack) + rampa a la puerta en V
-add("grating", box(4.6, 16.6, -1.0, 1.0, 1.0, 1.05, f=0.01))
+# planchada de 12 m (pipe rack) + rampa a la puerta en V. Posición respecto del pozo medida del vector de LAYOUT-WS10-0001
+# (4,66 pt/m calibrado con los anclajes 27,4 + 24,4 m): planchada a 4,96…16,96 m del pozo; caballetes transversales a 7,45 y
+# 14,4 m (cota "7" rotulada) con 6 m a cada lado del eje (cota "6" rotulada). Posiciones no rotuladas: confianza C.
+XP0 = WXP + 4.96                                                                 # extremo de la planchada lado pozo
+XCB = (WXP + 7.45, WXP + 14.4)                                                   # caballetes (WS10)
+add("grating", box(XP0, XP0 + 12.0, -1.0, 1.0, 1.0, 1.05, f=0.01))
 for y in (-1.0, 1.0):
-    add("rojo", perfil_c(4.6, 16.6, y, 0.85, abre=-1 if y > 0 else 1))
-    for x in (5.0, 8.0, 11.0, 14.0, 16.4):
-        add("rojo", bar((x, y, 0), (x, y, 0.7), 0.06, sq=True))
+    add("rojo", perfil_c(XP0, XP0 + 12.0, y, 0.85, abre=-1 if y > 0 else 1))
+    for x in (0.4, 3.4, 6.4, 9.4, 11.8):
+        add("rojo", bar((XP0 + x, y, 0), (XP0 + x, y, 0.7), 0.06, sq=True))
 def tubo(x0, y, z, L=9.4):
     """Tramo de tubing 2-7/8" (OD 73) con cupla NU (OD 88,9 × 0,16 m) en el extremo +X."""
     add("acero_oscuro", Pos(x0 + L / 2, y, z) * Rot(0, 90, 0) * Cylinder(0.0365, L))
     add("acero", Pos(x0 + L + 0.08, y, z) * Rot(0, 90, 0) * fillet(Cylinder(0.0445, 0.16).edges(), 0.006))
 
 
-tubo(5.4, 0.0, 1.05 + 0.0365)                                                    # tramo sobre la planchada
-for x in (6.0, 10.0, 14.0):                                                      # caballetes (1ª hilera ≥ 0,46 m)
-    for y in (2.0, 4.2):
-        add("acero_oscuro", bar((x, y, 0), (x, y, 0.5), 0.05, sq=True))
-    add("acero_oscuro", bar((x, 2.0, 0.5), (x, 4.2, 0.5), 0.06, ang=(0, 0, -1)))
+tubo(XP0 + 0.8, 0.0, 1.05 + 0.0365)                                              # tramo sobre la planchada
+for x in XCB:                                                                    # caballetes a ambos lados (1ª hilera ≥ 0,46 m)
+    for s_ in (-1, 1):
+        for y in (1.3, 4.0, 6.76):
+            add("acero_oscuro", bar((x, s_ * y, 0), (x, s_ * y, 0.5), 0.05, sq=True))
+        add("acero_oscuro", bar((x, s_ * 1.3, 0.5), (x, s_ * 6.76, 0.5), 0.06, ang=(0, 0, -1)))
+XT = (XCB[0] + XCB[1]) / 2 - 4.7                                                 # tiros de 9,4 m centrados entre caballetes
 for fila in range(3):                                                            # 3 hileras con listones separadores
     z = 0.56 + 0.0365 + fila * 0.1
     for k in range(10):
-        tubo(5.6 + (k % 2) * 0.12, 2.25 + k * 0.19 + (fila % 2) * 0.09, z)
+        tubo(XT + (k % 2) * 0.12, 2.25 + k * 0.19 + (fila % 2) * 0.09, z)
     if fila < 2:
-        for x in (6.0, 10.0, 14.0):
+        for x in XCB:
             add("grating", box(x - 0.025, x + 0.025, 2.1, 4.1, z + 0.037, z + 0.063))
-ra, rb = Vector(X1, 0, ZP), Vector(6.6, 0, 1.07)                                 # rampa de la V a la planchada
+ra, rb = Vector(X1, 0, ZP), Vector(XP0 + 2.0, 0, 1.07)                                 # rampa de la V a la planchada
 rd = rb - ra
 add("grating", Plane(origin=(ra + rb) * 0.5, x_dir=rd, z_dir=Vector(-rd.Z, 0, rd.X)) * Box(rd.length, 1.2, 0.04))
 for y in (-0.6, 0.6):
@@ -843,13 +849,16 @@ for s_ in (-1, 1):
                         mastil=M(XF + 1.9, s_ * 1.2, ZM + 0.08), tierra=(WXP + 24.4, -s_ * 26.8, 1.05)))
     VIENTOS.append(dict(id="interno_%s" % ("-z" if s_ > 0 else "+z"), tipo="viento interno corona → apoyo del carrier",
                         diametro_in=1.0, mastil=M(MC - 0.9, s_ * 0.9, H), carrier=(xc(64), s_ * 0.9, 121 * IN)))
-pz = ZM + 1.1                                                                    # pirosalva desde el piso de enganche a 35°
+# pirosalva (línea de escape) desde el piso de enganche al anclaje en el eje del equipo, lado planchada, a 45 m del pozo
+# (LAYOUT-WS10-0001, cota "45" rotulada). Fuente en conflicto: LAYOUT TKR-10 (2025) lo pone a 30 m y el Módulo Transporte y
+# Montaje YPF pide ~35°; con 45 m la línea queda a ≈ 26° de la horizontal. El modelo dibuja WS10.
+pz = ZM + 1.1
 P0 = M(XF + 1.9, 1.2, pz)
-add("cable", bar(P0, (P0[0] + pz / 0.7002 * 0.8, 1.2 + pz / 0.7002 * 0.6, 0.5), 0.0143))
+PA = (WXP + 45.0, 0.0, 0.5)
+add("cable", bar(P0, PA, 0.0143))
 VIENTOS.append(dict(id="pirosalva", tipo="línea de escape (pirosalva) desde el piso de enganche", diametro_in=1.125,
-                    mastil=P0, tierra=(P0[0] + pz / 0.7002 * 0.8, 1.2 + pz / 0.7002 * 0.6, 0.5)))
-add("hormigon", box(P0[0] + pz / 0.7002 * 0.8 - 0.4, P0[0] + pz / 0.7002 * 0.8 + 0.4,
-                    1.2 + pz / 0.7002 * 0.6 - 0.4, 1.2 + pz / 0.7002 * 0.6 + 0.4, 0, 0.5, f=0.03))
+                    mastil=P0, tierra=PA))
+add("hormigon", box(PA[0] - 0.4, PA[0] + 0.4, -0.4, 0.4, 0, 0.5, f=0.03))
 
 comp("sk575_pozo_vecino")
 # ───────────────────────── boca de pozo (árbol de navidad) ─────────────────────────
