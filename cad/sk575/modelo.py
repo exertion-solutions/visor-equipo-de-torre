@@ -590,17 +590,44 @@ for k, y in enumerate((-0.6, 0.6), 1):
 comp("sk575_aparejo")
 # ───────────────────────── aparejo y cables ─────────────────────────
 ZA = 14.0
-# aparejo-gancho unitizado (6 CORONAS Y APAREJOS p48-52): poleas con tapa redondeada, carcasa con resorte, gancho con traba
-tapa = Pos(WXP, 0, ZA + 0.55) * Rot(90, 0, 0) * (Cylinder(0.38, 0.5) & Pos(0, -0.4, 0) * Box(1, 1.2, 1))
-add("amarillo", fillet(tapa.edges(), 0.04))
-add("amarillo", box(WXP - 0.2, WXP + 0.2, -0.26, 0.26, ZA - 0.05, ZA + 0.55, f=0.04))
+# aparejo-gancho unitizado (6 CORONAS Y APAREJOS p48-52; aspecto según fotos de catálogo de aparejos-gancho, referencia C):
+# guarda facetada amarilla con franjas de seguridad negras, ranuras de ventilación, poleas visibles por la ranura superior,
+# cuello del giratorio con aros, gancho macizo con orejas laterales para las amelas, traba y seguro.
+GY = 0.27                                                                       # semiespesor de la guarda (C)
+perfil = make_face(Polyline((-0.2, -0.05), (0.2, -0.05), (0.42, 0.35), (0.42, 0.8), (0.16, 1.0), (-0.16, 1.0), (-0.42, 0.8),
+                            (-0.42, 0.35), close=True))
+guarda = Pos(WXP, 0, ZA) * (Plane.XZ * extrude(perfil, GY, both=True))
+guarda -= box(WXP - 0.09, WXP + 0.09, -GY + 0.03, GY - 0.03, ZA + 0.62, ZA + 1.1)          # ranura de entrada de las líneas
+add("amarillo", fillet(guarda.edges().filter_by(Axis.Y), 0.03))
 for y in (-0.18, -0.06, 0.06, 0.18):                                           # 4 poleas: 8 líneas (placa 104-330-08)
     add("acero_oscuro", Pos(WXP, y, ZA + 0.55) * Rot(90, 0, 0) * Cylinder(0.33, 0.08))
-add("amarillo", Pos(WXP, 0, ZA - 0.75) * fillet(Cylinder(0.17, 0.7, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.04))   # carcasa gancho
-add("acero", bar((WXP, 0, ZA - 0.75), (WXP, 0, ZA - 1.0), 0.07))
-gancho = Pos(WXP, 0, ZA - 1.2) * Rot(90, 0, 0) * (Torus(0.17, 0.055) - Pos(0.2, 0, 0) * Box(0.25, 0.3, 0.3))
-add("acero_oscuro", gancho)
-add("acero", bar((WXP + 0.12, 0, ZA - 1.08), (WXP + 0.05, 0, ZA - 1.33), 0.012))                    # traba (latch)
+    add("acero", Pos(WXP, y, ZA + 0.55) * Rot(90, 0, 0) * Cylinder(0.06, 0.1))
+add("acero", Pos(WXP, 0, ZA + 0.55) * Rot(90, 0, 0) * Cylinder(0.05, 2 * GY + 0.04))       # eje de poleas
+for s_ in (-1, 1):
+    cara = Pos(WXP, 0, ZA) * (Plane.XZ * extrude(perfil, 0.004, both=True))
+    for k in range(3):                                                          # franjas diagonales negras
+        franja = Pos(WXP - 0.3 + 0.27 * k, 0, ZA + 0.55) * Rot(0, 45, 0) * Box(0.09, 0.02, 1.4)
+        add("goma", Pos(0, s_ * (GY + 0.004), 0) * (cara & franja))
+    add("acero", Pos(WXP, s_ * (GY + 0.006), ZA + 0.25) * box(-0.06, 0.06, -0.003, 0.003, -0.04, 0.04))   # chapa de identificación
+    for x_ in (-0.24, 0.24):                                                    # tapas abulonadas del eje
+        add("amarillo", Pos(WXP + x_, s_ * (GY + 0.008), ZA + 0.12) * Rot(90, 0, 0) * Cylinder(0.045, 0.012))
+    for k in range(5):                                                          # ranuras de ventilación laterales
+        add("goma", box(WXP + s_ * 0.425 - 0.004, WXP + s_ * 0.425 + 0.004, -0.2 + 0.1 * k - 0.02, -0.2 + 0.1 * k + 0.02,
+                        ZA + 0.45, ZA + 0.72))
+add("rojo", Pos(WXP, -0.2, ZA - 0.2) * Rot(90, 0, 0) * Cylinder(0.035, 0.02))               # indicador rojo del cuello
+# giratorio: cuello con aros (resorte interno, 6 CORONAS Y APAREJOS)
+add("amarillo", Pos(WXP, 0, ZA - 0.75) * fillet(Cylinder(0.17, 0.7, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.04))
+for z_ in (ZA - 0.6, ZA - 0.3):
+    add("amarillo", Pos(WXP, 0, z_) * Cylinder(0.185, 0.03))
+# gancho macizo de placa con garganta, punta y traba; orejas laterales para las amelas
+perfil_g = Circle(0.22) - Pos(0.03, 0, 0) * Circle(0.1) - Pos(0.2, 0.08, 0) * Rectangle(0.22, 0.12)
+gancho = Pos(WXP, 0, ZA - 1.24) * (Plane.XZ * extrude(perfil_g, 0.07, both=True))
+gancho += box(WXP - 0.12, WXP + 0.12, -0.11, 0.11, ZA - 1.08, ZA - 0.75, f=0.03)            # cuerpo del gancho
+add("amarillo", gancho)
+add("acero", Pos(WXP + 0.16, 0, ZA - 1.08) * Rot(0, 20, 0) * box(-0.01, 0.01, -0.05, 0.05, -0.22, 0))   # traba (latch)
+add("rojo", Pos(WXP + 0.12, 0.08, ZA - 1.0) * Rot(90, 0, 0) * Cylinder(0.025, 0.04))         # seguro de la traba
+for s_ in (-1, 1):                                                              # orejas (asas) para las amelas
+    add("amarillo", box(WXP - 0.07, WXP + 0.07, min(s_ * 0.11, s_ * 0.17), max(s_ * 0.11, s_ * 0.17), ZA - 1.08, ZA - 0.86, f=0.015))
 # asas del gancho + amelas 150 t (Ø 3", largo útil 73", ojo sup. 3-1/2") + elevador de cierre central (paso 3-7/32",
 # tubing 2-7/8") — planillas de inspección TKR-10 (API RP 8B / SPEC 8C)
 LA, RA = 73 * 0.0254, 1.5 * 0.0254
@@ -620,18 +647,29 @@ for s_ in (-1, 1):
     add("acero_oscuro", Pos(WXP, s_ * 0.2, ZA - 1.0) * Rot(0, 90, 0) * Torus(0.06, 0.02))
     amela(s_ * 0.2, s_ * 0.29)
 ZEL = ZE_ - 0.02                                                                # eje de las asas del elevador
-cuerpo = fillet(box(WXP - 0.2, WXP + 0.2, -0.24, 0.24, ZEL - 0.32, ZEL - 0.02).edges(), 0.04)
+# elevador de cierre central (paso 3-7/32", asas Ø 2-7/8", perno 2-23/32": planilla SOP 1110, A). Forma y color según fotos de
+# catálogo de elevadores de cierre central (referencia C): cuerpo de dos mitades redondeado, orejas laterales abiertas con
+# pestillo para los ojos de las amelas, puerta con traba, pasador de seguridad y cadena.
+cuerpo = Pos(WXP, 0, ZEL - 0.32) * Cylinder(0.2, 0.3, align=(Align.CENTER, Align.CENTER, Align.MIN))
+cuerpo += box(WXP - 0.13, WXP + 0.13, -0.27, 0.27, ZEL - 0.3, ZEL - 0.04)
+cuerpo = fillet(cuerpo.edges().filter_by(Axis.Z), 0.03)
 cuerpo -= Pos(WXP, 0, ZEL - 0.5) * Cylinder(3.219 / 2 * 0.0254, 1.0)               # paso 3-7/32"
 cuerpo -= Pos(WXP, 0, ZEL - 0.02) * Cone(0.041, 0.09, 0.08, align=(Align.CENTER, Align.CENTER, Align.MAX))   # bisel de entrada
 cuerpo -= box(WXP - 0.21, WXP + 0.21, -0.003, 0.003, ZEL - 0.33, ZEL - 0.06)       # junta de las dos mitades
-add("acero_oscuro", cuerpo)
-for s_ in (-1, 1):                                                              # asas (ojales Ø 2-7/8") con seguro
-    add("acero_oscuro", Pos(WXP, s_ * 0.29, ZEL) * Rot(0, 90, 0) * Torus(0.045, 0.022))
-    add("acero_oscuro", box(WXP - 0.03, WXP + 0.03, s_ * 0.22 - 0.03, s_ * 0.22 + 0.03, ZEL - 0.1, ZEL - 0.02))
+add("rojo", cuerpo)
+for s_ in (-1, 1):                                                              # orejas abiertas (Ø 2-7/8") con pestillo
+    oreja = Pos(WXP, s_ * 0.29, ZEL) * Rot(0, 90, 0) * Torus(0.05, 0.026)
+    oreja -= box(WXP - 0.05, WXP + 0.05, min(s_ * 0.29, s_ * 0.4), max(s_ * 0.29, s_ * 0.4), ZEL + 0.01, ZEL + 0.1)   # boca de la oreja
+    add("rojo", oreja)
+    add("rojo", Pos(WXP + 0.045, s_ * 0.29, ZEL + 0.035) * Rot(90, 0, 0) * Cylinder(0.018, 0.08))    # pestillo
     add("acero", Pos(WXP + 0.07, s_ * 0.29, ZEL) * Rot(0, 90, 0) * Cylinder(0.008, 0.06))
 add("acero", Pos(WXP + 0.2, 0.1, ZEL - 0.17) * Cylinder(0.019, 0.32))                  # perno principal 2-23/32"
 add("rojo", Plane(origin=(WXP + 0.22, -0.05, ZEL - 0.17), x_dir=(0, 1, 0), z_dir=(1, 0, 0)) * fillet(Box(0.22, 0.05, 0.04).edges(), 0.012))   # traba
+add("rojo", box(WXP + 0.2, WXP + 0.24, -0.12, 0.02, ZEL - 0.29, ZEL - 0.08, f=0.008))  # puerta de la traba
 add("acero", bar((WXP + 0.22, -0.1, ZEL - 0.17), (WXP + 0.38, -0.2, ZEL - 0.12), 0.012))   # lengüeta de cierre
+add("acero", bar((WXP + 0.25, 0.04, ZEL - 0.06), (WXP + 0.25, 0.04, ZEL - 0.3), 0.007))   # pasador de seguridad
+for k in range(6):                                                              # cadena del pasador
+    add("acero_oscuro", Pos(WXP + 0.26, 0.06 + 0.012 * k, ZEL - 0.32 - 0.028 * k) * Rot(90 * (k % 2), 0, 0) * Torus(0.012, 0.003))
 for k in range(8):                                                              # 8 líneas, cable 1"
     y = -0.42 + 0.12 * k
     add("cable", bar(M(MC + 0.3, y, H + 0.75), (WXP, y * 0.5, ZA + 0.85), 0.0127))
@@ -805,19 +843,132 @@ for k in range(3):
 add("rojo", Pos(WXP + 0.38, 0, ZSB + 0.15) * Rot(0, 90, 0) * fillet(Cylinder(0.07, 0.25).edges(), 0.01))   # actuador neumático
 
 comp("sk575_llave")
-# ───────────────────────── llave hidráulica colgada ─────────────────────────
-# Gill Model 500 (manual p6-7): largo 1295, alto 241 (419 con backup), colgada ~0,9 m sobre el piso, brazo de torque a ménsula
+# ───────────────────────── llave hidráulica colgada (Gill Model 500) ─────────────────────────
+# Cotas del manual Gill Model 500 (p6-7, A): largo 51" (1,295 m), espacio sobre el caño 9-1/2" (0,241) / 16-1/2" con backup
+# (0,419), rango 1-5/16"–7", cilindro de izaje con 6 ft de carrera, colgada ~3 ft sobre la boca. Forma (cabeza de garganta
+# abierta, cuerpo que se angosta, caja de engranajes elevada atrás con motor y válvulas, backup bajo la cabeza): proporciones
+# medidas sobre la ilustración del manual (C). Nivel de detalle (válvulas con palancas, manómetro de torque, mangueras, bulones)
+# según una foto de catálogo de otra llave (referencia visual, decisión del usuario 2026-10-17); color real PENDIENTE.
 ZL = ZP + 0.9
-llave = box(WXP, WXP + 1.295, -0.3, 0.3, ZL + 0.178, ZL + 0.419, f=0.04)
-llave -= Pos(WXP, 0, ZL) * Cylinder(0.1, 1.2) + Pos(WXP - 0.2, 0, ZL + 0.3) * Box(0.4, 0.2, 0.6)   # garganta abierta
-add("rojo", llave)
-backup = box(WXP, WXP + 0.9, -0.27, 0.27, ZL, ZL + 0.15, f=0.03) - Pos(WXP, 0, ZL) * Cylinder(0.1, 1.2)
-add("acero_oscuro", backup)
+LL_Z0, LL_Z1 = ZL + 0.178, ZL + 0.419                                            # cuerpo de la llave: 9-1/2" sobre el caño
+RH, RB, LL_R = 0.26, 0.105, 1.295 - 0.26                                         # radio de cabeza (C), paso de 7" + mordazas, cola
+LL_TOP = LL_Z1 + 0.18                                                            # tapa de la caja de engranajes (C)
+
+
+def planta(r_cab, cola, w0, w1, z0, h):
+    """Planta de la llave: cabeza circular en el pozo + cuerpo trapezoidal hacia +X, con paso y garganta abiertos hacia −X."""
+    cuerpo = Pos(WXP, 0, z0) * Cylinder(r_cab, h, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    pl = make_face(Polyline((0, -w0), (cola, -w1), (cola, w1), (0, w0), close=True))
+    cuerpo += Pos(WXP, 0, z0) * extrude(pl, h)
+    cuerpo -= Pos(WXP, 0, z0 - 0.1) * Cylinder(RB, h + 0.2, align=(Align.CENTER, Align.CENTER, Align.MIN))
+    cuerpo -= box(WXP - r_cab - 0.1, WXP, -RB, RB, z0 - 0.1, z0 + h + 0.1)                    # garganta abierta
+    return cuerpo
+
+
+add("rojo", planta(RH, LL_R, 0.24, 0.19, LL_Z0, LL_Z1 - LL_Z0))
+# caja de engranajes elevada atrás + tapas abulonadas
+add("rojo", box(WXP + 0.62, WXP + LL_R, -0.19, 0.19, LL_Z1, LL_TOP, f=0.02))
+for x0_, x1_, z0_, z1_ in ((WXP + 0.30, WXP + 0.58, LL_Z0 + 0.04, LL_Z1 - 0.04), (WXP + 0.66, WXP + 0.98, LL_Z1 + 0.03, LL_TOP - 0.03)):
+    for s_ in (-1, 1):
+        y_ = s_ * (0.215 if x1_ < WXP + 0.6 else 0.19)
+        add("rojo", box(x0_, x1_, y_ - 0.006, y_ + 0.006, z0_, z1_))
+        for xb in (x0_ + 0.025, x1_ - 0.025):
+            for zb in (z0_ + 0.022, z1_ - 0.022):
+                add("acero_oscuro", Pos(xb, y_ + s_ * 0.008, zb) * Rot(90, 0, 0) * extrude(RegularPolygon(0.009, 6), 0.008))
+# anillo guía partido sobre la cabeza ("spit guide ring") y jaula rotativa con mordazas
+guia = Pos(WXP, 0, LL_Z1) * (Cylinder(0.235, 0.025, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                             - Cylinder(0.13, 0.1, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+add("acero", guia - box(WXP - 0.4, WXP, -RB - 0.01, RB + 0.01, LL_Z1 - 0.1, LL_Z1 + 0.1))
+jaula = Pos(WXP, 0, LL_Z0 - 0.01) * (Cylinder(0.13, LL_Z1 - LL_Z0 + 0.04, align=(Align.CENTER, Align.CENTER, Align.MIN))
+                                     - Cylinder(RB, 1, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+add("acero_oscuro", jaula - box(WXP - 0.4, WXP, -RB, RB, LL_Z0 - 0.1, LL_Z1 + 0.1))
+for s_ in (-1, 1):                                                               # mordazas con insertos
+    add("acero_oscuro", box(WXP + 0.02, WXP + 0.1, s_ * 0.052 - 0.03, s_ * 0.052 + 0.03, LL_Z0 + 0.05, LL_Z1 - 0.05, f=0.006))
+    add("acero", Pos(WXP - RH - 0.01, s_ * (RB + 0.03), LL_Z1 + 0.012) * Cylinder(0.018, 0.05))              # pernos de la garganta
+# backup bajo la cabeza (16-1/2" con backup): cuerpo, columnas guía y cilindros de agarre
+add("acero_oscuro", planta(0.25, 0.45, 0.22, 0.18, ZL, 0.15))
 for k in range(4):                                                               # columnas llave–backup
-    add("acero", bar((WXP + 0.35 + 0.15 * (k % 2), -0.22 + 0.44 * (k // 2), ZL + 0.15), (WXP + 0.35 + 0.15 * (k % 2), -0.22 + 0.44 * (k // 2), ZL + 0.178), 0.02))
-add("acero_oscuro", Pos(WXP + 1.05, 0, ZL + 0.419) * Cylinder(0.11, 0.25, align=(Align.CENTER, Align.CENTER, Align.MIN)))   # motor hidráulico
-add("acero", bar((WXP + 0.7, 0, ZL + 0.42), (WXP + 0.7, 0, ZL + 2.25), 0.04))                    # cilindro de elevación (carrera 1,83)
+    add("acero", bar((WXP + 0.32 + 0.12 * (k % 2), -0.16 + 0.32 * (k // 2), ZL + 0.15), (WXP + 0.32 + 0.12 * (k % 2), -0.16 + 0.32 * (k // 2), LL_Z0), 0.018))
+for s_ in (-1, 1):
+    add("rojo", Pos(WXP + 0.33, s_ * 0.2, ZL + 0.075) * Rot(0, 90, 0) * fillet(Cylinder(0.045, 0.26).edges(), 0.008))
+    add("acero", bar((WXP + 0.2, s_ * 0.2, ZL + 0.075), (WXP + 0.08, s_ * 0.2, ZL + 0.075), 0.018))
+# motor hidráulico, banco de válvulas con palancas, válvula de alivio y manómetro de torque
+add("acero_oscuro", Pos(WXP + 0.86, 0.06, LL_TOP) * fillet(Cylinder(0.085, 0.2, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.012))
+add("acero", Pos(WXP + 0.86, 0.06, LL_TOP) * Cylinder(0.1, 0.02, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+add("azul", box(WXP + 0.64, WXP + 0.79, -0.18, -0.02, LL_TOP, LL_TOP + 0.13, f=0.008))
+for k, y_ in enumerate((-0.14, -0.06)):                                          # palancas de rotación / cambio
+    p0 = (WXP + 0.715, y_, LL_TOP + 0.13)
+    p1 = (WXP + 0.6, y_, LL_TOP + 0.33)
+    add("acero", bar(p0, p1, 0.009))
+    add("rojo", Pos(*p1) * Sphere(0.022))
+add("acero", Pos(WXP + 0.79, -0.1, LL_TOP + 0.08) * Rot(0, 90, 0) * Cylinder(0.018, 0.08))                # alivio
+add("acero_oscuro", Pos(WXP + 0.84, -0.1, LL_TOP + 0.08) * Rot(0, 90, 0) * Torus(0.03, 0.006))
+add("acero", bar((WXP + 0.98, 0.14, LL_TOP), (WXP + 0.98, 0.14, LL_TOP + 0.22), 0.012))
+add("rojo", Pos(WXP + 0.98, 0.14, LL_TOP + 0.28) * Rot(0, 90, 0) * fillet(Cylinder(0.065, 0.04).edges(), 0.006))   # manómetro
+add("blanco", Pos(WXP + 0.958, 0.14, LL_TOP + 0.28) * Rot(0, 90, 0) * Cylinder(0.055, 0.004))
+add("acero_oscuro", bar((WXP + 0.955, 0.14, LL_TOP + 0.28), (WXP + 0.955, 0.17, LL_TOP + 0.31), 0.003))       # aguja
+manguera((WXP + 0.79, -0.05, LL_TOP + 0.05), (WXP + 0.84, -0.02, LL_TOP + 0.02), (WXP + 0.86, 0.0, LL_TOP + 0.12), r=0.014, n=6)
+manguera((WXP + 0.66, -0.1, LL_TOP + 0.06), (WXP + 0.5, -0.25, LL_TOP + 0.3), (WXP + 1.1, -0.15, ZL + 0.6), r=0.02, n=10)
+# orejas traseras del brazo de torque
+for s_ in (-1, 1):
+    oreja = box(WXP + LL_R, WXP + LL_R + 0.09, s_ * 0.05 - 0.01, s_ * 0.05 + 0.01, ZL + 0.24, ZL + 0.38, f=0.004)
+    add("rojo", oreja - Pos(WXP + LL_R + 0.055, s_ * 0.05, ZL + 0.31) * Rot(90, 0, 0) * Cylinder(0.018, 0.1))
+add("acero", Pos(WXP + LL_R + 0.055, 0, ZL + 0.31) * Rot(90, 0, 0) * Cylinder(0.014, 0.14))
+# estribo de colgar y cilindro de izaje con amortiguación (carrera 6 ft)
+ZEST = LL_TOP + 0.35
+for s_ in (-1, 1):
+    add("rojo", bar((WXP + 0.5, s_ * 0.2, LL_Z1), (WXP + 0.7, s_ * 0.03, ZEST), 0.022, sq=True))
+add("acero", Pos(WXP + 0.7, 0, ZEST + 0.05) * Rot(90, 0, 0) * Torus(0.05, 0.014))
+add("acero", bar((WXP + 0.7, 0, ZEST + 0.1), (WXP + 0.7, 0, ZEST + 0.7), 0.025))                          # vástago
+add("rojo", Pos(WXP + 0.7, 0, ZEST + 0.7) * fillet(Cylinder(0.055, ZL + 2.25 - ZEST - 0.7, align=(Align.CENTER, Align.CENTER, Align.MIN)).edges(), 0.01))
 add("cable", bar((WXP + 0.7, 0, ZL + 2.25), M(MX + 0.7, -0.4, 13.0), 0.01))
+
+# resortes de amortiguación del cilindro de izaje (detalle según la foto Westco 58-93R, misma especificación que la Gill 500; C)
+add("rojo", box(WXP + 0.62, WXP + 0.78, -0.1, 0.1, ZL + 2.25, ZL + 2.29, f=0.005))
+for s_ in (-1, 1):
+    add("acero", bar((WXP + 0.7, s_ * 0.06, ZL + 2.29), (WXP + 0.7, s_ * 0.06, ZL + 2.46), 0.008))
+    for k in range(7):
+        add("acero_oscuro", Pos(WXP + 0.7, s_ * 0.06, ZL + 2.31 + 0.022 * k) * Torus(0.022, 0.005))
+add("rojo", box(WXP + 0.62, WXP + 0.78, -0.1, 0.1, ZL + 2.46, ZL + 2.5, f=0.005))
+
+# ───────── llave manual tipo B estacionada, con colgador en L (forma según fotos de catálogo; C, sin modelo identificado) ─────────
+ZM0, YM = ZP + 0.95, 0.9
+cab = Pos(WXP, YM, ZM0 - 0.045) * Cylinder(0.17, 0.09, align=(Align.CENTER, Align.CENTER, Align.MIN))
+cab -= Pos(WXP, YM, ZM0 - 0.1) * Cylinder(0.065, 0.3, align=(Align.CENTER, Align.CENTER, Align.MIN))
+cab -= box(WXP - 0.3, WXP - 0.03, YM - 0.05, YM + 0.05, ZM0 - 0.1, ZM0 + 0.1)              # boca de la mandíbula
+add("rojo", cab)
+for k in range(4):                                                               # juntas de las mordazas articuladas
+    a = 2 * pi * (k + 0.5) / 4 + pi / 4
+    add("goma", Pos(WXP + 0.12 * cos(a), YM + 0.12 * sin(a), ZM0) * Rot(0, 0, a * 180 / pi) * box(-0.05, 0.05, -0.003, 0.003, -0.046, 0.046))
+    add("acero_oscuro", Pos(WXP + 0.12 * cos(a), YM + 0.12 * sin(a), ZM0 + 0.045) * Cylinder(0.02, 0.025, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+add("rojo", box(WXP + 0.15, WXP + 1.1, YM - 0.035, YM + 0.035, ZM0 - 0.03, ZM0 + 0.03, f=0.01))   # palanca
+add("rojo", Pos(WXP + 1.1, YM, ZM0) * Rot(0, 90, 0) * fillet(Cylinder(0.045, 0.16).edges(), 0.015))  # empuñadura
+add("rojo", box(WXP + 0.55, WXP + 0.63, YM - 0.06, YM + 0.06, ZM0 - 0.04, ZM0 + 0.04, f=0.008))    # soporte del colgador
+add("rojo", bar((WXP + 0.59, YM, ZM0 + 0.04), (WXP + 0.59, YM, ZM0 + 1.05), 0.025))
+add("rojo", bar((WXP + 0.59, YM, ZM0 + 1.05), (WXP + 0.3, YM, ZM0 + 1.05), 0.025))
+add("acero_oscuro", Pos(WXP + 0.3, YM, ZM0 + 1.1) * Rot(90, 0, 0) * Torus(0.04, 0.01))         # ojo del colgador
+add("rojo", box(WXP + 0.66, WXP + 0.72, YM - 0.1, YM + 0.1, ZM0 + 0.35, ZM0 + 0.37))           # manija del colgador
+add("cable", bar((WXP + 0.3, YM, ZM0 + 1.14), M(MX + 0.7, 0.6, 13.0), 0.008))
+
+# ───────── grampa de seguridad AOT A-MP-S (2-7/8"–4-1/8": 7 eslabones, 8 mordazas, 128 lb; catálogo Access Oil Tools p57,
+# referencia: no es equipo relevado del TKR-10) apoyada en el piso. Paso de eslabón y alturas: C.
+GX, GYC = WXP - 0.7, -0.8
+for k in range(7):
+    a = 2 * pi * k / 8
+    cx, cy = GX + 0.14 * cos(a), GYC + 0.14 * sin(a)
+    add("rojo", Pos(cx, cy, ZP) * Rot(0, 0, a * 180 / pi) * box(-0.035, 0.035, -0.045, 0.045, 0, 0.11, f=0.008))
+    add("acero_oscuro", Pos(GX + 0.1 * cos(a), GYC + 0.1 * sin(a), ZP + 0.015) * Rot(0, 0, a * 180 / pi) * box(-0.006, 0.006, -0.03, 0.03, 0, 0.08))
+    add("rojo", Pos(cx, cy, ZP + 0.11) * Cylinder(0.022, 0.03, align=(Align.CENTER, Align.CENTER, Align.MIN)))   # tuerca de bisagra
+a7 = 2 * pi * 7 / 8
+add("acero", bar((GX + 0.2 * cos(a7 - 0.3), GYC + 0.2 * sin(a7 - 0.3), ZP + 0.055), (GX + 0.2 * cos(0.3), GYC + 0.2 * sin(0.3), ZP + 0.055), 0.015))   # tornillo de cierre
+add("rojo", Pos(GX + 0.21 * cos(a7), GYC + 0.21 * sin(a7), ZP + 0.055) * Rot(0, 0, a7 * 180 / pi) * Rot(0, 90, 0) * Cylinder(0.035, 0.09))
+for k in (2, 5):                                                                 # manijas triangulares
+    a = 2 * pi * k / 8
+    p0 = (GX + 0.18 * cos(a - 0.15), GYC + 0.18 * sin(a - 0.15), ZP + 0.08)
+    p1 = (GX + 0.18 * cos(a + 0.15), GYC + 0.18 * sin(a + 0.15), ZP + 0.08)
+    pm = (GX + 0.34 * cos(a), GYC + 0.34 * sin(a), ZP + 0.08)
+    for u, v in ((p0, pm), (pm, p1)):
+        add("rojo", bar(u, v, 0.012))
 
 comp("sk575_piso")
 # ───────────────────────── piso de trabajo (planos TACKER 8114-1006-0200/0201/0210/0212) ─────────────────────────
@@ -870,7 +1021,7 @@ railing([(X1, 0.6, ZP), (X1, YL, ZP), (X0, YL, ZP), (X0, 0.95, ZP)])
 railing([(X1, -0.6, ZP), (X1, -YL, ZP)])
 railing([(X0, -2.5, ZP), (X1, -2.5, ZP)])
 stair((X1, -2.1, ZP), (X1 + ZP, -2.1, 0.0), 0.8, paso=0.18)                      # 45°, ancho 800 (plano escalera)
-add("acero_oscuro", bar((WXP + 1.25, 0.25, ZL + 0.3), (X1, 1.55, ZP + 1.1), 0.03))  # brazo de torque a la baranda
+add("acero_oscuro", bar((WXP + LL_R + 0.055, 0, ZL + 0.31), (X1, 1.55, ZP + 1.1), 0.03))  # brazo de torque a la baranda
 manguera((WXP + 1.1, -0.15, ZL + 0.6), (WXP + 1.4, -1.2, ZP + 0.2), (X1 - 0.2, -1.5, ZP + 0.05), r=0.022)
 
 comp("sk575_carrier")

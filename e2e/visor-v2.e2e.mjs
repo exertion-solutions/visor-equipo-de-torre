@@ -235,9 +235,11 @@ test('aparejo: el bloque SK sigue al deslizador y vuelve a 14 m', async (t) => {
       R.groups.aparejo.getObjectByName('sk575_aparejo_amarillo').getWorldPosition(p)
       return p.y
     }, v)
-  assert.ok(Math.abs((await alto(20)) - 20) < 0.05)
+  // el origen del nodo lo fija la cuantización del GLB (centro de la malla): se mide el desplazamiento, no la altura absoluta
+  const reposo = await alto(14)
+  assert.ok(Math.abs((await alto(20)) - reposo - 6) < 0.05)
   await snap('03-aparejo-20m')
-  assert.ok(Math.abs((await alto(14)) - 14) < 0.05)
+  assert.ok(Math.abs((await alto(14)) - reposo) < 0.05)
 })
 
 test('izamiento: el 1.er tramo gira, el 2.º telescopa, los cilindros SK se animan y el ciclo restaura la pose', async (t) => {
