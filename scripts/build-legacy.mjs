@@ -129,7 +129,7 @@ const patches = [
     replace:
       `window.__rig={groups:Jt,COMPONENTS:at,selectComponent:tr,setExplode:Fh,focusOn:ef,state:Me,` +
       `scene:Ft,renderer:ot,camera:()=>wt,controls:()=>qt,pickables:Dh,materials:jd,centers:Tn,explodeOffsets:Vx,view:Pe,families:nr,` +
-      `three:${obj(THREE_CLASSES)},mast:gt,hookHeight:Hn,invalidate:At};` +
+      `three:${obj(THREE_CLASSES)},mast:gt,hookHeight:Hn,invalidate:At,raycaster:Sl,stopCam:()=>{Ut=null}};` +
       `window.__rigExt&&window.__rigExt.runPost(window.__rig);`,
   },
 ]
@@ -212,6 +212,14 @@ function build() {
     blocks.push(
       '/* datos DROPS (src/data/qhse/tacker10-drops.json) */\nwindow.__TACKER_DROPS=' +
         safeJsonForScript(JSON.parse(fs.readFileSync(dropsJson, 'utf8'))) +
+        ';',
+    )
+  }
+  const vpJson = path.join(root, 'src', 'data', 'viewpoints', 'tacker10-viewpoints.json')
+  if (fs.existsSync(vpJson)) {
+    blocks.push(
+      '/* viewpoints del recorrido en primera persona (src/data/viewpoints/tacker10-viewpoints.json) */\nwindow.__TACKER_VIEWPOINTS=' +
+        safeJsonForScript(JSON.parse(fs.readFileSync(vpJson, 'utf8'))) +
         ';',
     )
   }
