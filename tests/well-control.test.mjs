@@ -39,8 +39,10 @@ test('el color del BOP es configurable y está marcado como pendiente', () => {
   assert.ok(/PENDIENTE: el color del equipo real/.test(wellsite))
 })
 
-test('la ficha del 07: geometría SK-575 (C), diámetro en conflicto (C2) y manifold que no es del TKR-10', () => {
-  assert.match(wellsite, /grade: 'C',\s*status: 'Fuente en conflicto'/)
+test('la ficha del 07: stack del plano 8127 (B), presión en conflicto con el folleto y manifold que no es del TKR-10', () => {
+  assert.match(wellsite, /grade: 'B',\s*status: 'Fuente en conflicto'/)
+  assert.ok(wellsite.includes('src-plano-bop-8127'))
+  assert.ok(wellsite.includes('Presión: Fuente en conflicto con el folleto'))
   assert.ok(wellsite.includes('no es el manifold del TKR-10'))
   assert.ok(wellsite.includes('Pendientes: placa del BOP instalado'))
 })
