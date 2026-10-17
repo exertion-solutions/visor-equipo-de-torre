@@ -675,6 +675,18 @@ for k in range(8):                                                              
     add("cable", bar(M(MC + 0.3, y, H + 0.75), (WXP, y * 0.5, ZA + 0.85), 0.0127))
 
 comp("sk575_bop")
+# Orientación del stack (decisión del usuario 2026-10-17): volantes y bonetes de los rams hacia los LATERALES de la
+# subestructura (±Y), no hacia el carrier ni bajo el plano inclinado. El stack se dibuja con los bonetes en X y se gira
+# BOP_ROT alrededor del eje del pozo al final del bloque: choke hacia la puerta en V (+X), kill hacia el mástil (−X).
+BOP_ROT = -90
+_n0_bop = {k: len(v) for k, v in parts.items() if k[0] == "sk575_bop"}
+
+
+def rot_bop(x, y, z):
+    """Punto del stack (marco sin girar) → marco del modelo (giro BOP_ROT = −90°: (dx, dy) → (dy, −dx))."""
+    return (WXP + y, -(x - WXP), z)
+
+
 # ───────────────────────── Stack BOP estándar WS 7-1/16" 10 ksi (plano TACKER 8127-1110-004 rev 4) ─────────────────────────
 # Plano "ESQUEMA TÍPICO STACK BOP ESTÁNDAR - 7 1/16" 10 KSI" (DJLeyria, 30/09/2026, 1:30; src-plano-bop-8127, no se versiona).
 # Cotas rotuladas (A), de abajo hacia arriba: 792 ram simple [1] + carretel [2] · 760 cruz con salidas (sin número en la
@@ -841,6 +853,10 @@ for k in range(3):
     a = 2 * pi * k / 3
     add("acero", Pos(WXP + 0.13 * cos(a), 0.13 * sin(a), ZSB + 0.28) * Rot(0, 0, a * 180 / pi) * box(-0.04, 0.04, -0.06, 0.06, 0, 0.305 * 0.5, f=0.01))
 add("rojo", Pos(WXP + 0.38, 0, ZSB + 0.15) * Rot(0, 90, 0) * fillet(Cylinder(0.07, 0.25).edges(), 0.01))   # actuador neumático
+
+for k, v in parts.items():                                                       # giro del stack (ver BOP_ROT)
+    if k[0] == "sk575_bop":
+        v[_n0_bop.get(k, 0):] = [Pos(WXP, 0, 0) * Rot(0, 0, BOP_ROT) * Pos(-WXP, 0, 0) * sh for sh in v[_n0_bop.get(k, 0):]]
 
 comp("sk575_llave")
 # ───────────────────────── llave hidráulica colgada (Gill Model 500) ─────────────────────────
@@ -1279,12 +1295,12 @@ for path in (vent, gol):
         add("azul", bar(p, q, 0.045), Pos(*q) * Sphere(0.055))
 
 comp("sk575_manifold")
-# línea de choke desde la compuerta [5] (plano 8127) hasta M9 (a ras del suelo) y línea de ahogo desde la bomba triplex hasta la
+# línea de choke desde la compuerta [5] (plano 8127, girada con el stack) hasta M9 (a ras del suelo) y línea de ahogo desde la bomba triplex hasta la
 # unión WECO 1502 [18] de la línea de kill del stack
-fl = [(WXP, 1.68, ZCH), (WXP, 2.0, ZCH), (WXP, 2.0, 0.15), (WXP, 6.0, 0.15), (CX, 6.0, 0.15), (CX, CY - 0.75, 0.15), (CX, CY - 0.75, CZ),
+fl = [rot_bop(WXP, 1.68, ZCH), (WXP + 2.0, 0, ZCH), (WXP + 2.0, 0, 0.15), (WXP + 2.0, 6.0, 0.15), (CX, 6.0, 0.15), (CX, CY - 0.75, 0.15), (CX, CY - 0.75, CZ),
       (CX, CY - 0.62, CZ)]
 BX, BY = WXP - 19.2, 14.3                                                   # bomba triplex (ver abajo)
-kl = [(WXP + 1.15, YK, ZKL), (WXP + 1.4, YK, ZKL), (WXP + 1.4, YK, 0.1), (WXP + 4.0, YK, 0.1), (WXP + 4.0, 13.4, 0.1),
+kl = [rot_bop(WXP + 1.15, YK, ZKL), rot_bop(WXP + 1.4, YK, ZKL), rot_bop(WXP + 1.4, YK, 0.1), (WXP + 4.0, -1.4, 0.1), (WXP + 4.0, 13.4, 0.1),
       (BX + 5.15, 13.4, 0.1), (BX + 5.15, BY + 0.1, 0.1), (BX + 5.15, BY + 0.1, 1.15), (BX + 5.15, BY + 0.6, 1.15)]
 for path, r in ((fl, 0.045), (kl, 0.03)):
     for p, q in zip(path, path[1:]):

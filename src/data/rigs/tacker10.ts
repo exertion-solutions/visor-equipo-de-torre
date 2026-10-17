@@ -274,7 +274,7 @@ const SK575_COMPONENTS: Component[] = [
     'Stack BOP estándar 7-1/16" (ram simple, cruz, doble ram + shear, anular) con líneas de choke y kill',
     'well-control',
     ['src-plano-bop-8127', 'src-folleto', 'src-manual-bop-11'],
-    'Alturas de los 5 tramos rotuladas en el plano 8127-1110-004; anchos, bonetes y líneas medidos sobre el plano (C). Base a nivel de terreno con cabezal en sótano y choke hacia las piletas: interpretación pendiente de relevar.',
+    'Alturas de los 5 tramos rotuladas en el plano 8127-1110-004; anchos, bonetes y líneas medidos sobre el plano (C). Base a nivel de terreno con cabezal en sótano; bonetes y volantes de los rams hacia los laterales de la subestructura, choke hacia la puerta en V y kill hacia el mástil: interpretación pendiente de relevar.',
     [
       {
         ...spec(

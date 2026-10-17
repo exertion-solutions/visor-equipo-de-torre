@@ -2614,7 +2614,7 @@
       'manifold: esquema M1–M12 (src-esquema-ahogo) con escala B20-9908 (src-choke-b20)',
     note:
       'Stack estándar WS 7-1/16": ram simple, cruz, doble ram + shear (10.000 psi) y anular (5.000 psi), 3,731 m. ' +
-      'Presión: Fuente en conflicto con el folleto (7-1/16" 5.000 psi). Base a nivel de terreno con cabezal en sótano y choke hacia las piletas: ' +
+      'Presión: Fuente en conflicto con el folleto (7-1/16" 5.000 psi). Base a nivel de terreno con cabezal en sótano y volantes de los rams hacia los laterales de la subestructura: ' +
       'interpretación pendiente de relevar. Acumulador de 5 botellas (folleto, A). Manifold de ahogo: disposición de un esquema sin identificar ' +
       'y escala de otro equipo (TKR-08): no es el manifold del TKR-10. Geometría aproximada, no as-built. ' +
       'Pendientes: placa del BOP instalado, cota real del cabezal / sótano, identidad del manifold y color del BOP/acumulador.',
