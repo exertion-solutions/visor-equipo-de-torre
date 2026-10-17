@@ -10787,14 +10787,19 @@ window.__rigExt.onPost((R) => {
     rc.near = 0
     rc.far = largo + RADIO
     let ok = true
-    for (const h of [0.4, 1.2]) {
-      org.set(x, h, z)
-      rc.set(org, dir)
-      if (rc.intersectObjects(R.pickables, false).some((i) => visible(i.object))) {
-        ok = false
-        break
+    // rayo central y uno a cada lado a ±RADIO (ancho del caminante): con solo el central, rozando el canto de un equipo
+    // el rayo pasaba por una rendija y se lo atravesaba (CI a 60 FPS, paso chico)
+    const px = -dir.z * RADIO
+    const pz = dir.x * RADIO
+    rayos: for (const h of [0.4, 1.2])
+      for (const k of [-1, 0, 1]) {
+        org.set(x + k * px, h, z + k * pz)
+        rc.set(org, dir)
+        if (rc.intersectObjects(R.pickables, false).some((i) => visible(i.object))) {
+          ok = false
+          break rayos
+        }
       }
-    }
     rc.near = near0
     rc.far = far0
     return ok
@@ -10993,6 +10998,7 @@ window.__rigExt.onPost((R) => {
     current: () => (actual ? actual.id : null),
     walking: () => !!walk,
     keys: teclas, // pruebas: simular teclas sin Pointer Lock
+    libre, // pruebas: colisión de un paso (x, z, dx, dz), sin depender de los FPS
     tour: {
       play,
       pause: pausa,

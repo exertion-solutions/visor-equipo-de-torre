@@ -953,6 +953,15 @@ test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a
       VP.go('bomba', { instant: true }) // mira hacia −Z, a la bomba
       VP.walk(true)
     })
+    // colisión sin depender de los FPS: pasos de 2,3 cm (1,4 m/s a 60 FPS) desde el viewpoint, que queda sobre el canto del gabinete
+    const rozando = await page.evaluate(() => {
+      const VP = window.__tackerVp
+      const c = window.__rig.camera()
+      let { x, z } = c.position
+      for (let i = 0; i < 300 && VP.libre(x, z, 0, -0.023); i++) z -= 0.023
+      return z
+    })
+    assert.ok(rozando > -14.5, `rozando el canto atravesó la bomba: z = ${rozando.toFixed(2)}`)
     // 1,5 s: el headless puede dar ~2 cuadros/s y el paso está topado a 0,25 s por cuadro; con 0,5 s podía no llegar ningún cuadro
     const corto = await andar(1500)
     assert.ok(Math.abs(corto.y - 1.7) < 1e-6, `altura ${corto.y}`)
