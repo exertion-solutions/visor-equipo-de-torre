@@ -27,7 +27,7 @@
     "archivo": "public/models/tacker10/sk575_piso.glb",
     "optimize": "npm run gltf:optimize -- sk575_piso.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 21064,
-    "triangulos_publicados": 15718,
+    "triangulos_publicados": 15788,
     "segmentos_aristas": 6662,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

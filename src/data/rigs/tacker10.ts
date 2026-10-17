@@ -317,11 +317,31 @@ const SK575_COMPONENTS: Component[] = [
   ),
   sk575(
     'sk575_llave',
-    'Llave hidráulica',
+    'Llave hidráulica Gill Model 500 con backup',
     'workfloor',
-    [],
-    'Envolvente ilustrativa; sin modelo ni cotas documentadas.',
-    [],
+    ['src-manual-gill-500'],
+    'Cotas de envolvente del manual Gill 500; forma medida sobre la ilustración del manual y detalle según una foto de catálogo de otra llave (C). Color real pendiente.',
+    [
+      spec('tongLengthIn', 'Largo de la llave', 51, 'A', 'src-manual-gill-500', 'in'),
+      spec(
+        'spaceOnPipeIn',
+        'Espacio sobre el caño (llave / con backup)',
+        '9-1/2 / 16-1/2',
+        'A',
+        'src-manual-gill-500',
+        'in',
+      ),
+      spec('sizeRange', 'Rango de diámetros', '1-5/16" a 7"', 'A', 'src-manual-gill-500'),
+      spec(
+        'torqueFtLb',
+        'Torque a 2.000 psi (alta / baja)',
+        '1.300 / 6.000',
+        'A',
+        'src-manual-gill-500',
+        'ft·lb',
+      ),
+      spec('liftStrokeFt', 'Carrera del cilindro de izaje', 6, 'A', 'src-manual-gill-500', 'ft'),
+    ],
   ),
   sk575(
     'sk575_piso',
@@ -637,6 +657,14 @@ export const TACKER10_RIG: Rig = {
       title:
         'Planillas de inspección SOP 1110 (API RP 8B / SPEC 8C): amelas 150 t y elevador de cierre central — APROBADA',
       ref: 'Imágenes provistas por el usuario 2026-10-09',
+      verified: true,
+    },
+    {
+      id: 'src-manual-gill-500',
+      kind: 'manufacturer',
+      title:
+        'Gill Services Model 500 / 500HT — manual de la llave hidráulica (especificaciones p6-7)',
+      ref: 'C:\\Users\\jcastro\\cad\\Gill Model 500 Manual.pdf',
       verified: true,
     },
     {
