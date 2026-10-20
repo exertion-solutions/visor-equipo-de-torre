@@ -78,6 +78,9 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
         case 'rig:select':
           store.setSelection(msg.selection)
           break
+        case 'rig:visitas':
+          store.setVisitas(msg.value)
+          break
       }
     }
     window.addEventListener('message', onMessage)

@@ -52,6 +52,22 @@ describe('parseLegacyMessage', () => {
   })
 })
 
+describe('parseLegacyMessage · visitas', () => {
+  it('acepta un total entero no negativo y rechaza el resto', () => {
+    expect(parseLegacyMessage({ type: 'rig:visitas', value: 1234 })).toEqual({
+      type: 'rig:visitas',
+      value: 1234,
+    })
+    expect(parseLegacyMessage({ type: 'rig:visitas', value: 0 })).toEqual({
+      type: 'rig:visitas',
+      value: 0,
+    })
+    for (const value of [-1, 1.5, NaN, '12', null, undefined]) {
+      expect(parseLegacyMessage({ type: 'rig:visitas', value })).toBeNull()
+    }
+  })
+})
+
 describe('normalizeLayers', () => {
   it('deduplica y ordena', () => {
     expect(normalizeLayers(['drops', 'zonas', 'drops', 'nope'])).toEqual(['zonas', 'drops'])

@@ -28,6 +28,8 @@ interface ViewerState {
   layers: LegacyLayer[] | null
   /** Componente seleccionado en el V2, con su confiabilidad geométrica. */
   selection: LegacySelection | null
+  /** Total del contador de visitas publicado por el visor V2; `null` = no disponible (local, sin red o aún no llegó). */
+  visitas: number | null
   /** Motor nativo: aristas vivas sobre los GLB ("sombreado con aristas" de un CAD). */
   edges: boolean
   setEngine: (engine: ViewerEngine) => void
@@ -36,6 +38,7 @@ interface ViewerState {
   setLegacyReady: (ready: boolean) => void
   setLegacyState: (state: { view: LegacyView | null; layers: LegacyLayer[] }) => void
   setSelection: (selection: LegacySelection | null) => void
+  setVisitas: (visitas: number | null) => void
   toggleEdges: () => void
 }
 
@@ -47,6 +50,7 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   view: null,
   layers: null,
   selection: null,
+  visitas: null,
   edges: true,
   setEngine: (engine) => set({ engine }),
   selectComponent: (selectedComponentId) => set({ selectedComponentId }),
@@ -54,5 +58,6 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   setLegacyReady: (legacyReady) => set({ legacyReady }),
   setLegacyState: ({ view, layers }) => set({ view, layers }),
   setSelection: (selection) => set({ selection, selectedComponentId: selection?.id ?? null }),
+  setVisitas: (visitas) => set({ visitas }),
   toggleEdges: () => set((s) => ({ edges: !s.edges })),
 }))

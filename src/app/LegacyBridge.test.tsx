@@ -21,6 +21,7 @@ afterEach(() => {
     view: null,
     layers: null,
     selection: null,
+    visitas: null,
   })
 })
 
@@ -102,5 +103,16 @@ describe('App · puente con el visor V2', () => {
     expect(chip.textContent).toContain('B · Parcial')
     fromFrame({ type: 'rig:select', id: null })
     expect(screen.queryByTestId('selection-grade')).toBeNull()
+  })
+
+  it('muestra el contador de visitas que publica el visor en la barra de estado', () => {
+    const { fromFrame } = frameWithBridge()
+    expect(screen.queryByTestId('visitas')).toBeNull()
+    fromFrame({ type: 'rig:visitas', value: 1234 })
+    expect(useViewerStore.getState().visitas).toBe(1234)
+    expect(screen.getByTestId('visitas').textContent).toContain((1234).toLocaleString('es-AR'))
+    // un valor mal formado no pisa el total
+    fromFrame({ type: 'rig:visitas', value: -5 })
+    expect(useViewerStore.getState().visitas).toBe(1234)
   })
 })

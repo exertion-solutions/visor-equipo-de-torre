@@ -9,14 +9,18 @@ const src = fs.readFileSync(path.join(root, 'legacy-ext', '89-visitas.js'), 'utf
 const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8');
 
 /** Corre el módulo con un entorno simulado y devuelve el elemento, las URL pedidas y el estado. */
-async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new Map(), dnt = '0', respuesta, falla = false } = {}) {
+async function correr({ conPadre = false, url = 'https://visor.ejemplo.com/legacy/', storage = new Map(), dnt = '0', respuesta, falla = false } = {}) {
   const u = new URL(url);
   const pedidos = [];
   const el = { hidden: true, textContent: '' };
   const bar = { appendChild: () => {} };
   let post;
+  const mensajes = [];
+  const oyentes = [];
   const win = {
     __rigExt: { onPost: (f) => (post = f) },
+    addEventListener: (t, f) => oyentes.push([t, f]),
+    parent: conPadre ? { postMessage: (m) => mensajes.push(m) } : null,
     sessionStorage: storage && {
       getItem: (k) => (storage.has(k) ? storage.get(k) : null),
       setItem: (k, v) => storage.set(k, v),
@@ -43,7 +47,7 @@ async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new
   );
   post();
   await new Promise((r) => setTimeout(r, 10));
-  return { el, pedidos, estado: win.__rigVisitas.estado(), storage };
+  return { el, pedidos, mensajes, oyentes, win, estado: win.__rigVisitas.estado(), storage };
 }
 
 test('el módulo está en el HTML generado y usa solo el servicio declarado, sin claves', () => {
@@ -89,4 +93,19 @@ test('si el servicio falla o responde mal, el contador queda oculto', async () =
   assert.equal(caido.estado, 'error');
   const raro = await correr({ respuesta: { value: 'abc' } });
   assert.equal(raro.el.hidden, true);
+});
+
+test('embebido: publica el total al padre y lo reenvía ante rig:ping', async () => {
+  const r = await correr({ conPadre: true });
+  assert.deepEqual(r.mensajes, [{ type: 'rig:visitas', value: 1234 }]);
+  const [, oyente] = r.oyentes.find(([t]) => t === 'message');
+  oyente({ source: r.win.parent, data: { type: 'rig:ping' } });
+  assert.equal(r.mensajes.length, 2);
+  oyente({ source: {}, data: { type: 'rig:ping' } }); // de otro origen: se ignora
+  assert.equal(r.mensajes.length, 2);
+});
+
+test('sin padre (página directa) no publica nada', async () => {
+  const r = await correr();
+  assert.deepEqual(r.mensajes, []);
 });
