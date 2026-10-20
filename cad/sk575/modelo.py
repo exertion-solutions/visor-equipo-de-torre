@@ -1201,11 +1201,92 @@ pileta(WXP - 8.2, 14.3, "zaranda")                                          # pi
 pileta(WXP - 11.3, 19.5, "preparadora")                                     # pileta de preparación
 pileta(WXP + 10.7, 27.7, "golpeador")                                       # pileta de ensayo
 
-# trip tank (≈2,1 × 2,3) con regla de nivel
-add("rojo", box(WXP + 0.4, WXP + 2.5, 10.6, 12.9, 0.15, 2.6, f=0.03))
-add("acero_oscuro", box(WXP + 0.3, WXP + 2.6, 10.5, 13.0, 0, 0.15))
-add("vidrio", box(WXP + 0.38, WXP + 0.4, 11.6, 11.7, 0.4, 2.4))
-railing([(WXP + 0.4, 10.6, 2.6), (WXP + 2.5, 10.6, 2.6), (WXP + 2.5, 12.9, 2.6)], h=1.0, step=1.0)
+def pernos(c, d, R, n, rb=0.014, h=0.022, mat="acero"):
+    """Anillo de `n` cabezas de perno (cilindros cortos) sobre un disco con normal `d`, centrado en `c`."""
+    pl = Plane(origin=Vector(*c), z_dir=Vector(*d))
+    for k in range(n):
+        a = 2 * pi * k / n
+        add(mat, pl * Pos(R * cos(a), R * sin(a), 0) * Cylinder(rb, h, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+
+
+def brida_c(c, d, R, e, n, Rp, mat="azul_bomba", rb=0.013):
+    """Brida (disco de espesor `e` hacia `d`) con `n` pernos en el radio `Rp`."""
+    d = Vector(*d).normalized()
+    add(mat, bar(c, Vector(*c) + d * e, R))
+    pernos(Vector(*c) + d * e, d, Rp, n, rb)
+
+
+# trip tank (huella ≈ 2,1 × 2,3, C) — detalle por REFERENCIA FOTOGRÁFICA GENÉRICA de un trip tank de campo: cuerpo de chapa con nervaduras
+# verticales, escalera de acceso, baranda amarilla con tapa de aforo, tubo de rebose con acople rápido, orejas de izaje, regla de nivel
+# y bomba centrífuga con motor eléctrico en el patín. Capacidad, caudal y potencia del equipo instalado: PENDIENTES. Confianza C.
+TX0, TX1, TY0, TY1 = WXP + 0.4, WXP + 2.5, 10.6, 12.9
+TYC = (TY0 + TY1) / 2
+add("acero_oscuro", box(WXP + 0.3, WXP + 2.6, 10.5, 14.1, 0, 0.15))                       # patín (incluye la bomba)
+for yy in (10.5, 14.1):
+    add("acero_oscuro", bar((WXP + 0.3, yy, 0.07), (WXP + 2.6, yy, 0.07), 0.07))          # largueros tubulares
+add("blanco", box(TX0, TX1, TY0, TY1, 0.15, 2.6, f=0.02))                                    # cuerpo
+for k in range(5):                                                                          # nervaduras verticales caras ±Y
+    x = TX0 + 0.2 + k * (TX1 - TX0 - 0.4) / 4
+    for yy, sg in ((TY0, -1), (TY1, 1)):
+        add("blanco", box(x - 0.04, x + 0.04, yy + (-0.05 if sg < 0 else 0), yy + (0 if sg < 0 else 0.05), 0.2, 2.5))
+for k in range(4):                                                                          # nervaduras caras ±X
+    y = TY0 + 0.25 + k * (TY1 - TY0 - 0.5) / 3
+    for xx, sg in ((TX0, -1), (TX1, 1)):
+        add("blanco", box(xx + (-0.05 if sg < 0 else 0), xx + (0 if sg < 0 else 0.05), y - 0.04, y + 0.04, 0.2, 2.5))
+add("blanco", box(TX0 - 0.03, TX1 + 0.03, TY0 - 0.03, TY1 + 0.03, 2.5, 2.6))                # cinta superior
+# cubierta: parrilla antideslizante, tapa de aforo abulonada y venteo con cuello de ganso
+add("grating", box(TX0, TX1, TY0, TY1, 2.6, 2.64))
+add("acero_oscuro", Pos((TX0 + TX1) / 2 + 0.2, TYC, 2.64) * Cylinder(0.26, 0.05, align=(Align.CENTER, Align.CENTER, Align.MIN)))
+pernos(((TX0 + TX1) / 2 + 0.2, TYC, 2.69), (0, 0, 1), 0.21, 10, 0.014)
+add("acero", bar((TX1 - 0.2, TYC + 0.6, 2.64), (TX1 - 0.2, TYC + 0.6, 3.1), 0.045))
+add("acero", Pos(TX1 - 0.28, TYC + 0.6, 3.1) * Rot(90, 0, 0) * Torus(0.08, 0.045) & box(-99, 99, -99, 99, 3.1, 99))
+railing([(TX0, TY0, 2.6), (TX1, TY0, 2.6), (TX1, TY1, 2.6), (TX0, TY1, 2.6)], h=1.0, step=1.05)
+# tubo de rebose blanco por el borde superior y bajada hasta un acople rápido (cara −X)
+add("blanco", bar((TX0 - 0.1, TY1 - 0.3, 2.72), (TX1 + 0.1, TY1 - 0.3, 2.72), 0.055))
+add("acero_oscuro", bar((TX0 - 0.1, TY1 - 0.3, 2.72), (TX0 - 0.1, TY1 - 0.3, 0.55), 0.045))
+for zz in (1.0, 1.9):
+    add("acero", bar((TX0 - 0.06, TY1 - 0.3, zz), (TX0 + 0.0, TY1 - 0.3, zz), 0.03))        # abrazaderas
+add("acero", bar((TX0 - 0.1, TY1 - 0.3, 0.55), (TX0 - 0.1, TY1 - 0.3, 0.42), 0.075))      # acople rápido (cuerpo)
+add("acero", bar((TX0 - 0.1, TY1 - 0.3, 0.42), (TX0 - 0.1, TY1 - 0.3 - 0.12, 0.42), 0.03))   # palanca
+# orejas de izaje (chapa con ojal) en las 4 esquinas altas
+for xx in (TX0 + 0.25, TX1 - 0.25):
+    for yy, sg in ((TY0, -1), (TY1, 1)):
+        add("acero_oscuro", box(xx - 0.06, xx + 0.06, yy + (-0.1 if sg < 0 else 0), yy + (0 if sg < 0 else 0.1), 2.25, 2.4))
+        add("acero", Pos(xx, yy + sg * 0.05, 2.38) * Rot(90, 0, 0) * Torus(0.04, 0.012))
+# regla de nivel (cara +X): visor de vidrio con marco y marcas cada 0,2 m
+add("acero", box(TX1 + 0.05, TX1 + 0.09, TYC - 0.1, TYC + 0.1, 0.35, 2.45))
+add("vidrio", box(TX1 + 0.09, TX1 + 0.1, TYC - 0.05, TYC + 0.05, 0.4, 2.4))
+for k in range(11):
+    add("acero_oscuro", box(TX1 + 0.09, TX1 + 0.11, TYC + 0.07, TYC + 0.13, 0.4 + k * 0.2 - 0.005, 0.4 + k * 0.2 + 0.005))
+# escalera de acceso a la cubierta (cara −X), largueros C y escalones de chapa perforada
+stair((TX0, TYC, 2.6), (TX0 - 2.6, TYC, 0.0), 0.7, mat_str="blanco", paso=0.24)
+# boca de salida inferior (cara +Y) con manguito de goma y brida
+add("blanco", bar((TX1 - 0.35, TY1, 0.45), (TX1 - 0.35, TY1 + 0.05, 0.45), 0.1))
+add("goma", bar((TX1 - 0.35, TY1 + 0.05, 0.45), (TX1 - 0.35, TY1 + 0.22, 0.45), 0.075))
+
+# bomba centrífuga con motor eléctrico sobre el patín (lado +Y): motor con aletas y tapa de ventilador, protector de acople (amarillo),
+# soporte de rodamientos, voluta, succión desde la boca de salida y descarga a una entrada superior del tanque con válvula
+PY, PZ = TY1 + 0.65, 0.5
+add("acero_oscuro", box(WXP + 0.45, WXP + 2.4, PY - 0.3, PY + 0.3, 0.15, 0.28))               # bancada
+add("acero", Pos(WXP + 0.85, PY, PZ) * Rot(0, 90, 0) * Cylinder(0.17, 0.6))                    # motor
+for k in range(7):
+    add("acero", Pos(WXP + 0.6 + k * 0.08, PY, PZ) * Rot(0, 90, 0) * Cylinder(0.185, 0.02))     # aletas
+add("acero_oscuro", Pos(WXP + 0.5, PY, PZ) * Rot(0, 90, 0) * Cylinder(0.2, 0.1))               # tapa del ventilador
+add("acero_oscuro", box(WXP + 0.8, WXP + 1.0, PY - 0.08, PY + 0.08, PZ + 0.17, PZ + 0.3))        # caja de bornes
+add("acero_oscuro", box(WXP + 0.65, WXP + 1.05, PY - 0.2, PY + 0.2, 0.28, PZ - 0.14))            # patas del motor
+add("amarillo", box(WXP + 1.15, WXP + 1.45, PY - 0.14, PY + 0.14, PZ - 0.14, PZ + 0.14, f=0.02))   # protector del acople
+add("acero_oscuro", box(WXP + 1.45, WXP + 1.65, PY - 0.14, PY + 0.14, 0.28, PZ + 0.14))          # soporte de rodamientos
+add("acero", Pos(WXP + 1.8, PY, PZ) * Rot(0, 90, 0) * Cylinder(0.26, 0.2))                       # voluta
+add("acero", Pos(WXP + 2.0, PY, PZ) * Rot(0, 90, 0) * Cone(0.12, 0.2, 0.2))                       # cono de succión
+add("acero", bar((WXP + 1.8, PY, PZ + 0.2), (WXP + 1.8, PY, 1.1), 0.06))                          # descarga
+add("acero", bar((WXP + 1.8, PY, 1.1), (WXP + 1.8, TY1 + 0.02, 1.1), 0.06))
+brida_c((WXP + 1.8, TY1 + 0.02, 1.1), (0, -1, 0), 0.1, 0.03, 6, 0.08, mat="acero")
+add("azul_bomba", Pos(WXP + 1.8, TY1 + 0.3, 1.1) * fillet(Box(0.2, 0.22, 0.22).edges(), 0.02))      # válvula de descarga
+add("acero_oscuro", bar((WXP + 1.8, TY1 + 0.3, 1.2), (WXP + 1.8, TY1 + 0.3, 1.38), 0.012))
+add("acero_oscuro", Pos(WXP + 1.8, TY1 + 0.3, 1.38) * Torus(0.1, 0.012))
+add("acero", bar((TX1 - 0.35, TY1 + 0.22, 0.45), (TX1 - 0.35, PY, 0.45), 0.055))                  # succión
+add("acero", bar((TX1 - 0.35, PY, 0.45), (WXP + 2.1, PY, 0.45), 0.055))
+add("acero", bar((WXP + 2.1, PY, 0.45), (WXP + 2.1, PY, PZ), 0.055))
 
 comp("sk575_manifold")
 # manifold de ahogo (esquema TACKER M1–M12) con la escala del choke Thrubore B20-9908: columnas a 64,03", filas a 62,18".
@@ -1307,19 +1388,98 @@ for path, r in ((fl, 0.045), (kl, 0.03)):
         add("azul", bar(p, q, r), Pos(*q) * Sphere(r * 1.3))
 
 comp("sk575_bomba")
-# bomba triplex sobre patín (6 × 2,4): motor + caja de cigüeñal + cabezal de 3 émbolos + amortiguador
+# bomba triplex sobre patín (6 × 2,4, layout WS10 = A). Detalle por REFERENCIA FOTOGRÁFICA GENÉRICA de una bomba de lodo triplex de catálogo
+# (power end con tapas y eje de piñón, fluid end de 3 cilindros con tapas abulonadas, múltiple de succión inferior, múltiple de descarga
+# superior con amortiguador de pulsaciones rojo y válvula de seguridad). Marca, modelo, camisas, carrera, presión y caudal del equipo
+# instalado: PENDIENTES (no se inventan); motor y cardán ilustrativos. Confianza C, no as-built.
 BX, BY = WXP - 19.2, 14.3
-add("acero_oscuro", box(BX, BX + 6, BY + 0.2, BY + 2.2, 0, 0.25))
-gabinete_ = box(BX + 0.3, BX + 3.0, BY + 0.3, BY + 2.1, 0.25, 2.0, f=0.05)
+YC = BY + 1.2                                                                   # eje longitudinal de la bomba
+CIL = (YC - 0.45, YC, YC + 0.45)                                                # ejes de los 3 cilindros (paso 0,45 m, C)
+ZE = 0.95                                                                       # altura del eje de los cilindros
+
+
+# patín: viga principal tubular con punta de trineo redondeada y travesaños (acero_oscuro) + puntas rojas
+add("acero_oscuro", box(BX, BX + 6, BY + 0.2, BY + 2.2, 0.0, 0.2))
+for yy in (BY + 0.2, BY + 2.2):
+    add("azul_bomba", bar((BX + 0.1, yy, 0.12), (BX + 5.9, yy, 0.12), 0.12))
+    for xx in (BX + 0.1, BX + 5.9):
+        add("rojo", Pos(xx, yy, 0.12) * Sphere(0.14))
+for k in range(7):
+    add("azul_bomba", box(BX + 0.2 + k * 0.9, BX + 0.3 + k * 0.9, BY + 0.2, BY + 2.2, 0.2, 0.3))
+add("acero_oscuro", box(BX + 0.05, BX + 5.95, BY + 0.3, BY + 2.1, 0.2, 0.26))          # piso de chapa
+
+# motor (ilustrativo): gabinete rojo con radiador, tapa de valvulas y escape
+gabinete_ = box(BX + 0.3, BX + 3.0, BY + 0.3, BY + 2.1, 0.26, 2.0, f=0.05)
 add("rojo", gabinete_)
 add("acero_oscuro", box(BX + 0.25, BX + 0.3, BY + 0.4, BY + 2.0, 0.6, 1.9))   # radiador
 add("acero", bar((BX + 2.2, BY + 1.5, 2.0), (BX + 2.2, BY + 1.5, 2.7), 0.06))
-add("azul", box(BX + 3.4, BX + 4.8, BY + 0.5, BY + 1.9, 0.25, 1.35, f=0.06))   # cárter
-for k in range(3):
-    y = BY + 0.75 + k * 0.45
-    add("acero", Pos(BX + 5.15, y, 0.85) * Rot(0, 90, 0) * fillet(Cylinder(0.16, 0.7).edges(), 0.02))   # módulos
-add("acero", bar((BX + 5.15, BY + 0.6, 1.15), (BX + 5.15, BY + 1.8, 1.15), 0.06))
-add("acero_oscuro", Pos(BX + 5.15, BY + 1.95, 1.15) * Sphere(0.22))           # amortiguador de pulsaciones
+add("acero_oscuro", bar((BX + 2.2, BY + 1.5, 2.2), (BX + 2.2, BY + 1.5, 2.55), 0.1))    # silenciador
+
+# cardán y protector de transmisión (amarillo)
+add("acero", bar((BX + 3.0, YC, ZE), (BX + 3.5, YC, ZE), 0.07))
+add("amarillo", box(BX + 3.05, BX + 3.45, YC - 0.3, YC + 0.3, 0.3, 1.25, f=0.04))
+
+# power end (caja de cigüeñal): bloque azul con costillas, tapa de acceso oval, tapas redondas de rodamiento y ojales de izaje
+add("azul_bomba", box(BX + 3.5, BX + 4.95, BY + 0.35, BY + 2.05, 0.26, 1.7, f=0.06))
+add("azul_bomba", box(BX + 3.55, BX + 4.9, BY + 0.55, BY + 1.85, 1.7, 1.78, f=0.02))   # tapa superior
+for xx in (BX + 3.85, BX + 4.25, BX + 4.6):
+    for sy in (-1, 1):
+        add("azul_bomba", box(xx - 0.03, xx + 0.03, YC + sy * 0.86 - (0.0 if sy < 0 else 0.03), YC + sy * 0.86 + (0.03 if sy < 0 else 0.0), 0.35, 1.62))  # costillas
+for sy in (-1, 1):
+    c = (BX + 4.25, YC + sy * 0.86, 1.0)
+    add("acero", Pos(*c) * Rot(90, 0, 0) * Pos(0, 0, 0 if sy > 0 else -0.04) * Cylinder(0.2, 0.04))     # tapa oval (aprox. disco)
+    pernos((c[0], c[1] + sy * 0.02, c[2]), (0, sy, 0), 0.23, 10, 0.012)
+    add("azul_bomba", Pos(BX + 4.25, YC + sy * 0.9, 1.0) * Rot(90, 0, 0) * Cylinder(0.3, 0.02))        # chapa de nombre / zona de rotulación
+c = (BX + 3.5, YC + 0.45, 1.05)
+add("azul_bomba", bar((BX + 3.5, YC, 1.0), (BX + 3.5 - 0.07, YC, 1.0), 0.45))                            # tapa circular de rodamiento (lado motor)
+pernos((BX + 3.43, YC, 1.0), (-1, 0, 0), 0.4, 16, 0.016)
+add("acero", bar((BX + 3.43, YC, 1.0), (BX + 3.2, YC, 1.0), 0.1))                                          # extremo del eje de piñón
+for sy in (-1, 1):                                                                                          # ojales de izaje
+    add("acero", Pos(BX + 4.25, YC + sy * 0.45, 1.8) * Rot(90, 0, 0) * Torus(0.09, 0.02))
+
+# extensiones de cruceta (3 tubos con brida) y vástagos de émbolo hacia el fluid end
+for yy in CIL:
+    add("azul_bomba", bar((BX + 4.9, yy, ZE), (BX + 5.2, yy, ZE), 0.15))
+    brida_c((BX + 4.95, yy, ZE), (1, 0, 0), 0.2, 0.05, 8, 0.17)
+    add("acero", bar((BX + 5.05, yy, ZE), (BX + 5.3, yy, ZE), 0.05))                                       # vástago
+
+# fluid end (bloque con 3 cilindros): cuerpo, tapas de camisa abulonadas, tapas de válvula arriba
+add("azul_bomba", box(BX + 5.2, BX + 5.7, YC - 0.75, YC + 0.75, 0.45, 1.5, f=0.05))
+for yy in CIL:
+    add("azul_bomba", bar((BX + 5.7, yy, ZE), (BX + 5.78, yy, ZE), 0.2))                                    # tapa de camisa
+    pernos((BX + 5.78, yy, ZE), (1, 0, 0), 0.16, 8, 0.016)
+    add("acero", bar((BX + 5.78, yy, ZE), (BX + 5.84, yy, ZE), 0.07))                                       # tapón central
+    add("azul_bomba", bar((BX + 5.45, yy, 1.5), (BX + 5.45, yy, 1.64), 0.13))                               # tapa de válvula de descarga
+    pernos((BX + 5.45, yy, 1.64), (0, 0, 1), 0.1, 6, 0.012)
+    add("azul_bomba", bar((BX + 5.45, yy, 0.45), (BX + 5.45, yy, 0.36), 0.12))                              # tapa de válvula de succión
+
+# múltiple de succión (inferior): tubo transversal con bridas, brida ciega y boca de entrada 6"
+add("azul_bomba", bar((BX + 5.45, YC - 1.0, 0.34), (BX + 5.45, YC + 1.0, 0.34), 0.12))
+brida_c((BX + 5.45, YC + 1.0, 0.34), (0, 1, 0), 0.19, 0.05, 12, 0.15)
+brida_c((BX + 5.45, YC - 1.0, 0.34), (0, -1, 0), 0.19, 0.05, 12, 0.15)
+add("acero_oscuro", bar((BX + 5.45, YC + 1.05, 0.34), (BX + 5.45, YC + 1.12, 0.34), 0.1))                # brida ciega
+
+# múltiple de descarga (superior) + amortiguador de pulsaciones rojo con cuello abulonado, manómetro y tapa
+add("azul_bomba", bar((BX + 5.45, YC - 0.9, 1.78), (BX + 5.45, YC + 0.9, 1.78), 0.1))
+for yy in CIL:
+    add("azul_bomba", bar((BX + 5.45, yy, 1.64), (BX + 5.45, yy, 1.78), 0.07))
+brida_c((BX + 5.45, YC + 0.9, 1.78), (0, 1, 0), 0.15, 0.04, 8, 0.12)
+brida_c((BX + 5.45, YC - 0.9, 1.78), (0, -1, 0), 0.15, 0.04, 8, 0.12)
+add("azul_bomba", bar((BX + 5.45, YC, 1.78), (BX + 5.45, YC, 2.0), 0.09))
+brida_c((BX + 5.45, YC, 2.0), (0, 0, 1), 0.13, 0.04, 8, 0.1, mat="rojo")
+add("rojo", Pos(BX + 5.45, YC, 2.5) * Sphere(0.3))                                                          # cuerpo esférico del amortiguador
+add("rojo", bar((BX + 5.45, YC, 2.05), (BX + 5.45, YC, 2.25), 0.12))                                       # cuello
+brida_c((BX + 5.45, YC, 2.74), (0, 0, 1), 0.12, 0.05, 12, 0.09, mat="rojo")                                  # tapa superior abulonada
+add("acero", Pos(BX + 5.45, YC - 0.3, 2.6) * Rot(0, 90, 0) * Cylinder(0.07, 0.03))                          # manómetro (bisel)
+add("blanco", Pos(BX + 5.45, YC - 0.325, 2.6) * Rot(90, 0, 0) * Cylinder(0.055, 0.01))
+add("acero", bar((BX + 5.45, YC - 0.3, 2.5), (BX + 5.45, YC - 0.3, 2.6), 0.012))
+
+# válvula de seguridad / alivio (roja) sobre el múltiple de descarga: brida, cuerpo, cabeza y salida lateral
+add("azul_bomba", bar((BX + 5.45, YC - 0.55, 1.78), (BX + 5.45, YC - 0.55, 2.05), 0.06))
+brida_c((BX + 5.45, YC - 0.55, 2.05), (0, 0, 1), 0.1, 0.04, 6, 0.08)
+add("rojo", bar((BX + 5.45, YC - 0.55, 2.09), (BX + 5.45, YC - 0.55, 2.35), 0.09))
+add("rojo", Pos(BX + 5.45, YC - 0.55, 2.38) * Sphere(0.1))
+add("rojo", bar((BX + 5.45, YC - 0.55, 2.3), (BX + 5.45 - 0.2, YC - 0.55, 2.3), 0.06))
 
 comp("sk575_acumulador")
 # ───────────────────────── acumulador del BOP (unidad de cierre API 16D) ─────────────────────────

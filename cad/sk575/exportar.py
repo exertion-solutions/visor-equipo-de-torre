@@ -26,7 +26,7 @@ OUT = ROOT / "assets" / "source"
 MATS = {
     "acero": ("#9ea3aa", 1.0, 0.26), "acero_oscuro": ("#5f646b", 1.0, 0.38), "aluminio": ("#c4c8cc", 1.0, 0.3),
     "rojo": ("#b3261e", 0.3, 0.45), "amarillo": ("#e0a400", 0.3, 0.45), "blanco": ("#f2f2f2", 0.0, 0.5),
-    "azul": ("#2f7f95", 0.4, 0.4), "grating": ("#8d9196", 0.8, 0.55), "cable": ("#3a3d42", 1.0, 0.5),
+    "azul": ("#2f7f95", 0.4, 0.4), "azul_bomba": ("#1c4ea0", 0.1, 0.42), "grating": ("#8d9196", 0.8, 0.55), "cable": ("#3a3d42", 1.0, 0.5),
     "goma": ("#1d1d1d", 0.0, 0.9), "vidrio": ("#1b2630", 0.2, 0.05), "hormigon": ("#8a8780", 0.0, 0.9),
     "luz": ("#ffd9a0", 0.0, 0.4, True),
 }
@@ -50,7 +50,7 @@ INFO = {
     "sk575_pozo_vecino": ("C", "Árbol de navidad de pozo vecino (ilustrativo)"),
     "sk575_piletas": ("C", "Piletas de circulación, preparación y ensayo + trip tank"),
     "sk575_manifold": ("C", "Manifold de ahogo M1–M12 y líneas de choke/ahogo"),
-    "sk575_bomba": ("C", "Bomba triplex sobre patín"),
+    "sk575_bomba": ("C", "Bomba triplex sobre patín: power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad (referencia fotográfica genérica; modelo, camisas, carrera y presión del equipo PENDIENTES)"),
     "sk575_acumulador": ("C", "Acumulador del BOP: huella 8 × 2,4 m (layout WS10), 5 botellones 3.000 psi (folleto); botellones, "
                              "válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 "
                              "(src-ref-rigmfg-4650, genérica: no es el equipo instalado)"),

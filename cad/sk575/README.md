@@ -81,9 +81,9 @@ ahora **declarado**) y copia el meta a `public/models/tacker10/<id>.meta.json` (
 | `sk575_tiros`       | auxiliary    | C           | 2.296       | 712        | Tiros de tubing (ilustrativo)                                                                                               |
 | `sk575_vientos`     | anchoring    | C           | 23.908      | 5.432      | Vientos, anclajes, pirosalva (extremos en el meta.json)                                                                     |
 | `sk575_pozo_vecino` | well-control | C           | 13.680      | 12.272     | Árbol de navidad vecino (ilustrativo)                                                                                       |
-| `sk575_piletas`     | circulation  | C           | 46.228      | 20.890     | 3 piletas + trip tank                                                                                                       |
+| `sk575_piletas`     | circulation  | C           | 80.444      | 32.098     | 3 piletas + trip tank (nervaduras, escalera, rebose, bomba centrífuga; referencia genérica)                                 |
 | `sk575_manifold`    | well-control | C           | 152.392     | 68.068     | Manifold M1–M12 + líneas                                                                                                    |
-| `sk575_bomba`       | circulation  | C           | 11.290      | 8.906      | Bomba triplex                                                                                                               |
+| `sk575_bomba`       | circulation  | C           | 61.564      | 44.096     | Bomba triplex: power end, fluid end 3 cilindros, amortiguador (referencia genérica)                                         |
 | `sk575_acumulador`  | well-control | C           | 103.838     | 86.010     | Acumulador BOP: 5 botellones, 6 selectoras, reguladoras, bombas (ref. CPC 4650, sub-nodos `sk575_acum_*`)                   |
 
 Total 1.107.460 tris de origen → **572.378 publicados** + 143.609 segmentos de aristas (presupuesto nativo < 1,5 M tris,
