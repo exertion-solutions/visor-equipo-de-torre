@@ -2280,7 +2280,9 @@
     trailer(LX, -4.5, { stripe: '#9a9d94' }) // encargado de turno / personal
     trailer(LX, 8.5, { stripe: '#9a9d94' }) // jefe de equipo
     trailer(LX, 21.5, { stripe: '#9a9d94' }) // inspector
-    trailer(-34.0, -29.6, { parts: 4, stripe: C.RED, wheels: false, alongX: true }) // laboratorio · taller · depósito · usinas
+    // laboratorio · taller · depósito · usinas: por indicación del usuario (2026-10-20) va al extremo +z de la columna, fuera de la fila norte del
+    // LAYOUT WS10 (−29,6 m lateral): fuente en conflicto, posición pendiente de validación.
+    trailer(-37.4, 33.2, { parts: 4, stripe: C.RED, wheels: false, alongX: true })
     // tanques de combustible (12.465 l) y agua (8.300 l) sobre patín (WS10: tanque de combustible y agua, z −23,5…−11,5)
     S.box('#3a3e45', 12.2, 0.25, 2.2, LX, 0.5, -17.5, PI / 2)
     for (const [dz, r, L, col] of [
@@ -2295,8 +2297,8 @@
     // junto al módulo "usinas" de la fila. Referencia: foto de grupo CAT 3512 de catálogo (GENÉRICA: marca, modelo, potencia y
     // consumo del equipo instalado PENDIENTES; ilustrativa, confianza C). Huella 5,6 × 2,0 m en el lugar de la usina anterior.
     {
-      const UX = -29.6
-      const UZ = -26.6
+      const UX = -36.0 // junto al tráiler de usinas, en su nueva posición (extremo +z de la columna)
+      const UZ = 29.9
       const GY = '#E0A100' // amarillo de máquina (pintura)
       const GYD = '#B98300' // sombra/arista del amarillo
       const BK = '#16181C' // base, radiador y cañería (negro mate)
@@ -2558,6 +2560,7 @@
     const FX0 = -46
     const FX1 = 34
     const FZ = 31
+    const FZN = 36.5 // vallado norte (+z) más afuera: encierra el tráiler de usinas y la usina del extremo +z de la columna
     const fence = (x1, z1, x2, z2, gap) => {
       const len = Math.hypot(x2 - x1, z2 - z1)
       const n = Math.round(len / 4)
@@ -2577,9 +2580,9 @@
       }
     }
     fence(FX0, -FZ, FX1, -FZ, [-12, -4]) // sur, con portón entre x −12 y −4
-    fence(FX1, -FZ, FX1, FZ)
-    fence(FX1, FZ, FX0, FZ)
-    fence(FX0, FZ, FX0, -FZ)
+    fence(FX1, -FZ, FX1, FZN)
+    fence(FX1, FZN, FX0, FZN)
+    fence(FX0, FZN, FX0, -FZ)
     for (const x of [-12, -4]) S.box('#f2b632', 0.16, 2.0, 0.16, x, 1.0, -FZ) // pilares del portón
 
     // ── conos de tránsito: portón, extremo de planchada y esquinas de equipos (decorativo, sin significado de zona)
@@ -2684,12 +2687,13 @@
       return V
     }
 
-    // ── estacionamiento: 3 camionetas en bahías pintadas, alineadas y con el frente hacia la salida (portón al sur, −z), con calzas
-    //    en las ruedas traseras. Fuera de la línea de los vientos y de la zona de los equipos; sin valor de control operacional.
-    for (const x of [-25.5, -22.5, -19.5, -16.5]) F.box('#e9e9e4', 0.12, 0.01, 6.2, x, 0.075, -26.9) // líneas de bahía
-    F.box('#e9e9e4', 9.12, 0.01, 0.12, -21, 0.075, -23.8) // línea de fondo
+    // ── estacionamiento: 3 camionetas ESTACIONADAS EN REVERSA (cola contra el fondo de la bahía, del lado del vallado sur, y frente
+    //    hacia el interior para salir de frente), en bahías pintadas, alineadas y con calzas en las ruedas traseras. Fuera de la
+    //    línea de los vientos y de la zona de los equipos; sin valor de control operacional.
+    for (const x of [-25.5, -22.5, -19.5, -16.5]) F.box('#e9e9e4', 0.12, 0.01, 6.2, x, 0.075, -27.3) // líneas de bahía
+    F.box('#e9e9e4', 9.12, 0.01, 0.12, -21, 0.075, -30.4) // línea de fondo (lado del vallado)
     for (const x of [-24, -21, -18]) {
-      const V = pickup(x, -26.9, PI / 2, '#f1f1ee')
+      const V = pickup(x, -27.3, -PI / 2, '#f1f1ee') // frente hacia +z
       for (const sg of [-1, 1]) chock(V, -2.08, sg * 0.8)
     }
 
@@ -2796,7 +2800,7 @@
       }
       mkSign(-8, -30.6, 0, 1.6, 0.9, 'ACCESO A LOCACIÓN', '#1d4f6b', '#ffffff', 'TACKER 10')
       mkSign(-27, 14.5, PI / 2, 1.3, 0.8, 'PUNTO DE REUNIÓN', '#1f6f43', '#ffffff')
-      mkSign(-14.6, -26.9, PI / 2, 1.3, 0.8, 'ESTACIONAMIENTO', '#1d4f6b', '#ffffff', 'VEHÍCULOS')
+      mkSign(-14.6, -27.3, PI / 2, 1.3, 0.8, 'ESTACIONAMIENTO', '#1d4f6b', '#ffffff', 'VEHÍCULOS')
       mkSign(33.4, 7, -PI / 2, 1.3, 0.8, 'EQUIPO EN OPERACIÓN', '#f2b632', '#1b1b1b')
       S.flush(env, mat, 'carteles_postes', { cast: true, receive: true })
     }
