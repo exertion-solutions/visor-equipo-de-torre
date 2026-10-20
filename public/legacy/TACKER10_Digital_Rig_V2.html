@@ -11718,7 +11718,10 @@ window.__rigExt.onPost((R) => {
  *     SecurityError: en ese caso cuenta una por carga de la página.
  *   · No cuenta (solo oculta el contador) en localhost, file:// ni fuera de http(s): el desarrollo no ensucia el total.
  *   · Con Do Not Track activado solo LEE el total; no suma.
- *   · Si el servicio falla o tarda más de 6 s, el contador queda oculto: nunca rompe el visor.
+ *   · Si el servicio falla, el contador queda oculto: nunca rompe el visor. (Sin temporizador de corte: durante el arranque el hilo
+ *     principal puede estar ocupado varios segundos y un timeout cortaría un pedido que ya llegó.)
+ *   · En modo embebido (iframe de la app) la barra de estado del visor está oculta: el total se publica al padre con
+ *     `tacker:visitas { value }` (ver docs/LEGACY_BRIDGE.md) y la app lo muestra en su propia barra de estado.
  * API para pruebas: `window.__tackerVisitas = { NS, KEY, estado() }`.
  */
 window.__rigExt.onPost(() => {
@@ -11772,13 +11775,25 @@ window.__rigExt.onPost(() => {
     }
   }
 
+  // Embebido: el padre (app) escucha `tacker:visitas`; se reenvía también ante `tacker:ping` por si llegó tarde a escuchar.
+  let total = null
+  const avisar = () => {
+    if (total === null || !window.parent || window.parent === window) return
+    try {
+      window.parent.postMessage({ type: 'tacker:visitas', value: total }, '*')
+    } catch {
+      /* sin padre: nada que avisar */
+    }
+  }
+  window.addEventListener('message', (e) => {
+    if (e.source === window.parent && e.data && e.data.type === 'tacker:ping') avisar()
+  })
+
   const dnt = navigator.doNotTrack === '1' || window.doNotTrack === '1'
   const sumar = !dnt && !yaContada()
-  const ctl = typeof AbortController === 'function' ? new AbortController() : null
-  const timer = setTimeout(() => ctl && ctl.abort(), 6000)
 
   const urlContador = `${BASE}/${sumar ? 'hit' : 'get'}/${NS}/${KEY}`
-  const pedido = { signal: ctl ? ctl.signal : undefined, cache: 'no-store' }
+  const pedido = { cache: 'no-store' }
   fetch(urlContador, pedido)
     .then((r) => {
       if (!r.ok) throw new Error('HTTP ' + r.status)
@@ -11791,11 +11806,12 @@ window.__rigExt.onPost(() => {
       el.textContent = 'Visitas: ' + n.toLocaleString('es-AR')
       el.hidden = false
       estado = sumar ? 'contada' : 'leída'
+      total = n
+      avisar()
     })
     .catch(() => {
       estado = 'error' // silencioso: el contador queda oculto
     })
-    .finally(() => clearTimeout(timer))
 })
 
 </script>

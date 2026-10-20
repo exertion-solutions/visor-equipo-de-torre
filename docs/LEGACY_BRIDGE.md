@@ -32,6 +32,7 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 | `tacker:ready`  | `version: 1`                                                                                           | Al terminar de arrancar (`window.__rig` listo) y en respuesta a `ping`.      |
 | `tacker:state`  | `mode`, `view`, `layers`                                                                               | Al arrancar y cada vez que cambia modo, vista o alguna capa.                 |
 | `tacker:select` | `id`, `name`, `grade` (`A`\|`B`\|`C`), `status` — o `id: null` al deseleccionar                        | Al cambiar el componente seleccionado. Origen: tabla `META` del visor.       |
+| `tacker:visitas` | `value` (entero ≥ 0) | Total del contador de visitas (`legacy-ext/89-visitas.js`, servicio externo). Solo en sitios http(s) no locales; se reenvía ante `tacker:ping`. La app lo muestra en su barra de estado. |
 
 `grade` es la confiabilidad geométrica de `CLAUDE.md`: **A confirmado · B parcial · C aproximado**
 (lo pendiente de relevamiento se trata como aproximado). Referencia digital, nunca as-built.

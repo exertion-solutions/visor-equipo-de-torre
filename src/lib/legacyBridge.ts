@@ -66,6 +66,8 @@ export type LegacyToAppMessage =
   | { type: 'tacker:ready'; version: number }
   | { type: 'tacker:state'; mode: AppMode | null; view: LegacyView | null; layers: LegacyLayer[] }
   | { type: 'tacker:select'; selection: LegacySelection | null }
+  /** Total del contador de visitas (legacy-ext/89-visitas.js); solo se publica en sitios http(s) no locales. */
+  | { type: 'tacker:visitas'; value: number }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 const strOrNull = (v: unknown): string | null => (typeof v === 'string' && v ? v : null)
@@ -97,6 +99,10 @@ export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
         },
       }
     }
+    case 'tacker:visitas':
+      return typeof data.value === 'number' && Number.isInteger(data.value) && data.value >= 0
+        ? { type: 'tacker:visitas', value: data.value }
+        : null
     default:
       return null
   }
