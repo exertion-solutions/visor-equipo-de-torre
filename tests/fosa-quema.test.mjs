@@ -32,6 +32,8 @@ test('camionetas estacionadas en bahías pintadas con calzas, lejos de los ancla
   const bays = [...wellsite.matchAll(/for \(const x of \[(-24, -21, -18)\]\)/g)];
   assert.equal(bays.length, 1);
   assert.ok(wellsite.includes('chock(V, -2.08'));
-  // anclajes de viento (layout WS10): x −27,4 / +24,4, z ±26,8 → el estacionamiento (x −24…−18, z −26,9) no los pisa
-  for (const x of [-24, -21, -18]) assert.ok(Math.hypot(x - -27.4, -26.9 - -26.8) > 2.5);
+  // en reversa: cola al fondo (lado del vallado sur, z −30) y frente hacia el interior (+z)
+  assert.ok(wellsite.includes("pickup(x, -27.3, -PI / 2,"));
+  // anclajes de viento (layout WS10): x −27,4 / +24,4, z ±26,8 → el estacionamiento (x −24…−18, z −27,3) no los pisa
+  for (const x of [-24, -21, -18]) assert.ok(Math.hypot(x - -27.4, -27.3 - -26.8) > 2.5);
 });
