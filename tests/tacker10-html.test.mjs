@@ -8,12 +8,14 @@ test('TACKER10 HTML is self-contained (opens by double-click, no server or netwo
   assert.doesNotMatch(html, /<script[^>]+\bsrc=/i);
   assert.doesNotMatch(html, /<link[^>]+href=["']https?:/i);
   assert.doesNotMatch(html, /XMLHttpRequest|import\(/);
-  // Única carga externa: los GLB del SK-575 de su propio sitio (fetch relativo, ver 84-modelo-sk575.js) con respaldo en el
-  // sk575-glb.js de al lado (un <script> clásico: carga también por file://). Nada absoluto ni de otro origen.
+  // Cargas por red admitidas: (1) los GLB del SK-575 de su propio sitio (fetch relativo, ver 84-modelo-sk575.js) con respaldo en el
+  // sk575-glb.js de al lado (un <script> clásico: carga también por file://); (2) el contador de visitas (89-visitas.js), un único
+  // pedido a un servicio declarado que NO corre en file:// ni en localhost, así que abrir el HTML con doble clic sigue siendo offline.
   assert.deepEqual(
     [...html.matchAll(/\bfetch\(([^)]*)\)/g)].map((m) => m[1]),
-    ["new URL('../models/tacker10/' + id + '.glb', location.href"],
+    ["new URL('../models/tacker10/' + id + '.glb', location.href", 'urlContador, pedido'],
   );
+  assert.equal(html.split("const BASE = 'https://abacus.jasoncameron.dev'").length - 1, 1);
   assert.match(html, /s\.src = 'sk575-glb\.js'/);
   assert.doesNotMatch(html, /\bsrc\s*=\s*['"]https?:/);
 });
