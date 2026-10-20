@@ -5487,25 +5487,136 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
     ])
       cone(x, z)
 
-    // ── camioneta de servicio (estética): local → mundo con giro `ry`
-    const pickup = (cx, cz, ry, col) => {
+    // ── vehículos (ilustrativos; referencia: plano CAD de pickup doble cabina y foto de manipulador telescópico de catálogo, GENÉRICOS:
+    //    marca, modelo y capacidades PENDIENTES). Marco local: lx hacia adelante, lz lateral; `ry` = giro de mundo (adelante = (cos, −sin)).
+    const vehicle = (cx, cz, ry) => {
       const c = Math.cos(ry)
       const sn = Math.sin(ry)
-      const put = (lx, ly, lz, w, h, d, color) =>
-        S.box(color, w, h, d, cx + lx * c + lz * sn, ly, cz - lx * sn + lz * c, ry)
-      put(0, 0.75, 0, 5.2, 0.7, 1.9, col) // chasis y caja
-      put(0.6, 1.4, 0, 1.9, 0.75, 1.8, col) // cabina
-      put(0.65, 1.45, 0, 1.75, 0.55, 1.82, C.GLASS) // vidrios
-      put(-1.4, 1.15, 0, 2.0, 0.3, 1.86, '#c9cdc8') // caja de carga
-      for (const lx of [1.6, -1.6])
-        for (const lz of [-0.95, 0.95]) {
-          const wx = cx + lx * c + lz * sn
-          const wz = cz - lx * sn + lz * c
-          S.cyl('#15171c', 0.4, 0.4, 0.3, wx, 0.4, wz, 'z', 12)
-        }
+      const W = (lx, ly, lz) => [cx + lx * c + lz * sn, ly, cz - lx * sn + lz * c]
+      return {
+        W,
+        box: (col, w, h, d, lx, ly, lz, rz = 0) => {
+          const [x, y, z] = W(lx, ly, lz)
+          if (!rz) return S.box(col, w, h, d, x, y, z, ry)
+          const gb = new K.Box(w, h, d)
+          gb.rotateZ(rz)
+          gb.rotateY(ry)
+          return S.push(gb, x, y, z, col)
+        },
+        rod: (col, a, b2, r, seg = 6) => S.rod(col, W(...a), W(...b2), r, seg),
+        wheel: (lx, ly, lz, r, wid, rim) => {
+          S.rod('#15171c', W(lx, ly, lz - wid / 2), W(lx, ly, lz + wid / 2), r, 14) // neumático
+          const o = Math.sign(lz) * (wid / 2 + 0.004)
+          S.rod(rim, W(lx, ly, lz + o - 0.02), W(lx, ly, lz + o + 0.02), r * 0.62, 10) // llanta
+          S.rod('#3a3e45', W(lx, ly, lz + o), W(lx, ly, lz + o + Math.sign(lz) * 0.015), r * 0.2, 6) // maza
+        },
+      }
     }
-    pickup(-24, 26.5, 0.25, '#f1f1ee')
-    pickup(-28.5, 27.5, -0.1, '#f1f1ee')
+    /** Calza de rueda: cuña de goma negra contra el neumático (lx = tangente trasera de la rueda). */
+    const chock = (V, lx, lz) => V.box('#15171c', 0.2, 0.1, 0.24, lx, 0.05, lz, 0.5)
+
+    /** Camioneta pick-up doble cabina (5,3 × 1,86 × 1,8 m): carrocería, vidrios, caja con barral, defensa, baliza y antena con banderín. */
+    const pickup = (cx, cz, ry, col) => {
+      const V = vehicle(cx, cz, ry)
+      for (const lx of [1.6, -1.6])
+        for (const lz of [-0.8, 0.8]) V.wheel(lx, 0.39, lz, 0.39, 0.27, '#b4babe')
+      V.box(col, 5.0, 0.42, 1.86, 0, 0.78, 0) // carrocería inferior
+      V.box('#2b2f36', 3.4, 0.14, 1.9, 0.2, 0.52, 0) // estribos y zócalo
+      for (const lx of [1.6, -1.6])
+        for (const sg of [-1, 1]) V.box('#2b2f36', 0.95, 0.1, 0.1, lx, 0.99, sg * 0.93) // pasarruedas
+      V.box(col, 1.35, 0.14, 1.78, 1.9, 1.08, 0) // capot
+      V.box(col, 0.1, 0.5, 1.86, 2.55, 0.85, 0) // frente
+      V.box('#1d1f22', 0.05, 0.22, 1.0, 2.6, 0.9, 0) // parrilla
+      for (const sg of [-1, 1]) {
+        V.box('#d8dcdf', 0.05, 0.12, 0.32, 2.58, 0.98, sg * 0.7) // faros
+        V.box('#C62B1E', 0.04, 0.2, 0.16, -2.52, 1.0, sg * 0.82) // luces traseras
+        V.box('#1d1f22', 0.12, 0.12, 0.2, 1.2, 1.38, sg * 1.0) // espejos
+        V.box('#8e949a', 0.08, 0.03, 0.14, 0.45, 1.25, sg * 0.88) // manijas
+        V.box(C.RED, 4.6, 0.08, 0.02, 0, 0.86, sg * 0.935) // franja roja lateral
+      }
+      V.box('#2b2f36', 0.18, 0.2, 1.95, 2.66, 0.55, 0) // paragolpes delantero
+      V.box('#2b2f36', 0.18, 0.2, 1.95, -2.66, 0.55, 0) // paragolpes trasero
+      V.box('#f0f0f0', 0.02, 0.12, 0.34, -2.76, 0.7, 0) // patente
+      // defensa tubular delantera (bull-bar)
+      for (const sg of [-1, 1])
+        V.rod('#1d1f22', [2.78, 0.5, sg * 0.55], [2.78, 1.1, sg * 0.55], 0.027, 6)
+      V.rod('#1d1f22', [2.78, 1.1, -0.55], [2.78, 1.1, 0.55], 0.027, 6)
+      V.rod('#1d1f22', [2.78, 0.75, -0.55], [2.78, 0.75, 0.55], 0.022, 6)
+      // cabina: carrocería, vidrios laterales con parante, parabrisas inclinado, luneta y techo
+      V.box(col, 2.05, 0.82, 1.72, 0.4, 1.38, 0)
+      V.box(col, 1.5, 0.06, 1.66, 0.35, 1.81, 0) // techo
+      for (const sg of [-1, 1]) {
+        V.box(C.GLASS, 1.55, 0.5, 0.02, 0.4, 1.42, sg * 0.865)
+        V.box(col, 0.09, 0.52, 0.025, 0.42, 1.42, sg * 0.868) // parante B
+      }
+      V.box(C.GLASS, 0.03, 0.78, 1.55, 1.34, 1.4, 0, 0.42) // parabrisas
+      V.box(C.GLASS, 0.03, 0.45, 1.4, -0.63, 1.43, 0) // luneta
+      V.box('#1d1f22', 0.16, 0.1, 0.2, 0.15, 1.88, 0) // base de baliza
+      V.rod('#E8A200', [0.15, 1.93, 0], [0.15, 2.03, 0], 0.085, 10) // baliza ámbar
+      V.rod('#2b2f36', [-0.4, 1.84, 0.72], [-0.4, 3.1, 0.72], 0.008, 4) // antena
+      V.box('#E4702A', 0.01, 0.22, 0.34, -0.4, 2.95, 0.88) // banderín
+      // caja de carga: piso, bordas, portón, pasarruedas internos y barral (portaequipos) tras la cabina
+      V.box('#2b2f36', 1.9, 0.04, 1.6, -1.6, 0.96, 0)
+      for (const sg of [-1, 1]) V.box(col, 1.95, 0.5, 0.05, -1.6, 1.22, sg * 0.84)
+      V.box(col, 0.05, 0.5, 1.7, -2.58, 1.22, 0)
+      for (const sg of [-1, 1]) V.box('#2b2f36', 0.8, 0.14, 0.2, -1.6, 1.05, sg * 0.7)
+      for (const sg of [-1, 1])
+        V.rod('#1d1f22', [-0.78, 0.98, sg * 0.75], [-0.78, 1.95, sg * 0.75], 0.025, 6)
+      V.rod('#1d1f22', [-0.78, 1.95, -0.75], [-0.78, 1.95, 0.75], 0.025, 6)
+      return V
+    }
+
+    // ── estacionamiento: 3 camionetas en bahías pintadas, alineadas y con el frente hacia la salida (portón al sur, −z), con calzas
+    //    en las ruedas traseras. Fuera de la línea de los vientos y de la zona de los equipos; sin valor de control operacional.
+    for (const x of [-25.5, -22.5, -19.5, -16.5]) F.box('#e9e9e4', 0.12, 0.01, 6.2, x, 0.075, -26.9) // líneas de bahía
+    F.box('#e9e9e4', 9.12, 0.01, 0.12, -21, 0.075, -23.8) // línea de fondo
+    for (const x of [-24, -21, -18]) {
+      const V = pickup(x, -26.9, PI / 2, '#f1f1ee')
+      for (const sg of [-1, 1]) chock(V, -2.08, sg * 0.8)
+    }
+
+    /** Manipulador telescópico (4,8 × 2,0 × 2,25 m) estacionado junto a los caballetes con un paquete de tubing 2-7/8" (9,4 m) en las uñas. */
+    {
+      const V = vehicle(12.4, 11.3, PI / 2)
+      const RED = '#C8281E'
+      const WHT = '#E8E9E6'
+      const BLK = '#1C1D20'
+      for (const lx of [1.3, -1.3])
+        for (const lz of [-0.82, 0.82]) V.wheel(lx, 0.55, lz, 0.55, 0.42, '#9aa1a8')
+      V.box(BLK, 3.8, 0.5, 1.5, 0, 0.78, 0) // chasis
+      for (const lx of [1.3, -1.3])
+        for (const sg of [-1, 1]) V.box(RED, 1.3, 0.07, 0.5, lx, 1.16, sg * 0.82) // guardabarros
+      V.box(RED, 1.0, 0.7, 1.7, -1.6, 1.3, 0) // capot / motor
+      V.box(BLK, 0.3, 0.6, 1.7, -2.15, 1.0, 0) // contrapeso
+      V.rod('#2b2f36', [-1.9, 1.6, -0.6], [-1.9, 2.3, -0.6], 0.04, 6) // escape
+      // cabina a la derecha (+lz): panel inferior, vidrios, 4 parantes, techo y baliza
+      V.box(WHT, 1.2, 0.42, 0.88, 0.1, 1.2, 0.58)
+      V.box(C.GLASS, 1.12, 0.95, 0.8, 0.1, 1.88, 0.58)
+      for (const lx of [-0.5, 0.7])
+        for (const lz of [0.17, 0.99]) V.rod(WHT, [lx, 1.0, lz], [lx, 2.38, lz], 0.03, 6)
+      V.box(WHT, 1.35, 0.06, 0.98, 0.1, 2.4, 0.58)
+      V.rod('#E8A200', [0.1, 2.43, 0.58], [0.1, 2.53, 0.58], 0.08, 10)
+      V.box(BLK, 0.14, 0.14, 0.1, 0.62, 1.72, 1.08) // espejo
+      // pluma telescópica a la izquierda (−lz): tramo base rojo, tramo extensible negro, cilindro de elevación
+      V.box(RED, 3.57, 0.38, 0.38, 0.2, 1.2, -0.45, -0.197)
+      V.box(BLK, 1.2, 0.3, 0.32, 1.55, 0.89, -0.45, -0.16)
+      V.rod('#8e949a', [-1.0, 0.98, -0.45], [0.1, 1.08, -0.45], 0.05, 6)
+      // portaimplementos y uñas
+      V.box(BLK, 0.12, 0.95, 1.25, 2.12, 0.62, 0)
+      for (const sg of [-1, 1]) V.box('#2b2f36', 1.2, 0.08, 0.14, 2.75, 0.28, sg * 0.45)
+      // paquete de tubing en pirámide 5-4-3 (tubos de 9,4 m transversales) con cuplas y dos zunchos
+      const LY = 0.32 + 0.0365
+      ;[5, 4, 3].forEach((n, layer) => {
+        for (let k = 0; k < n; k++) {
+          const lx = 2.75 + (k - (n - 1) / 2) * 0.076
+          const ly = LY + layer * 0.066
+          V.rod('#3a3e44', [lx, ly, -4.7], [lx, ly, 4.7], 0.0365, 6)
+          V.rod('#8e949a', [lx, ly, 4.54], [lx, ly, 4.7], 0.0445, 6) // cupla
+        }
+      })
+      for (const lz of [-1.3, 1.3]) V.box('#E4702A', 0.5, 0.3, 0.03, 2.75, 0.5, lz) // zunchos
+      for (const sg of [-1, 1]) chock(V, -1.3 - 0.62, sg * 0.82)
+    }
 
     // ── camino de acceso de ripio oscuro desde el portón (estético)
     F.box('#736d60', 6.0, 0.03, 30, -8, 0.065, -46)
@@ -5567,6 +5678,7 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
       }
       mkSign(-8, -30.6, 0, 1.6, 0.9, 'ACCESO A LOCACIÓN', '#1d4f6b', '#ffffff', 'TACKER 10')
       mkSign(-27, 14.5, PI / 2, 1.3, 0.8, 'PUNTO DE REUNIÓN', '#1f6f43', '#ffffff')
+      mkSign(-14.6, -26.9, PI / 2, 1.3, 0.8, 'ESTACIONAMIENTO', '#1d4f6b', '#ffffff', 'VEHÍCULOS')
       mkSign(33.4, 7, -PI / 2, 1.3, 0.8, 'EQUIPO EN OPERACIÓN', '#f2b632', '#1b1b1b')
       S.flush(env, mat, 'carteles_postes', { cast: true, receive: true })
     }
@@ -6490,7 +6602,7 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
     note:
       'Piletas (plano, A): patín 12.000 × 2.400 mm, cuba 11.000 × 2.300 mm, alto 1.742 mm, compartimentos 4.500/4.500/2.000 mm (15,5/15,5/7 m³ = 38 m³); ' +
       'en el modelo el golpeador lleva un tanque de 3 m³. Fuente en conflicto: el folleto da pileta de ensayo de 40 m³ y cubicador de 3,5 m³ (equivalencia no confirmada). ' +
-      'Bomba triplex: huella 6 × 2,4 m (layout WS10, A); power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad por referencia fotográfica genérica (C; marca, camisas, carrera y presión PENDIENTES), motor ilustrativo. Trip tank: huella ≈ 2,1 × 2,3 m (C) con escalera, nervaduras, rebose y bomba centrífuga de referencia genérica; capacidad PENDIENTE. Manifold de ahogo: esquema sin identificar con escala de otro equipo (TKR-08), ' +
+      'Bomba triplex: huella 6 × 2,4 m (layout WS10, A); power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad por referencia fotográfica genérica (C; marca, camisas, carrera y presión PENDIENTES), motor ilustrativo. Fosa de quema (88-fosa-quema.js): posición, dimensiones, diámetro y ruteo de las dos líneas (choke manifold y golpeador) tomados de un esquema sin cotas, ilustrativos y pendientes de validación; NO son distancias de seguridad; llamas y humo = efecto visual, no simulación. Camionetas y manipulador telescópico: modelos genéricos ilustrativos (marca, modelo y capacidades pendientes). Trip tank: huella ≈ 2,1 × 2,3 m (C) con escalera, nervaduras, rebose y bomba centrífuga de referencia genérica; capacidad PENDIENTE. Manifold de ahogo: esquema sin identificar con escala de otro equipo (TKR-08), ' +
       'no es el del TKR-10. Geometría aproximada, no as-built. Pendientes: presión de trabajo, conexiones y ruteo del golpeador.',
   }
 
@@ -11165,6 +11277,425 @@ window.__rigExt.onPost((R) => {
       prev: () => parada(tour.i - 1),
       state: () => ({ ...tour }),
     },
+  }
+})
+
+/* 88-fosa-quema.js */
+/*
+ * 88-fosa-quema.js — FOSA DE QUEMA (foso para quemar gas) con dos líneas y llamas animadas. Módulo de presentación del V2.
+ *
+ *   · Línea 1 → sale de la línea de venteo al campo del choke manifold (sk575_manifold, extremo x 6,15 / z −19,98).
+ *   · Línea 2 → sale del desgasificador ("golpeador") de la pileta de ensayo (sk575_piletas, x 21,7 / z −28,9).
+ *   Las dos corren sobre el terreno apoyadas en tacos de hormigón y terminan en la fosa, a la derecha de la pileta de ensayo,
+ *   como en el esquema aportado por el usuario.
+ *
+ * ESTADO: ilustrativo (pendingValidation). La POSICIÓN, la distancia al pozo, las dimensiones de la fosa, el diámetro de las
+ * líneas y el ruteo vienen de un esquema sin cotas: NO son distancias de seguridad ni requisitos, y no hay documento de la
+ * locación que las confirme. Las llamas y el humo son un EFECTO VISUAL: no representan caudal, altura de llama, radiación
+ * térmica ni ninguna simulación; se apagan con el botón "Llamas de la fosa" del menú Capas.
+ *
+ * Marco: origen = boca de pozo, +X hacia el mástil, carrier hacia −X, Z lateral. 1 unidad = 1 m.
+ * Geometría: `R.three` solo expone unas pocas clases, así que las llamas son mallas de vértices con color RGBA animadas por CPU
+ * (mezcla aditiva, sin textura ni shader); el humo son esferas translúcidas. Render bajo demanda: mientras la fosa está en
+ * cuadro y las llamas encendidas, un temporizador de ~24 cuadros/s pide un frame; fuera de cuadro o con la pestaña oculta no pide nada.
+ * API para pruebas: `window.__tackerFosa = { pos, lineas, estado, llamas(on?), activo() }`.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  if (!R.scene || !T || !T.BufferGeometry || !T.CylinderGeometry || !T.MeshBasicMaterial) return
+  const V3 = T.Vector3
+
+  // ───────────────────────── datos (ilustrativos) ─────────────────────────
+  const PIT = { cx: 44.5, cz: -27.5, L: 8, W: 5 } // centro y tamaño de la fosa (m), esquema sin cotas
+  const TIP_X = 44.9 // extremo de las dos líneas dentro de la fosa
+  const Y_G = 0.28 // eje de las líneas apoyadas en el terreno
+  const R_PIPE = 0.09
+  const LINEAS = {
+    choke: {
+      nombre: 'Línea desde el choke manifold (venteo al campo)',
+      z: -26.1,
+      alto: 4.6,
+      pts: [
+        [6.15, 0.15, -19.98], // extremo de la línea de venteo del modelo SK-575
+        [6.15, 0.75, -19.98], // cruce aéreo sobre la línea al golpeador (x 7,78)
+        [8.6, 0.75, -19.98],
+        [8.6, Y_G, -19.98],
+        [30, Y_G, -19.98],
+        [30, Y_G, -26.1],
+        [TIP_X, Y_G, -26.1],
+      ],
+    },
+    golpeador: {
+      nombre: 'Línea desde el golpeador (desgasificador de la pileta de ensayo)',
+      z: -28.9,
+      alto: 3.4,
+      pts: [
+        [21.7, 4.1, -28.9], // codo de venteo del desgasificador
+        [23.6, 4.1, -28.9],
+        [23.6, Y_G, -28.9],
+        [TIP_X, Y_G, -28.9],
+      ],
+    },
+  }
+
+  const Z_MED = (LINEAS.choke.z + LINEAS.golpeador.z) / 2 // eje medio de las dos líneas
+
+  const g = new T.Group()
+  g.name = 'fosa_quema'
+  g.userData = {
+    estado: 'pendingValidation',
+    nota: 'Posición y dimensiones ilustrativas (esquema sin cotas); llamas = efecto visual',
+  }
+  R.scene.add(g)
+
+  const std = (color, roughness = 0.9, metalness = 0) =>
+    new T.MeshStandardMaterial({ color, roughness, metalness })
+  const M = {
+    tierra: std('#7B6247', 1),
+    ceniza: std('#141517', 1),
+    acero: std('#7E858B', 0.5, 0.6),
+    tapa: std('#2B2F36', 0.6, 0.5),
+    taco: std('#8C8F89', 0.95),
+    hollin: new T.MeshBasicMaterial({
+      color: '#0D0D0E',
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+    }),
+  }
+  const put = (geo, mat, x, y, z) => {
+    const m = new T.Mesh(geo, mat)
+    m.position.set(x, y, z)
+    m.castShadow = false
+    m.receiveShadow = false
+    g.add(m)
+    return m
+  }
+  const rod = (a, b, r, mat) => {
+    const d = new V3(b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    const len = d.length()
+    if (len < 1e-6) return
+    const m = put(
+      new T.CylinderGeometry(r, r, len, 10, 1),
+      mat,
+      (a[0] + b[0]) / 2,
+      (a[1] + b[1]) / 2,
+      (a[2] + b[2]) / 2,
+    )
+    m.quaternion.setFromUnitVectors(new V3(0, 1, 0), d.normalize())
+  }
+
+  // ───────────────────────── fosa: piso de ceniza, hollín y terraplenes en 3 lados (abierta hacia −X) ─────────────────────────
+  put(new T.BoxGeometry(PIT.L, 0.04, PIT.W), M.ceniza, PIT.cx, 0.02, PIT.cz)
+  const hollin = (rx, rz, x, z) => {
+    const geo = new T.CircleGeometry(1, 28)
+    geo.rotateX(-Math.PI / 2)
+    const m = put(geo, M.hollin, x, 0.012, z)
+    m.scale.set(rx, 1, rz)
+  }
+  hollin(PIT.L * 0.75, PIT.W * 0.95, PIT.cx - 0.6, PIT.cz) // quemado del terreno alrededor de la fosa
+  hollin(3.2, 1.3, PIT.cx - 5.2, Z_MED) // huella de la entrada de las líneas
+  // terraplén: tronco de pirámide de 4 caras (CylinderGeometry de 4 lados girada 45°, lado √2 abajo y √2/2 arriba)
+  const berm = (cx, cz, sx, sz, h) => {
+    const geo = new T.CylinderGeometry(0.5, 1, 1, 4, 1)
+    geo.rotateY(Math.PI / 4)
+    const m = put(geo, M.tierra, cx, h / 2, cz)
+    m.scale.set(sx / Math.SQRT2, h, sz / Math.SQRT2)
+  }
+  const BH = 1.15
+  berm(PIT.cx + PIT.L / 2 + 0.9, PIT.cz, 2.4, PIT.W + 4.6, BH) // fondo (+X)
+  berm(PIT.cx + 0.2, PIT.cz + PIT.W / 2 + 0.9, PIT.L + 2.6, 2.4, BH) // lado +Z
+  berm(PIT.cx + 0.2, PIT.cz - PIT.W / 2 - 0.9, PIT.L + 2.6, 2.4, BH) // lado −Z
+
+  // ───────────────────────── líneas: caño, uniones y tacos de hormigón ─────────────────────────
+  const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2])
+  for (const L of Object.values(LINEAS)) {
+    const p = L.pts
+    for (let i = 1; i < p.length; i++) {
+      rod(p[i - 1], p[i], R_PIPE, M.acero)
+      if (i < p.length - 1)
+        put(new T.SphereGeometry(R_PIPE * 1.25, 8, 6), M.acero, p[i][0], p[i][1], p[i][2]) // codo
+      // tacos de apoyo cada ~4,5 m en los tramos sobre el terreno
+      if (p[i][1] === Y_G && p[i - 1][1] === Y_G) {
+        const n = Math.max(1, Math.floor(dist(p[i - 1], p[i]) / 6))
+        for (let k = 0; k <= n; k++) {
+          const t = k / n
+          put(
+            new T.BoxGeometry(0.45, Y_G - R_PIPE - 0.01, 0.45),
+            M.taco,
+            p[i - 1][0] + (p[i][0] - p[i - 1][0]) * t,
+            (Y_G - R_PIPE - 0.01) / 2,
+            p[i - 1][2] + (p[i][2] - p[i - 1][2]) * t,
+          )
+        }
+      }
+    }
+    // extremo: campana abierta (deflector) y dos soportes en A
+    const z = L.z
+    const hood = put(
+      new T.CylinderGeometry(0.17, 0.17, 0.5, 12, 1, true),
+      M.tapa,
+      TIP_X + 0.25,
+      Y_G,
+      z,
+    )
+    hood.rotation.z = Math.PI / 2
+    hood.material.side = T.DoubleSide
+    for (const dx of [-1.2, -2.6])
+      for (const s of [-1, 1])
+        rod([TIP_X + dx, 0, z + s * 0.28], [TIP_X + dx, Y_G - R_PIPE, z], 0.025, M.acero)
+  }
+  // bajante del desgasificador: abrazaderas cada ~1,2 m
+  for (let y = 0.9; y < 4.0; y += 1.2)
+    put(new T.BoxGeometry(0.06, 0.05, 0.3), M.tapa, 23.6, y, -28.9)
+
+  // ───────────────────────── llamas: mallas de vértices con color RGBA, mezcla aditiva ─────────────────────────
+  const Attr = new T.BoxGeometry(1, 1, 1).attributes.position.constructor
+  const N = 14 // anillos
+  const S = 10 // lados
+  const lerpRamp = (ramp, t) => {
+    for (let i = 1; i < ramp.length; i++)
+      if (t <= ramp[i][0]) {
+        const [t0, c0] = ramp[i - 1]
+        const [t1, c1] = ramp[i]
+        const k = (t - t0) / (t1 - t0 || 1)
+        return c0.map((v, j) => v + (c1[j] - v) * k)
+      }
+    return ramp[ramp.length - 1][1]
+  }
+  const RAMP_OUT = [
+    [0, [1, 0.62, 0.18, 0.55]],
+    [0.18, [1, 0.55, 0.13, 0.5]],
+    [0.5, [1, 0.36, 0.05, 0.4]],
+    [0.8, [0.85, 0.2, 0.03, 0.26]],
+    [1, [0.5, 0.08, 0, 0]],
+  ]
+  const RAMP_CORE = [
+    [0, [1, 0.9, 0.6, 0.6]],
+    [0.4, [1, 0.78, 0.35, 0.45]],
+    [1, [1, 0.6, 0.15, 0]],
+  ]
+  const llamaMat = new T.MeshBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    side: T.DoubleSide,
+    blending: 2, // THREE.AdditiveBlending
+    fog: false,
+  })
+  const grupoLlamas = new T.Group()
+  grupoLlamas.name = 'fosa_quema_llamas'
+  g.add(grupoLlamas)
+
+  function llama({ x, y, z, H, R0, lean, phase, ramp }) {
+    const nv = (N + 1) * S
+    const pos = new Float32Array(nv * 3)
+    const col = new Float32Array(nv * 4)
+    const idx = []
+    for (let i = 0; i <= N; i++) {
+      const c = lerpRamp(ramp, i / N)
+      for (let j = 0; j < S; j++) col.set(c, (i * S + j) * 4)
+    }
+    for (let i = 0; i < N; i++)
+      for (let j = 0; j < S; j++) {
+        const a = i * S + j
+        const b = i * S + ((j + 1) % S)
+        const c = (i + 1) * S + j
+        const d = (i + 1) * S + ((j + 1) % S)
+        idx.push(a, c, b, b, c, d)
+      }
+    const geo = new T.BufferGeometry()
+    const aPos = new Attr(pos, 3)
+    const arr = aPos.array // el atributo copia el array recibido: se escribe sobre su propia copia
+    geo.setAttribute('position', aPos)
+    geo.setAttribute('color', new Attr(col, 4))
+    geo.setIndex(idx)
+    const mesh = new T.Mesh(geo, llamaMat)
+    mesh.position.set(x, y, z)
+    mesh.frustumCulled = false
+    mesh.castShadow = false
+    mesh.receiveShadow = false
+    mesh.renderOrder = 6
+    grupoLlamas.add(mesh)
+    return (t) => {
+      for (let i = 0; i <= N; i++) {
+        const tt = i / N
+        const prof =
+          R0 *
+          (Math.pow(Math.sin(Math.PI * Math.min(1, 0.12 + 0.9 * tt)), 0.9) *
+            Math.pow(1 - tt, 0.55) +
+            0.05)
+        const w = tt * tt
+        const cx =
+          lean * H * Math.pow(tt, 1.7) +
+          w *
+            0.16 *
+            H *
+            (0.6 * Math.sin(t * 5.1 + phase + tt * 5) +
+              0.4 * Math.sin(t * 8.7 + phase * 1.7 + tt * 9))
+        const cz = w * 0.12 * H * Math.sin(t * 4.3 + phase * 0.7 + tt * 6)
+        const yy = tt * H * (1 + 0.06 * Math.sin(t * 11 + phase))
+        for (let j = 0; j < S; j++) {
+          const a = (2 * Math.PI * j) / S
+          const r = prof * (1 + 0.14 * Math.sin(t * 13 + j * 1.9 + i * 0.8 + phase))
+          const o = (i * S + j) * 3
+          arr[o] = cx + r * Math.cos(a)
+          arr[o + 1] = yy
+          arr[o + 2] = cz + r * Math.sin(a)
+        }
+      }
+      aPos.needsUpdate = true
+    }
+  }
+
+  const actualizar = []
+  for (const [k, L] of Object.entries(LINEAS)) {
+    const ph = k === 'choke' ? 0 : 2.3
+    const base = { x: TIP_X + 0.55, y: Y_G + 0.1, z: L.z, lean: 0.28 }
+    actualizar.push(llama({ ...base, H: L.alto, R0: 0.62, phase: ph, ramp: RAMP_OUT }))
+    actualizar.push(llama({ ...base, H: L.alto * 0.62, R0: 0.3, phase: ph + 1.1, ramp: RAMP_CORE }))
+    actualizar.push(
+      llama({
+        ...base,
+        x: base.x + 0.15,
+        z: L.z + 0.18,
+        H: L.alto * 0.8,
+        R0: 0.2,
+        phase: ph + 2.7,
+        ramp: RAMP_OUT,
+      }),
+    )
+    actualizar.push(
+      llama({
+        ...base,
+        x: base.x - 0.1,
+        z: L.z - 0.2,
+        H: L.alto * 0.7,
+        R0: 0.18,
+        phase: ph + 4.1,
+        ramp: RAMP_OUT,
+      }),
+    )
+  }
+
+  // resplandor sobre el terreno (disco aditivo con alfa radial), pulsa con la llama
+  const discoGeo = (() => {
+    const K = 28
+    const p = new Float32Array((K + 1) * 3)
+    const c = new Float32Array((K + 1) * 4)
+    const idx = []
+    c.set([1, 0.55, 0.18, 0.5], 0)
+    for (let k = 0; k < K; k++) {
+      const a = (2 * Math.PI * k) / K
+      p.set([Math.cos(a), 0, Math.sin(a)], (k + 1) * 3)
+      c.set([1, 0.4, 0.08, 0], (k + 1) * 4)
+      idx.push(0, k + 1, ((k + 1) % K) + 1)
+    }
+    const geo = new T.BufferGeometry()
+    geo.setAttribute('position', new Attr(p, 3))
+    geo.setAttribute('color', new Attr(c, 4))
+    geo.setIndex(idx)
+    return geo
+  })()
+  const resplandor = new T.Mesh(discoGeo, llamaMat)
+  resplandor.position.set(TIP_X + 1.0, 0.06, Z_MED)
+  resplandor.frustumCulled = false
+  resplandor.renderOrder = 5
+  grupoLlamas.add(resplandor)
+
+  // humo: esferas oscuras translúcidas que suben y se corren con el viento (+X); cada una con su opacidad
+  const humoGeo = new T.SphereGeometry(1, 7, 5)
+  const humo = []
+  for (const L of Object.values(LINEAS))
+    for (let k = 0; k < 6; k++) {
+      const mat = new T.MeshBasicMaterial({
+        color: '#2A2A2B',
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      })
+      const m = new T.Mesh(humoGeo, mat)
+      m.frustumCulled = false
+      m.castShadow = false
+      m.renderOrder = 7
+      grupoLlamas.add(m)
+      humo.push({ m, mat, z: L.z, h: L.alto, off: k / 6, life: 4.2 })
+    }
+
+  function actualizarEfectos(t) {
+    for (const f of actualizar) f(t)
+    const pulso = 0.8 + 0.2 * Math.sin(t * 9) * Math.sin(t * 3.7 + 1)
+    resplandor.scale.set(7 * pulso, 1, 5.2 * pulso)
+    llamaMat.opacity = 0.92 + 0.08 * Math.sin(t * 17)
+    for (const s of humo) {
+      const age = (((t / s.life + s.off) % 1) + 1) % 1 // 0..1
+      const a = age * s.life
+      s.m.position.set(
+        TIP_X + 0.6 + a * 1.1 + Math.sin(t * 0.8 + s.off * 9) * 0.25,
+        Y_G + s.h * 0.75 + a * 1.5,
+        s.z + Math.sin(a * 1.3 + s.off * 7) * 0.35,
+      )
+      const e = 0.5 + age * 1.4
+      s.m.scale.set(e, e, e)
+      s.mat.opacity = 0.24 * Math.sin(Math.PI * Math.min(1, age * 1.15)) * (1 - age * 0.35)
+    }
+  }
+
+  // ───────────────────────── interruptor y bucle de animación ─────────────────────────
+  let on = true
+  let timer = 0
+  const v = new V3()
+  const enCuadro = () => {
+    v.set(PIT.cx, 2, PIT.cz).project(R.camera())
+    return Math.abs(v.x) < 1.25 && Math.abs(v.y) < 1.25 && v.z > -1 && v.z < 1
+  }
+  const tick = () => {
+    if (!on || document.hidden || !enCuadro()) return
+    actualizarEfectos(performance.now() / 1000)
+    R.invalidate()
+  }
+  function llamas(next) {
+    if (typeof next === 'boolean' && next !== on) {
+      on = next
+      grupoLlamas.visible = on
+      btn.classList.toggle('on', on)
+      btn.setAttribute('aria-pressed', String(on))
+      if (on) actualizarEfectos(performance.now() / 1000)
+      const msg = document.getElementById('cad-message')
+      if (msg)
+        msg.textContent = on
+          ? 'Fosa de quema · llamas y humo = efecto visual, no simulación. Posición y dimensiones ilustrativas (pendientes de validación).'
+          : 'Llamas de la fosa de quema apagadas.'
+      R.invalidate()
+    }
+    return on
+  }
+
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.className = 'btn on'
+  btn.id = 'c-fosa'
+  btn.textContent = 'Llamas de la fosa'
+  btn.title =
+    'Efecto visual de la fosa de quema (no es simulación). Posición ilustrativa, pendiente de validación.'
+  btn.setAttribute('aria-pressed', 'true')
+  btn.addEventListener('click', () => llamas(!on))
+  if (window.__rigToolbar && window.__rigToolbar.add) window.__rigToolbar.add('capas', btn)
+  else document.body.appendChild(btn)
+
+  actualizarEfectos(performance.now() / 1000)
+  timer = setInterval(tick, 42)
+  window.addEventListener('pagehide', () => clearInterval(timer))
+
+  R.invalidate()
+  window.__tackerFosa = {
+    pos: { ...PIT, tipX: TIP_X },
+    lineas: Object.fromEntries(
+      Object.entries(LINEAS).map(([k, L]) => [k, { nombre: L.nombre, pts: L.pts }]),
+    ),
+    estado: 'pendingValidation',
+    llamas,
+    activo: () => on,
   }
 })
 

@@ -2605,25 +2605,136 @@
     ])
       cone(x, z)
 
-    // ── camioneta de servicio (estética): local → mundo con giro `ry`
-    const pickup = (cx, cz, ry, col) => {
+    // ── vehículos (ilustrativos; referencia: plano CAD de pickup doble cabina y foto de manipulador telescópico de catálogo, GENÉRICOS:
+    //    marca, modelo y capacidades PENDIENTES). Marco local: lx hacia adelante, lz lateral; `ry` = giro de mundo (adelante = (cos, −sin)).
+    const vehicle = (cx, cz, ry) => {
       const c = Math.cos(ry)
       const sn = Math.sin(ry)
-      const put = (lx, ly, lz, w, h, d, color) =>
-        S.box(color, w, h, d, cx + lx * c + lz * sn, ly, cz - lx * sn + lz * c, ry)
-      put(0, 0.75, 0, 5.2, 0.7, 1.9, col) // chasis y caja
-      put(0.6, 1.4, 0, 1.9, 0.75, 1.8, col) // cabina
-      put(0.65, 1.45, 0, 1.75, 0.55, 1.82, C.GLASS) // vidrios
-      put(-1.4, 1.15, 0, 2.0, 0.3, 1.86, '#c9cdc8') // caja de carga
-      for (const lx of [1.6, -1.6])
-        for (const lz of [-0.95, 0.95]) {
-          const wx = cx + lx * c + lz * sn
-          const wz = cz - lx * sn + lz * c
-          S.cyl('#15171c', 0.4, 0.4, 0.3, wx, 0.4, wz, 'z', 12)
-        }
+      const W = (lx, ly, lz) => [cx + lx * c + lz * sn, ly, cz - lx * sn + lz * c]
+      return {
+        W,
+        box: (col, w, h, d, lx, ly, lz, rz = 0) => {
+          const [x, y, z] = W(lx, ly, lz)
+          if (!rz) return S.box(col, w, h, d, x, y, z, ry)
+          const gb = new K.Box(w, h, d)
+          gb.rotateZ(rz)
+          gb.rotateY(ry)
+          return S.push(gb, x, y, z, col)
+        },
+        rod: (col, a, b2, r, seg = 6) => S.rod(col, W(...a), W(...b2), r, seg),
+        wheel: (lx, ly, lz, r, wid, rim) => {
+          S.rod('#15171c', W(lx, ly, lz - wid / 2), W(lx, ly, lz + wid / 2), r, 14) // neumático
+          const o = Math.sign(lz) * (wid / 2 + 0.004)
+          S.rod(rim, W(lx, ly, lz + o - 0.02), W(lx, ly, lz + o + 0.02), r * 0.62, 10) // llanta
+          S.rod('#3a3e45', W(lx, ly, lz + o), W(lx, ly, lz + o + Math.sign(lz) * 0.015), r * 0.2, 6) // maza
+        },
+      }
     }
-    pickup(-24, 26.5, 0.25, '#f1f1ee')
-    pickup(-28.5, 27.5, -0.1, '#f1f1ee')
+    /** Calza de rueda: cuña de goma negra contra el neumático (lx = tangente trasera de la rueda). */
+    const chock = (V, lx, lz) => V.box('#15171c', 0.2, 0.1, 0.24, lx, 0.05, lz, 0.5)
+
+    /** Camioneta pick-up doble cabina (5,3 × 1,86 × 1,8 m): carrocería, vidrios, caja con barral, defensa, baliza y antena con banderín. */
+    const pickup = (cx, cz, ry, col) => {
+      const V = vehicle(cx, cz, ry)
+      for (const lx of [1.6, -1.6])
+        for (const lz of [-0.8, 0.8]) V.wheel(lx, 0.39, lz, 0.39, 0.27, '#b4babe')
+      V.box(col, 5.0, 0.42, 1.86, 0, 0.78, 0) // carrocería inferior
+      V.box('#2b2f36', 3.4, 0.14, 1.9, 0.2, 0.52, 0) // estribos y zócalo
+      for (const lx of [1.6, -1.6])
+        for (const sg of [-1, 1]) V.box('#2b2f36', 0.95, 0.1, 0.1, lx, 0.99, sg * 0.93) // pasarruedas
+      V.box(col, 1.35, 0.14, 1.78, 1.9, 1.08, 0) // capot
+      V.box(col, 0.1, 0.5, 1.86, 2.55, 0.85, 0) // frente
+      V.box('#1d1f22', 0.05, 0.22, 1.0, 2.6, 0.9, 0) // parrilla
+      for (const sg of [-1, 1]) {
+        V.box('#d8dcdf', 0.05, 0.12, 0.32, 2.58, 0.98, sg * 0.7) // faros
+        V.box('#C62B1E', 0.04, 0.2, 0.16, -2.52, 1.0, sg * 0.82) // luces traseras
+        V.box('#1d1f22', 0.12, 0.12, 0.2, 1.2, 1.38, sg * 1.0) // espejos
+        V.box('#8e949a', 0.08, 0.03, 0.14, 0.45, 1.25, sg * 0.88) // manijas
+        V.box(C.RED, 4.6, 0.08, 0.02, 0, 0.86, sg * 0.935) // franja roja lateral
+      }
+      V.box('#2b2f36', 0.18, 0.2, 1.95, 2.66, 0.55, 0) // paragolpes delantero
+      V.box('#2b2f36', 0.18, 0.2, 1.95, -2.66, 0.55, 0) // paragolpes trasero
+      V.box('#f0f0f0', 0.02, 0.12, 0.34, -2.76, 0.7, 0) // patente
+      // defensa tubular delantera (bull-bar)
+      for (const sg of [-1, 1])
+        V.rod('#1d1f22', [2.78, 0.5, sg * 0.55], [2.78, 1.1, sg * 0.55], 0.027, 6)
+      V.rod('#1d1f22', [2.78, 1.1, -0.55], [2.78, 1.1, 0.55], 0.027, 6)
+      V.rod('#1d1f22', [2.78, 0.75, -0.55], [2.78, 0.75, 0.55], 0.022, 6)
+      // cabina: carrocería, vidrios laterales con parante, parabrisas inclinado, luneta y techo
+      V.box(col, 2.05, 0.82, 1.72, 0.4, 1.38, 0)
+      V.box(col, 1.5, 0.06, 1.66, 0.35, 1.81, 0) // techo
+      for (const sg of [-1, 1]) {
+        V.box(C.GLASS, 1.55, 0.5, 0.02, 0.4, 1.42, sg * 0.865)
+        V.box(col, 0.09, 0.52, 0.025, 0.42, 1.42, sg * 0.868) // parante B
+      }
+      V.box(C.GLASS, 0.03, 0.78, 1.55, 1.34, 1.4, 0, 0.42) // parabrisas
+      V.box(C.GLASS, 0.03, 0.45, 1.4, -0.63, 1.43, 0) // luneta
+      V.box('#1d1f22', 0.16, 0.1, 0.2, 0.15, 1.88, 0) // base de baliza
+      V.rod('#E8A200', [0.15, 1.93, 0], [0.15, 2.03, 0], 0.085, 10) // baliza ámbar
+      V.rod('#2b2f36', [-0.4, 1.84, 0.72], [-0.4, 3.1, 0.72], 0.008, 4) // antena
+      V.box('#E4702A', 0.01, 0.22, 0.34, -0.4, 2.95, 0.88) // banderín
+      // caja de carga: piso, bordas, portón, pasarruedas internos y barral (portaequipos) tras la cabina
+      V.box('#2b2f36', 1.9, 0.04, 1.6, -1.6, 0.96, 0)
+      for (const sg of [-1, 1]) V.box(col, 1.95, 0.5, 0.05, -1.6, 1.22, sg * 0.84)
+      V.box(col, 0.05, 0.5, 1.7, -2.58, 1.22, 0)
+      for (const sg of [-1, 1]) V.box('#2b2f36', 0.8, 0.14, 0.2, -1.6, 1.05, sg * 0.7)
+      for (const sg of [-1, 1])
+        V.rod('#1d1f22', [-0.78, 0.98, sg * 0.75], [-0.78, 1.95, sg * 0.75], 0.025, 6)
+      V.rod('#1d1f22', [-0.78, 1.95, -0.75], [-0.78, 1.95, 0.75], 0.025, 6)
+      return V
+    }
+
+    // ── estacionamiento: 3 camionetas en bahías pintadas, alineadas y con el frente hacia la salida (portón al sur, −z), con calzas
+    //    en las ruedas traseras. Fuera de la línea de los vientos y de la zona de los equipos; sin valor de control operacional.
+    for (const x of [-25.5, -22.5, -19.5, -16.5]) F.box('#e9e9e4', 0.12, 0.01, 6.2, x, 0.075, -26.9) // líneas de bahía
+    F.box('#e9e9e4', 9.12, 0.01, 0.12, -21, 0.075, -23.8) // línea de fondo
+    for (const x of [-24, -21, -18]) {
+      const V = pickup(x, -26.9, PI / 2, '#f1f1ee')
+      for (const sg of [-1, 1]) chock(V, -2.08, sg * 0.8)
+    }
+
+    /** Manipulador telescópico (4,8 × 2,0 × 2,25 m) estacionado junto a los caballetes con un paquete de tubing 2-7/8" (9,4 m) en las uñas. */
+    {
+      const V = vehicle(12.4, 11.3, PI / 2)
+      const RED = '#C8281E'
+      const WHT = '#E8E9E6'
+      const BLK = '#1C1D20'
+      for (const lx of [1.3, -1.3])
+        for (const lz of [-0.82, 0.82]) V.wheel(lx, 0.55, lz, 0.55, 0.42, '#9aa1a8')
+      V.box(BLK, 3.8, 0.5, 1.5, 0, 0.78, 0) // chasis
+      for (const lx of [1.3, -1.3])
+        for (const sg of [-1, 1]) V.box(RED, 1.3, 0.07, 0.5, lx, 1.16, sg * 0.82) // guardabarros
+      V.box(RED, 1.0, 0.7, 1.7, -1.6, 1.3, 0) // capot / motor
+      V.box(BLK, 0.3, 0.6, 1.7, -2.15, 1.0, 0) // contrapeso
+      V.rod('#2b2f36', [-1.9, 1.6, -0.6], [-1.9, 2.3, -0.6], 0.04, 6) // escape
+      // cabina a la derecha (+lz): panel inferior, vidrios, 4 parantes, techo y baliza
+      V.box(WHT, 1.2, 0.42, 0.88, 0.1, 1.2, 0.58)
+      V.box(C.GLASS, 1.12, 0.95, 0.8, 0.1, 1.88, 0.58)
+      for (const lx of [-0.5, 0.7])
+        for (const lz of [0.17, 0.99]) V.rod(WHT, [lx, 1.0, lz], [lx, 2.38, lz], 0.03, 6)
+      V.box(WHT, 1.35, 0.06, 0.98, 0.1, 2.4, 0.58)
+      V.rod('#E8A200', [0.1, 2.43, 0.58], [0.1, 2.53, 0.58], 0.08, 10)
+      V.box(BLK, 0.14, 0.14, 0.1, 0.62, 1.72, 1.08) // espejo
+      // pluma telescópica a la izquierda (−lz): tramo base rojo, tramo extensible negro, cilindro de elevación
+      V.box(RED, 3.57, 0.38, 0.38, 0.2, 1.2, -0.45, -0.197)
+      V.box(BLK, 1.2, 0.3, 0.32, 1.55, 0.89, -0.45, -0.16)
+      V.rod('#8e949a', [-1.0, 0.98, -0.45], [0.1, 1.08, -0.45], 0.05, 6)
+      // portaimplementos y uñas
+      V.box(BLK, 0.12, 0.95, 1.25, 2.12, 0.62, 0)
+      for (const sg of [-1, 1]) V.box('#2b2f36', 1.2, 0.08, 0.14, 2.75, 0.28, sg * 0.45)
+      // paquete de tubing en pirámide 5-4-3 (tubos de 9,4 m transversales) con cuplas y dos zunchos
+      const LY = 0.32 + 0.0365
+      ;[5, 4, 3].forEach((n, layer) => {
+        for (let k = 0; k < n; k++) {
+          const lx = 2.75 + (k - (n - 1) / 2) * 0.076
+          const ly = LY + layer * 0.066
+          V.rod('#3a3e44', [lx, ly, -4.7], [lx, ly, 4.7], 0.0365, 6)
+          V.rod('#8e949a', [lx, ly, 4.54], [lx, ly, 4.7], 0.0445, 6) // cupla
+        }
+      })
+      for (const lz of [-1.3, 1.3]) V.box('#E4702A', 0.5, 0.3, 0.03, 2.75, 0.5, lz) // zunchos
+      for (const sg of [-1, 1]) chock(V, -1.3 - 0.62, sg * 0.82)
+    }
 
     // ── camino de acceso de ripio oscuro desde el portón (estético)
     F.box('#736d60', 6.0, 0.03, 30, -8, 0.065, -46)
@@ -2685,6 +2796,7 @@
       }
       mkSign(-8, -30.6, 0, 1.6, 0.9, 'ACCESO A LOCACIÓN', '#1d4f6b', '#ffffff', 'TACKER 10')
       mkSign(-27, 14.5, PI / 2, 1.3, 0.8, 'PUNTO DE REUNIÓN', '#1f6f43', '#ffffff')
+      mkSign(-14.6, -26.9, PI / 2, 1.3, 0.8, 'ESTACIONAMIENTO', '#1d4f6b', '#ffffff', 'VEHÍCULOS')
       mkSign(33.4, 7, -PI / 2, 1.3, 0.8, 'EQUIPO EN OPERACIÓN', '#f2b632', '#1b1b1b')
       S.flush(env, mat, 'carteles_postes', { cast: true, receive: true })
     }
