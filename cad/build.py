@@ -52,14 +52,14 @@ _, bb2, _, v2 = mastil.main(spec, P2, sfx2)
 check("con --set: altura sigue siendo la documentada", bb2["z"], spec["mast"]["heightM"])
 check("con --set: sigue conexa", v2["componentes"], 1)
 print("  [OK] sufijo de salida con overrides: %r (barras %d)" % (sfx2, v2["barras"]))
-# preset tacker10: faltan datos del fabricante -> PENDIENTE, sin inventar
-debe_fallar("preset tacker10 del mástil", lambda: parametros("mastil", "tacker10"), KeyError, "PENDIENTE")
+# preset rig10: faltan datos del fabricante -> PENDIENTE, sin inventar
+debe_fallar("preset rig10 del mástil", lambda: parametros("mastil", "rig10"), KeyError, "PENDIENTE")
 debe_fallar("parámetro desconocido", lambda: parametros("mastil", None, ["zzz=1"]), KeyError, "desconocido")
 debe_fallar("valor fuera de rango", lambda: parametros("mastil", None, ["n_pan_inf=99"]), ValueError, "fuera del rango")
-debe_fallar("catálogo: dato PENDIENTE", lambda: catalogo.dato("TACKER10-mastil", "Db", spec), KeyError, "PENDIENTE")
-val, uni, est, _ = catalogo.dato("TACKER10-mastil", "heightM", spec)
+debe_fallar("catálogo: dato PENDIENTE", lambda: catalogo.dato("RIG10-mastil", "Db", spec), KeyError, "PENDIENTE")
+val, uni, est, _ = catalogo.dato("RIG10-mastil", "heightM", spec)
 check("catálogo: altura REF_OEM (%s)" % est, val, spec["mast"]["heightM"])
-print("  pendientes del mástil (catálogo):", catalogo.pendientes("TACKER10-mastil"))
+print("  pendientes del mástil (catálogo):", catalogo.pendientes("RIG10-mastil"))
 
 # ───────── piso de trabajo ─────────
 P, sfx = parametros("piso_trabajo")
@@ -73,7 +73,7 @@ for preset in ("minimo", "maximo"):  # configuraciones
     piso_trabajo.build(spec, Pp)
     print("  [OK] configuración '%s' (h=%s m) regenera" % (preset, Pp["h"]))
 debe_fallar("altura fuera del rango documentado", lambda: piso_trabajo.build(spec, dict(P, h=4.5)), AssertionError, "fuera del rango")
-debe_fallar("preset tacker10 del piso (espesor)", lambda: parametros("piso_trabajo", "tacker10"), KeyError, "PENDIENTE")
+debe_fallar("preset rig10 del piso (espesor)", lambda: parametros("piso_trabajo", "rig10"), KeyError, "PENDIENTE")
 
 # ───────── carrier ─────────
 P, sfx = parametros("carrier_huella")

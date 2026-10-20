@@ -2,7 +2,7 @@
 
 `scripts/gltf-optimize.mjs` corre `gltf-transform optimize` (CLI 4.5.1). Ese comando aplica **simplify** (meshoptimizer)
 por defecto con `--simplify-error 0.0001` (fracción de la extensión de la malla). Hasta el 2026-10-11 el wrapper no lo
-declaraba: los GLB publicados en `public/models/tacker10/` tienen menos triángulos que los originales de `assets/source/`
+declaraba: los GLB publicados en `public/models/rig10/` tienen menos triángulos que los originales de `assets/source/`
 y que lo que documenta cada `.meta.json`.
 
 Desde esa fecha el wrapper declara `--simplify true --simplify-error 0.0001` (el mismo resultado que antes, ahora
@@ -16,7 +16,7 @@ no cambia esa clasificación, pero sí puede mover aristas y caras finas.
 
 Medido con `gltf-transform inspect --format csv` (suma de `glPrimitives` de las mallas), 2026-10-11.
 
-| GLB | Origen (`assets/source`) | Publicado (`public/models/tacker10`) |
+| GLB | Origen (`assets/source`) | Publicado (`public/models/rig10`) |
 |---|---:|---:|
 | sk575_acumulador | 37 772 | 32 042 |
 | sk575_aparejo | 37 740 | 25 608 |

@@ -8,9 +8,9 @@
     },
     "unidades": "m salvo indicación"
   },
-  "TACKER10-mastil": {
+  "RIG10-mastil": {
     "nombre": "Mástil Service King SK104-330",
-    "aplica_a_tacker10": true,
+    "aplica_a_rig10": true,
     "fuente": "src-folleto",
     "datos": {
       "heightM": {
@@ -70,9 +70,9 @@
       }
     }
   },
-  "TACKER10-piso-trabajo": {
+  "RIG10-piso-trabajo": {
     "nombre": "Piso de trabajo telescópico",
-    "aplica_a_tacker10": true,
+    "aplica_a_rig10": true,
     "fuente": "src-folleto",
     "datos": {
       "largo": {
@@ -102,9 +102,9 @@
       "esp": { "valor": null, "unidad": "m", "estado": "PENDIENTE", "nota": "espesor de la placa" }
     }
   },
-  "TACKER10-carrier": {
+  "RIG10-carrier": {
     "nombre": "Carrier Service King SK-575",
-    "aplica_a_tacker10": true,
+    "aplica_a_rig10": true,
     "fuente": "src-layout",
     "datos": {
       "largo": {

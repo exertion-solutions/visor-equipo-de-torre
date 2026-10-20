@@ -6,7 +6,7 @@ ficha de confiabilidad en `legacy-ext/42-meta-llave.js`; parámetro `LLAVE_COLOR
 
 ## Imágenes de referencia (unidades genéricas)
 
-**No son el equipo del TACKER 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin
+**No son el equipo 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin
 verificar (fotos de catálogo de terceros): no se embeben en el HTML y **no están versionadas en git**; quedan en la copia local
 `.tmp/refs-png/llaves/` del checkout principal.
 
@@ -97,4 +97,4 @@ medida sectores anulares (placas, buje, cuñas), tubos (mangueras, arco, resorte
 ## Pendiente de verificar
 
 - Aspecto en GPU real y en pantallas de alta densidad (las capturas son con renderizado por software).
-- Que el color rojo y la disposición coincidan con el equipo real del TACKER 10 (fotos propias del equipo).
+- Que el color rojo y la disposición coincidan con el equipo real del equipo 10 (fotos propias del equipo).

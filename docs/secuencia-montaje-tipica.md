@@ -1,8 +1,8 @@
 # Secuencia típica de montaje (rig-up)
 
 **Estatus: `pendingValidation`.** Texto aportado por el usuario (2026-09-30) como secuencia típica de montaje de un equipo de
-workover. No es el procedimiento de Tacker ni un requisito de empresa, cliente o legal. Se usa solo como guion visual de
-`legacy-ext/76-secuencia-montaje.js`; validar contra el procedimiento de montaje vigente de Tacker antes de presentarla como requisito.
+workover. No es el procedimiento de la empresa ni un requisito de empresa, cliente o legal. Se usa solo como guion visual de
+`legacy-ext/76-secuencia-montaje.js`; validar contra el procedimiento de montaje vigente de la empresa antes de presentarla como requisito.
 
 ## Pasos
 
@@ -36,7 +36,7 @@ No se anima el izamiento del mástil ni se inventan tiempos, cargas o distancias
 - **Izamiento del mástil (paso 6):** el mástil tiene **dos pistones**: (1) el de **izaje del primer tramo**, que lo lleva de **0° a 90°**; (2) el de
   **izaje del segundo tramo**, que **extiende el tramo embutido en el primero**. **Después se tensan los vientos.** Animado de forma ilustrativa en
   `legacy-ext/81-izamiento-mastil.js` (sin cargas, presiones ni tiempos). Carreras y pistón interno del 2.º tramo: aproximados.
-- Referencias fotográficas de equipos similares (otras marcas, no TACKER 10) confirman la cinemática: el mástil viaja acostado sobre el carrier hacia la
+- Referencias fotográficas de equipos similares (otras marcas, no equipo 10) confirman la cinemática: el mástil viaja acostado sobre el carrier hacia la
   cabina, pivota por la parte trasera con pistones en la base y termina vertical con vientos a los anclajes. No se copia geometría ni marcas de esas fotos.
 
 ### Decisiones tomadas de las imágenes de referencia (equipos similares de otras marcas; `pendingValidation`)

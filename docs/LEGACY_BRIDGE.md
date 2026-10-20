@@ -1,6 +1,6 @@
 # Contrato de mensajes app ⇄ visor V2 embebido
 
-La app React embebe `public/legacy/TACKER10_Digital_Rig_V2.html?embedded` en un `<iframe
+La app React embebe `public/legacy/Digital_Rig_V2.html?embedded` en un `<iframe
 sandbox="allow-scripts allow-downloads">` **sin `allow-same-origin`**: el visor corre en origen opaco.
 Toda la comunicación es por `window.postMessage`. Este contrato es el mismo que deberá cumplir el motor
 R3F nativo cuando alcance paridad, por lo que sirve también para **medir la paridad** (ver
@@ -18,10 +18,10 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 
 | `type`             | Payload                                                     | Efecto                                                                                    |
 | ------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `tacker:setMode`   | `mode`: `explore` \| `operation` \| `qhse` \| `training`    | Aplica el preset de capas del modo (ver abajo).                                           |
-| `tacker:setView`   | `view`: `iso` \| `front` \| `side` \| `top` \| `well`       | Mueve la cámara a la vista estándar.                                                      |
-| `tacker:setLayers` | `layers`: `LayerId[]`                                       | Conjunto **exacto** de capas activas (las demás se apagan). Se aplica después del preset. |
-| `tacker:ping`      | —                                                           | El visor responde otra vez `ready` + `state` (útil si la app montó después del visor).    |
+| `rig:setMode`   | `mode`: `explore` \| `operation` \| `qhse` \| `training`    | Aplica el preset de capas del modo (ver abajo).                                           |
+| `rig:setView`   | `view`: `iso` \| `front` \| `side` \| `top` \| `well`       | Mueve la cámara a la vista estándar.                                                      |
+| `rig:setLayers` | `layers`: `LayerId[]`                                       | Conjunto **exacto** de capas activas (las demás se apagan). Se aplica después del preset. |
+| `rig:ping`      | —                                                           | El visor responde otra vez `ready` + `state` (útil si la app montó después del visor).    |
 
 `LayerId`: `zonas` (zonas de riesgo ilustrativas) · `cotas` · `etiquetas` · `malla` · `despiece` · `drops`.
 
@@ -29,9 +29,9 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 
 | `type`          | Payload                                                                                                | Cuándo                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `tacker:ready`  | `version: 1`                                                                                           | Al terminar de arrancar (`window.__rig` listo) y en respuesta a `ping`.      |
-| `tacker:state`  | `mode`, `view`, `layers`                                                                               | Al arrancar y cada vez que cambia modo, vista o alguna capa.                 |
-| `tacker:select` | `id`, `name`, `grade` (`A`\|`B`\|`C`), `status` — o `id: null` al deseleccionar                        | Al cambiar el componente seleccionado. Origen: tabla `META` del visor.       |
+| `rig:ready`  | `version: 1`                                                                                           | Al terminar de arrancar (`window.__rig` listo) y en respuesta a `ping`.      |
+| `rig:state`  | `mode`, `view`, `layers`                                                                               | Al arrancar y cada vez que cambia modo, vista o alguna capa.                 |
+| `rig:select` | `id`, `name`, `grade` (`A`\|`B`\|`C`), `status` — o `id: null` al deseleccionar                        | Al cambiar el componente seleccionado. Origen: tabla `META` del visor.       |
 
 `grade` es la confiabilidad geométrica de `CLAUDE.md`: **A confirmado · B parcial · C aproximado**
 (lo pendiente de relevamiento se trata como aproximado). Referencia digital, nunca as-built.
@@ -39,8 +39,8 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 ## Secuencia de arranque
 
 1. La app monta el iframe y muestra "Cargando visor 3D…".
-2. El visor envía `tacker:ready` (+ `tacker:state`). La app oculta el cartel.
-3. La app envía `tacker:setMode` con el modo actual (`modeStore` es la fuente de verdad del modo).
+2. El visor envía `rig:ready` (+ `rig:state`). La app oculta el cartel.
+3. La app envía `rig:setMode` con el modo actual (`modeStore` es la fuente de verdad del modo).
 4. Si la URL traía `view` y/o `layers`, la app los envía **una sola vez** (`setView`, `setLayers`), después
    del modo: lo explícito de la URL gana sobre el preset.
 5. Desde ahí, vista/capas/selección fluyen visor → app (`state`, `select`) y se reflejan en la URL y en la

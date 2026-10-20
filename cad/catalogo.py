@@ -38,5 +38,5 @@ def pendientes(equipo):
     return sorted(k for k, d in cat[equipo]["datos"].items() if d["estado"] == "PENDIENTE")
 
 
-def aplica_a_tacker10(equipo):
-    return bool(_catalogo()[equipo].get("aplica_a_tacker10"))
+def aplica_a_rig10(equipo):
+    return bool(_catalogo()[equipo].get("aplica_a_rig10"))

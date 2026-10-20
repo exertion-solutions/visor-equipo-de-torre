@@ -1,5 +1,5 @@
 /**
- * Modelo de datos base de TACKER DIGITAL RIG.
+ * Modelo de datos base de DIGITAL RIG.
  * Unidades: 1 unidad 3D = 1 metro (ver CLAUDE.md). Todo dato numérico declara su fuente.
  */
 
@@ -65,7 +65,7 @@ export interface Component {
   scope?: string
   /** Desplazamiento de despiece autorado en metros [x, y, z] a factor 1. Determinista; no se calcula. */
   explodeOffset?: [number, number, number]
-  /** Ruta bajo public/, p. ej. `/models/tacker10/mast.glb`. */
+  /** Ruta bajo public/, p. ej. `/models/rig10/mast.glb`. */
   model?: string
 }
 

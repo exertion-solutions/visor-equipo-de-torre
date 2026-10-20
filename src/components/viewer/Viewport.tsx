@@ -9,19 +9,19 @@ import { RigModel } from '@/scene/loaders/RigModel'
 import { PostFx } from '@/scene/effects/PostFx'
 import { SelectableModel } from '@/scene/picking/SelectableModel'
 import { useViewerStore } from '@/stores/viewerStore'
-import { TACKER10_SCENE, type SceneModel } from '@/data/rigs/tacker10'
+import { RIG10_SCENE, type SceneModel } from '@/data/rigs/rig10'
 
 interface ViewportProps {
   /** GLB a cargar (con su posición). Vacío = escena de referencia (grilla 1 m). */
   models?: readonly SceneModel[]
 }
 
-export function Viewport({ models = TACKER10_SCENE }: ViewportProps) {
+export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
   const selectComponent = useViewerStore((s) => s.selectComponent)
   return (
     <Canvas
       role="img"
-      aria-label="Escena 3D del equipo TACKER 10 (referencia digital, no as-built)"
+      aria-label="Escena 3D del equipo 10 (referencia digital, no as-built)"
       // Render bajo demanda (escena estática): drei invalida en cada 'change' de OrbitControls,
       // y el damping sigue solo porque cada update() emite 'change' hasta asentarse. r3f invalida
       // al montar/cambiar props; cualquier animación futura debe llamar invalidate().

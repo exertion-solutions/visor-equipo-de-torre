@@ -44,7 +44,7 @@ assets/source/**
 **/Taller de Aseguramiento*.pdf
 **/Upstream YPF*.pdf
 
-# documentos internos de Tacker (PDF fuente y sus capturas): quedan en el disco, no en el repo publico
+# documentos internos de la empresa (PDF fuente y sus capturas): quedan en el disco, no en el repo publico
 docs/fuentes/**/*.pdf
 docs/pdf-review/pages/
 
@@ -60,7 +60,7 @@ docs/references/enganche/*.png
 __pycache__/
 *.pyc
 
-# documentos y fotos sueltos en la raíz (planos TACKER, imágenes de terceros): nunca al repo público
+# documentos y fotos sueltos en la raíz (planos de la empresa, imágenes de terceros): nunca al repo público
 **/*.pdf
 **/*.PDF
 # excepciones puntuales que sí deban subirse: !ruta/archivo.pdf

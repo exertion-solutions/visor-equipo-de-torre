@@ -13,13 +13,13 @@
  *   · No cuenta (solo oculta el contador) en localhost, file:// ni fuera de http(s): el desarrollo no ensucia el total.
  *   · Con Do Not Track activado solo LEE el total; no suma.
  *   · Si el servicio falla o tarda más de 6 s, el contador queda oculto: nunca rompe el visor.
- * API para pruebas: `window.__tackerVisitas = { NS, KEY, estado() }`.
+ * API para pruebas: `window.__rigVisitas = { NS, KEY, estado() }`.
  */
 window.__rigExt.onPost(() => {
-  const NS = 'tacker10-digital-rig-exertion'
+  const NS = 'rig10-digital-rig-exertion'
   const KEY = 'visitas'
   const BASE = 'https://abacus.jasoncameron.dev'
-  const FLAG = 'tacker10-visita-contada'
+  const FLAG = 'rig10-visita-contada'
 
   const bar = document.getElementById('cad-status')
   if (!bar) return
@@ -39,7 +39,7 @@ window.__rigExt.onPost(() => {
     host === '[::1]' ||
     host.endsWith('.local')
   let estado = 'oculto'
-  window.__tackerVisitas = { NS, KEY, estado: () => estado }
+  window.__rigVisitas = { NS, KEY, estado: () => estado }
   if (!enLinea || local) return // desarrollo o archivo local: no se cuenta ni se muestra
 
   const storage = () => {

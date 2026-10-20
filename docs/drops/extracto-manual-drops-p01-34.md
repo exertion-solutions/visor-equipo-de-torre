@@ -63,7 +63,7 @@ No hay categorías por tipo de objeto más allá de estático/dinámico. Las 10 
 
 ## 3. Puntos de control / componentes del equipo (págs. 1-34)
 
-Advertencia: en las págs. 1-34 **no hay ninguna sección específica de equipo de torre de pulling/workover** (no aparecen corona, mástil, tramos, plataforma del enganchador, elevadores, aparejo/travelling block ni cuadro de maniobras). Las palabras "corona" (tuerca corona), "torre de perforación" (solo evacuación) y "top drive" (solo un uso de pasador expandible) aparecen por otras razones. El índice (PDF 3) lista secciones posteriores (rejillas, barandas, luminarias, CCTV, cajas de conexiones, antenas, etc.) que caen en PDF 35+ (otro agente). Lo de abajo son puntos de control **genéricos** que el manual aplica a cualquier equipo en altura; su mapeo a piezas de la torre Tacker 10 sería inferencia.
+Advertencia: en las págs. 1-34 **no hay ninguna sección específica de equipo de torre de pulling/workover** (no aparecen corona, mástil, tramos, plataforma del enganchador, elevadores, aparejo/travelling block ni cuadro de maniobras). Las palabras "corona" (tuerca corona), "torre de perforación" (solo evacuación) y "top drive" (solo un uso de pasador expandible) aparecen por otras razones. El índice (PDF 3) lista secciones posteriores (rejillas, barandas, luminarias, CCTV, cajas de conexiones, antenas, etc.) que caen en PDF 35+ (otro agente). Lo de abajo son puntos de control **genéricos** que el manual aplica a cualquier equipo en altura; su mapeo a piezas de la torre Equipo 10 sería inferencia.
 
 | Punto de control | Ubicación en el equipo | Qué se controla | Frecuencia / responsable | Fuente (PDF pág.; impr.) |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ Ninguna figura de las págs. 1-34 muestra un esquema de torre/mástil ni posicio
 3. Tabla de energía (J) o umbrales numéricos de severidad; la Calculadora es solo gráfica.
 4. Frecuencias de inspección diaria/semanal/mensual de puntos fijos (solo: anual para encuestas y poleas de rodillos, 12 meses poleas/grilletes/cáncamos, 6 meses anticaída/evacuación, cada turno para armarios de herramientas y registro, antes de cada uso para anticaída).
 5. Modelo de checklist de inspección de estructura (solo el formato de registro de herramientas y menciones de "libro de inspección" y "lista de colisión").
-6. Quién aprueba el documento, nombres de cargos de una empresa concreta, o adopción por Tacker o cliente alguno.
+6. Quién aprueba el documento, nombres de cargos de una empresa concreta, o adopción por la empresa o cliente alguno.
 7. Nada específico de pulling/workover terrestre; el marco es genérico y con sesgo offshore.
 
 ## 7. Dudas / puntos a verificar

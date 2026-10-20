@@ -7,9 +7,9 @@ import path from 'node:path'
 import { after, before, test } from 'node:test'
 import { chromium } from 'playwright-core'
 
-// public/ entero (como Pages): el V2 baja los GLB del SK-575 de ../models/tacker10/ con fetch
+// public/ entero (como Pages): el V2 baja los GLB del SK-575 de ../models/rig10/ con fetch
 const dir = path.resolve('public')
-const file = 'legacy/TACKER10_Digital_Rig_V2.html'
+const file = 'legacy/Digital_Rig_V2.html'
 let server, browser, page, problems
 let skip = false
 
@@ -38,7 +38,7 @@ before(async () => {
   page.on('console', (m) => m.type() === 'error' && problems.push(m.text()))
   page.on('pageerror', (e) => problems.push(e.message))
   await page.goto(`http://127.0.0.1:${server.address().port}/${file}`)
-  await page.waitForFunction(() => !!window.__tackerSeq && !!window.__tackerErect, null, {
+  await page.waitForFunction(() => !!window.__rigSeq && !!window.__rigErect, null, {
     timeout: 30000,
   })
 })
@@ -66,10 +66,10 @@ test('abrir el menú, elegir el paso 6 muestra el izamiento; "Todo" lo vuelve a 
   assert.equal(await page.locator('#tm-pop-montaje').isVisible(), true)
   await page.click('#sq-steps button:nth-child(6)')
   assert.equal(await page.locator('#rig-erect').isVisible(), true)
-  assert.equal(await page.evaluate(() => window.__tackerSeq.current()), 6)
+  assert.equal(await page.evaluate(() => window.__rigSeq.current()), 6)
   await page.click('#sq-close')
   assert.equal(await page.locator('#rig-erect').isHidden(), true)
-  assert.equal(await page.evaluate(() => window.__tackerSeq.current()), 0)
+  assert.equal(await page.evaluate(() => window.__rigSeq.current()), 0)
 })
 
 test('Reproducir cierra el menú y el izamiento avanza', async (t) => {
@@ -77,8 +77,8 @@ test('Reproducir cierra el menú y el izamiento avanza', async (t) => {
   await page.click('#sq-steps button:nth-child(6)')
   await page.click('#er-play')
   assert.equal(await page.locator('#tm-pop-montaje').isHidden(), true, 'el menú no tapa la escena')
-  await page.waitForFunction(() => window.__tackerErect.progress() > 0.02, null, { timeout: 15000 })
-  await page.evaluate(() => window.__tackerErect.pause())
+  await page.waitForFunction(() => window.__rigErect.progress() > 0.02, null, { timeout: 15000 })
+  await page.evaluate(() => window.__rigErect.pause())
 })
 
 test('sin errores de consola', async (t) => {

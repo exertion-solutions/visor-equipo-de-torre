@@ -10,28 +10,28 @@ const root = path.resolve(import.meta.dirname, '..');
 const ext = (f) => readFileSync(path.join(root, 'legacy-ext', f), 'utf8');
 
 function build() {
-  const out = path.join(mkdtempSync(path.join(tmpdir(), 'tacker-bridge-')), 'index.html');
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'rig-bridge-')), 'index.html');
   const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', out], { cwd: root, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   return readFileSync(out, 'utf8');
 }
 
-test('el build expone META, el evento tacker:mode y el arranque, e incluye puente, capas y presets', () => {
+test('el build expone META, el evento rig:mode y el arranque, e incluye puente, capas y presets', () => {
   const html = build();
-  assert.match(html, /window\.__TACKER_META=META;const MODE=\{/);
-  assert.match(html, /new CustomEvent\('tacker:mode'/);
-  assert.match(html, /window\.__tackerMode=\{/);
-  assert.match(html, /document\.dispatchEvent\(new Event\('tacker:boot'\)\)/);
+  assert.match(html, /window\.__RIG_META=META;const MODE=\{/);
+  assert.match(html, /new CustomEvent\('rig:mode'/);
+  assert.match(html, /window\.__rigMode=\{/);
+  assert.match(html, /document\.dispatchEvent\(new Event\('rig:boot'\)\)/);
   for (const f of ['10-layers.js', '70-bridge.js', '75-mode-presets.js']) assert.match(html, new RegExp(`/\\* ${f.replace('.', '\\.')} \\*/`));
-  assert.match(html, /window\.__tackerLayers = \{/);
+  assert.match(html, /window\.__rigLayers = \{/);
   // orden de módulos: capas → drops → puente → presets
   const at = (f) => html.indexOf(`/* ${f} */`);
   assert.ok(at('10-layers.js') < at('50-drops-layer.js') && at('50-drops-layer.js') < at('70-bridge.js') && at('70-bridge.js') < at('75-mode-presets.js'));
 });
 
-test('70-bridge: contrato de mensajes tacker:* con listas blancas y origen del padre', () => {
+test('70-bridge: contrato de mensajes rig:* con listas blancas y origen del padre', () => {
   const src = ext('70-bridge.js');
-  for (const t of ['tacker:ready', 'tacker:state', 'tacker:select', 'tacker:setMode', 'tacker:setView', 'tacker:setLayers', 'tacker:ping'])
+  for (const t of ['rig:ready', 'rig:state', 'rig:select', 'rig:setMode', 'rig:setView', 'rig:setLayers', 'rig:ping'])
     assert.ok(src.includes(`'${t}'`), t);
   assert.match(src, /e\.source !== window\.parent/);
   assert.match(src, /postMessage\(msg, '\*'\)/);
@@ -71,7 +71,7 @@ function makeLayerEnv() {
   };
   const ctx = vm.createContext({ window: win, document: { getElementById: (id) => buttons[id] || null }, console });
   vm.runInContext(ext('10-layers.js'), ctx);
-  return { L: win.__tackerLayers, state, buttons };
+  return { L: win.__rigLayers, state, buttons };
 }
 
 test('10-layers: get/set/apply con conjunto exacto e ids inválidos ignorados', () => {
@@ -101,7 +101,7 @@ test('75-mode-presets: cada modo define el conjunto completo de capas (sin datos
   const listeners = {};
   const applied = [];
   const ctx = vm.createContext({
-    window: { __rig: { state: {}, groups: {} }, __tackerLayers: { apply: (l) => applied.push(Array.from(l)) } },
+    window: { __rig: { state: {}, groups: {} }, __rigLayers: { apply: (l) => applied.push(Array.from(l)) } },
     document: {
       getElementById: () => null,
       querySelector: () => null,
@@ -110,13 +110,13 @@ test('75-mode-presets: cada modo define el conjunto completo de capas (sin datos
     console,
   });
   vm.runInContext(src, ctx);
-  const P = ctx.window.__tackerPresets;
+  const P = ctx.window.__rigPresets;
   assert.deepEqual(Array.from(P.presets.explore.layers), []);
   assert.deepEqual(Array.from(P.presets.operation.layers), ['cotas']);
   assert.deepEqual(Array.from(P.presets.operation.isolate), ['aparejo', 'malacate']);
   assert.deepEqual(Array.from(P.presets.qhse.layers).sort(), ['drops', 'zonas']);
   assert.deepEqual(Array.from(P.presets.training.layers).sort(), ['despiece', 'etiquetas']);
   assert.equal(P.apply('hack'), false);
-  listeners['tacker:mode']({ detail: 'qhse' });
+  listeners['rig:mode']({ detail: 'qhse' });
   assert.deepEqual(applied.at(-1), ['zonas', 'drops']);
 });

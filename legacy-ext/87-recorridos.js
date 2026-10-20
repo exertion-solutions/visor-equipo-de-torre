@@ -1,7 +1,7 @@
 /*
  * 87-recorridos.js — recorridos visuales en primera persona (operario parado en la locación).
  *
- * Datos: window.__TACKER_VIEWPOINTS (src/data/viewpoints/tacker10-viewpoints.json, inyectado por build-legacy). Sumar un
+ * Datos: window.__RIG_VIEWPOINTS (src/data/viewpoints/rig10-viewpoints.json, inyectado por build-legacy). Sumar un
  * viewpoint = sumar un registro; esta lógica no se toca. Altura de ojos = cota del piso + 1,70 m (un test lo verifica).
  *
  *  - Panel "Ir a equipo" (arriba a la derecha del escenario) y DOBLE clic sobre un equipo (el clic simple ya selecciona en
@@ -13,10 +13,10 @@
  *  - Recorrido guiado (solo en modo Entrenamiento): paradas y segundos por parada configurables en el JSON.
  *
  * Es una herramienta VISUAL: las posiciones de cámara no son puestos de trabajo ni distancias de seguridad, y no hay zonas
- * de exclusión documentadas que respetar. API para pruebas: window.__tackerVp.
+ * de exclusión documentadas que respetar. API para pruebas: window.__rigVp.
  */
 window.__rigExt.onPost((R) => {
-  const D = window.__TACKER_VIEWPOINTS
+  const D = window.__RIG_VIEWPOINTS
   if (!D || !D.viewpoints || !R.camera || !R.controls || !R.raycaster || !R.three) return
   const T = R.three
   const $ = (id) => document.getElementById(id)
@@ -287,7 +287,7 @@ window.__rigExt.onPost((R) => {
     ficha(v)
     $('vp-back').disabled = false
     volar(vec(v.camPos), vec(v.target), v.fov, o.instant ? 0 : MS)
-    document.dispatchEvent(new CustomEvent('tacker:viewpoint', { detail: id }))
+    document.dispatchEvent(new CustomEvent('rig:viewpoint', { detail: id }))
     return true
   }
   function limpiar() {
@@ -540,13 +540,13 @@ window.__rigExt.onPost((R) => {
     parada(tour.i + 1)
   })
   $('vp-play').addEventListener('click', play)
-  document.addEventListener('tacker:mode', (e) => {
+  document.addEventListener('rig:mode', (e) => {
     if (e && e.detail === 'training') return
     pausa()
   })
   pintarTour()
 
-  window.__tackerVp = {
+  window.__rigVp = {
     list: () => VP,
     go,
     back,

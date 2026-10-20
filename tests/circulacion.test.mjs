@@ -5,7 +5,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 const root = path.resolve(import.meta.dirname, '..');
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8');
 const wellsite = fs.readFileSync(path.join(root, 'legacy-ext', '40-wellsite.js'), 'utf8');
 const meta = fs.readFileSync(path.join(root, 'legacy-ext', '44-meta-circulacion.js'), 'utf8');
 
@@ -39,8 +39,8 @@ test('los peligros nuevos se rotulan "referencia, pendiente de validación" (nun
 test('la ficha: geometría SK-575 (C) y volúmenes 38 vs 40 m³ como fuente en conflicto', () => {
   assert.match(meta, /grade: 'C',\s*status: 'Fuente en conflicto'/);
   assert.ok(meta.includes('38 m³') && meta.includes('40 m³'), 'conflicto de volúmenes rotulado');
-  assert.match(meta, /window\.__TACKER_META/);
-  assert.match(meta, /tacker:boot/);
+  assert.match(meta, /window\.__RIG_META/);
+  assert.match(meta, /rig:boot/);
   assert.ok(html.includes('/* 44-meta-circulacion.js */'), 'el módulo debe estar en el HTML generado');
 });
 

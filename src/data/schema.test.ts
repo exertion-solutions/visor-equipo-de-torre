@@ -19,20 +19,20 @@ import {
 const source = {
   id: 'src-folleto',
   kind: 'brochure',
-  title: 'Folleto Tacker 10',
+  title: 'Folleto Equipo 10',
   verified: true,
 } as const
 
 const validRig = {
-  id: 'TACKER-10',
-  name: 'TACKER 10',
+  id: 'RIG-10',
+  name: 'Equipo 10',
   service: 'Pulling',
   sources: [source],
   equipment: [],
   components: [
     {
       id: 'mast',
-      rigId: 'TACKER-10',
+      rigId: 'RIG-10',
       name: 'Mástil',
       family: 'mast',
       confidence: 'A',
@@ -123,7 +123,7 @@ describe('rigSchema', () => {
     expect(
       rigSchema.safeParse({
         ...validRig,
-        components: [{ ...c, model: '/models/tacker10/mast.glb' }],
+        components: [{ ...c, model: '/models/rig10/mast.glb' }],
       }).success,
     ).toBe(true)
     expect(
@@ -136,22 +136,22 @@ describe('rigSchema', () => {
     const c = validRig.components[0]
     const parse = (model: string) =>
       rigSchema.safeParse({ ...validRig, components: [{ ...c, model }] }).success
-    expect(parse('/models/tacker10/mast.gltf')).toBe(true)
-    expect(parse('/models/tacker10/mast.v2..final.glb')).toBe(true)
+    expect(parse('/models/rig10/mast.gltf')).toBe(true)
+    expect(parse('/models/rig10/mast.v2..final.glb')).toBe(true)
     expect(parse('/models/../secret.glb')).toBe(false)
-    expect(parse('/models/tacker10/../../x.glb')).toBe(false)
-    expect(parse('/models//tacker10/mast.glb')).toBe(false)
-    expect(parse('/models/tacker10' + String.fromCharCode(92) + 'mast.glb')).toBe(false)
+    expect(parse('/models/rig10/../../x.glb')).toBe(false)
+    expect(parse('/models//rig10/mast.glb')).toBe(false)
+    expect(parse('/models/rig10' + String.fromCharCode(92) + 'mast.glb')).toBe(false)
     expect(parse('/models/./mast.glb')).toBe(false)
     expect(parse('/models/%2e%2e/x.glb')).toBe(false)
-    expect(parse('/models/tacker10%2Fmast.glb')).toBe(false)
+    expect(parse('/models/rig10%2Fmast.glb')).toBe(false)
     expect(parse('/other/mast.glb')).toBe(false)
   })
 })
 
 describe('rigSchema: referencias cruzadas', () => {
   const c = validRig.components[0]
-  const eq = { id: 'eq1', rigId: 'TACKER-10', name: 'Mástil y aparejo', componentIds: ['mast'] }
+  const eq = { id: 'eq1', rigId: 'RIG-10', name: 'Mástil y aparejo', componentIds: ['mast'] }
   const spec = {
     key: 'anchorDistance',
     label: 'Distancia de anclajes',
@@ -256,7 +256,7 @@ const confirmedBasis = { status: 'confirmed', sourceId: 'src-folleto' } as const
 
 const risk = {
   id: 'r1',
-  rigId: 'TACKER-10',
+  rigId: 'RIG-10',
   hazard: 'suspendedLoad',
   title: 'Carga suspendida',
   event: 'Caída de la carga',
@@ -275,7 +275,7 @@ const barrier = {
 
 const dsZone = { id: 'z1', riskId: 'r1', title: 'Zona', hazard: 'suspendedLoad', basis: pending }
 
-const dataset = { rigId: 'TACKER-10', risks: [risk], barriers: [barrier], zones: [dsZone] }
+const dataset = { rigId: 'RIG-10', risks: [risk], barriers: [barrier], zones: [dsZone] }
 
 describe('riskSchema (bow-tie)', () => {
   it('exige event y consequence no vacíos', () => {
@@ -343,9 +343,9 @@ describe('qhseDatasetSchema', () => {
   it('acepta un conjunto consistente', () => {
     expect(qhseDatasetSchema.safeParse(dataset).success).toBe(true)
     expect(strict.safeParse(dataset).success).toBe(true)
-    expect(
-      strict.safeParse({ rigId: 'TACKER-10', risks: [], barriers: [], zones: [] }).success,
-    ).toBe(true)
+    expect(strict.safeParse({ rigId: 'RIG-10', risks: [], barriers: [], zones: [] }).success).toBe(
+      true,
+    )
   })
 
   it('rechaza barrier.riskId y zone.riskId inexistentes', () => {
@@ -498,7 +498,7 @@ describe('makeQhseDatasetSchema: fuentes citadas', () => {
 describe('makeTrainingStepsSchema', () => {
   const step = {
     id: 't1',
-    rigId: 'TACKER-10',
+    rigId: 'RIG-10',
     order: 1,
     title: 'Paso',
     instruction: 'Instrucción de entrenamiento',

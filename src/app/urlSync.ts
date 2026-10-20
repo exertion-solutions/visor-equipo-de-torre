@@ -10,7 +10,7 @@ export function hydrateStoresFromUrl(): void {
 
 /**
  * Refleja modo / vista / capas en la URL (`history.replaceState`, sin ensuciar el historial) para poder
- * compartir una vista concreta. Vista y capas provienen del visor V2 (`tacker:state`); mientras no hayan
+ * compartir una vista concreta. Vista y capas provienen del visor V2 (`rig:state`); mientras no hayan
  * llegado se conserva lo que traía la URL, para no borrarlo antes de aplicarlo.
  */
 export function useUrlSync(): void {

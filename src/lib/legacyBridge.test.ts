@@ -9,18 +9,18 @@ describe('parseLegacyMessage', () => {
   })
 
   it('ready', () => {
-    expect(parseLegacyMessage({ type: 'tacker:ready', version: 1 })).toEqual({
-      type: 'tacker:ready',
+    expect(parseLegacyMessage({ type: 'rig:ready', version: 1 })).toEqual({
+      type: 'rig:ready',
       version: 1,
     })
   })
 
   it('state: filtra modo, vista y capas inválidos', () => {
     expect(
-      parseLegacyMessage({ type: 'tacker:state', mode: 'x', view: 'y', layers: ['cotas', 7, 'z'] }),
-    ).toEqual({ type: 'tacker:state', mode: null, view: null, layers: ['cotas'] })
-    expect(parseLegacyMessage({ type: 'tacker:state' })).toEqual({
-      type: 'tacker:state',
+      parseLegacyMessage({ type: 'rig:state', mode: 'x', view: 'y', layers: ['cotas', 7, 'z'] }),
+    ).toEqual({ type: 'rig:state', mode: null, view: null, layers: ['cotas'] })
+    expect(parseLegacyMessage({ type: 'rig:state' })).toEqual({
+      type: 'rig:state',
       mode: null,
       view: null,
       layers: [],
@@ -30,25 +30,25 @@ describe('parseLegacyMessage', () => {
   it('select: con componente, sin componente y con id inválido', () => {
     expect(
       parseLegacyMessage({
-        type: 'tacker:select',
+        type: 'rig:select',
         id: 'bop',
         name: 'BOP',
         grade: 'B',
         status: 'Parcial',
       }),
     ).toEqual({
-      type: 'tacker:select',
+      type: 'rig:select',
       selection: { id: 'bop', name: 'BOP', grade: 'B', status: 'Parcial' },
     })
-    expect(parseLegacyMessage({ type: 'tacker:select', id: 'bop', grade: 'Z' })).toEqual({
-      type: 'tacker:select',
+    expect(parseLegacyMessage({ type: 'rig:select', id: 'bop', grade: 'Z' })).toEqual({
+      type: 'rig:select',
       selection: { id: 'bop', name: null, grade: null, status: null },
     })
-    expect(parseLegacyMessage({ type: 'tacker:select', id: null })).toEqual({
-      type: 'tacker:select',
+    expect(parseLegacyMessage({ type: 'rig:select', id: null })).toEqual({
+      type: 'rig:select',
       selection: null,
     })
-    expect(parseLegacyMessage({ type: 'tacker:select', id: 5 })).toBeNull()
+    expect(parseLegacyMessage({ type: 'rig:select', id: 5 })).toBeNull()
   })
 })
 

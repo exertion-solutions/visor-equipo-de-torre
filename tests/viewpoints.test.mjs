@@ -1,4 +1,4 @@
-// Viewpoints del recorrido en primera persona (src/data/viewpoints/tacker10-viewpoints.json → legacy-ext/87-recorridos.js).
+// Viewpoints del recorrido en primera persona (src/data/viewpoints/rig10-viewpoints.json → legacy-ext/87-recorridos.js).
 // Sumar un viewpoint = sumar un registro: este test cuida que el registro sea coherente sin mirar la lógica.
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -6,14 +6,14 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const D = JSON.parse(
-  fs.readFileSync(path.join(root, 'src', 'data', 'viewpoints', 'tacker10-viewpoints.json'), 'utf8'),
+  fs.readFileSync(path.join(root, 'src', 'data', 'viewpoints', 'rig10-viewpoints.json'), 'utf8'),
 )
 
 test('el V2 trae el módulo y los datos', () => {
   assert.ok(html.includes('/* 87-recorridos.js */'))
-  assert.ok(html.includes('window.__TACKER_VIEWPOINTS='))
+  assert.ok(html.includes('window.__RIG_VIEWPOINTS='))
   assert.ok(html.includes('raycaster:Sl'), '__rig expone el raycaster del V2')
 })
 

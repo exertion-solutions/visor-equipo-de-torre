@@ -5,7 +5,7 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const models = path.join(root, 'public', 'models', 'tacker10')
+const models = path.join(root, 'public', 'models', 'rig10')
 const glbs = fs.readdirSync(models).filter((f) => /^sk575_[a-z_]+\.glb$/.test(f))
 const json = (f) => {
   const b = fs.readFileSync(path.join(models, f))
@@ -27,16 +27,16 @@ test('GLB sk575: materiales <id>_<material> (sin palette) y normales en cada pri
 })
 
 test('el V2 lista los 16 GLB (fetch), trae el meshopt y el módulo 84; el base64 va aparte en sk575-glb.js', () => {
-  const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+  const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
   const ids = glbs.map((f) => f.slice(0, -4)).sort()
   assert.match(html, /window\.__MeshoptDecoder=MeshoptDecoder/)
   assert.match(html, /\/\* 84-modelo-sk575\.js \*\//)
-  const files = html.match(/window\.__TACKER_SK575_FILES=(\[[^\]]*\]);/)
+  const files = html.match(/window\.__RIG_SK575_FILES=(\[[^\]]*\]);/)
   assert.ok(files)
   assert.deepEqual(JSON.parse(files[1]).sort(), ids)
-  assert.doesNotMatch(html, /window\.__TACKER_SK575_GLB=/, 'el HTML servido no lleva el base64')
+  assert.doesNotMatch(html, /window\.__RIG_SK575_GLB=/, 'el HTML servido no lleva el base64')
   const js = fs.readFileSync(path.join(root, 'public', 'legacy', 'sk575-glb.js'), 'utf8')
-  const m = js.match(/window\.__TACKER_SK575_GLB=(\{[^;]*\});/)
+  const m = js.match(/window\.__RIG_SK575_GLB=(\{[^;]*\});/)
   assert.ok(m)
   const map = JSON.parse(m[1])
   assert.deepEqual(Object.keys(map).sort(), ids)

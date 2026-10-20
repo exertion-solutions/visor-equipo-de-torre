@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import patches from '../scripts/patches/08-llave.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const original = fs.readFileSync(path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
 const wellsite = fs.readFileSync(path.join(root, 'legacy-ext', '40-wellsite.js'), 'utf8')
 const meta = fs.readFileSync(path.join(root, 'legacy-ext', '42-meta-llave.js'), 'utf8')
@@ -75,7 +75,7 @@ test('el manómetro no indica ningún valor de torque (aguja en cero) y no hay m
 
 test('la ficha de confiabilidad del 08 es C / Aproximado y se aplica al arrancar el producto', () => {
   assert.match(meta, /grade: 'C',\s*status: 'Aproximado'/)
-  assert.ok(meta.includes("document.addEventListener('tacker:boot', applyMeta, { once: true })"))
+  assert.ok(meta.includes("document.addEventListener('rig:boot', applyMeta, { once: true })"))
   assert.ok(meta.includes('Pendientes: fabricante y'))
   assert.ok(html.includes('/* 42-meta-llave.js */'))
 })

@@ -15,7 +15,7 @@
  * Geometría: `R.three` solo expone unas pocas clases, así que las llamas son mallas de vértices con color RGBA animadas por CPU
  * (mezcla aditiva, sin textura ni shader); el humo son esferas translúcidas. Render bajo demanda: mientras la fosa está en
  * cuadro y las llamas encendidas, un temporizador de ~24 cuadros/s pide un frame; fuera de cuadro o con la pestaña oculta no pide nada.
- * API para pruebas: `window.__tackerFosa = { pos, lineas, estado, llamas(on?), activo() }`.
+ * API para pruebas: `window.__rigFosa = { pos, lineas, estado, llamas(on?), activo() }`.
  */
 window.__rigExt.onPost((R) => {
   const T = R.three
@@ -405,7 +405,7 @@ window.__rigExt.onPost((R) => {
   window.addEventListener('pagehide', () => clearInterval(timer))
 
   R.invalidate()
-  window.__tackerFosa = {
+  window.__rigFosa = {
     pos: { ...PIT, tipX: TIP_X },
     lineas: Object.fromEntries(
       Object.entries(LINEAS).map(([k, L]) => [k, { nombre: L.nombre, pts: L.pts }]),

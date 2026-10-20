@@ -3,7 +3,7 @@
   python cad/cli.py mastil                               # base ilustrativo
   python cad/cli.py mastil --set n_pan_inf=10 --set Db=1.8
   python cad/cli.py piso_trabajo minimo                  # preset del JSON
-  python cad/cli.py mastil tacker10                      # falla: PENDIENTE (falta plano del fabricante)
+  python cad/cli.py mastil rig10                      # falla: PENDIENTE (falta plano del fabricante)
 """
 import pathlib
 import sys

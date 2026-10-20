@@ -1,22 +1,22 @@
 /*
- * 70-bridge.js — puente postMessage entre la app TACKER DIGITAL RIG (padre) y el visor V2 (iframe).
+ * 70-bridge.js — puente postMessage entre la app DIGITAL RIG (padre) y el visor V2 (iframe).
  *
  * El iframe corre con sandbox="allow-scripts allow-downloads" (sin allow-same-origin): su origen es
  * opaco, por eso se publica al padre con targetOrigin '*' y solo se aceptan mensajes cuyo
- * `event.source === window.parent`. Todo mensaje es un objeto con `type` que empieza por `tacker:`.
+ * `event.source === window.parent`. Todo mensaje es un objeto con `type` que empieza por `rig:`.
  * Lo mal formado se ignora en silencio; los ids se validan contra listas blancas. Nunca lanza.
  *
  *   app → visor
- *     tacker:setMode   { mode: 'explore'|'operation'|'qhse'|'training' }   (reaplica el preset del modo)
- *     tacker:setView   { view: 'iso'|'front'|'side'|'top'|'well' }
- *     tacker:setLayers { layers: string[] }   conjunto exacto (ver 10-layers.js); se aplica DESPUÉS del preset
- *     tacker:ping      {}                     → el visor responde tacker:ready + tacker:state (+ tacker:select)
+ *     rig:setMode   { mode: 'explore'|'operation'|'qhse'|'training' }   (reaplica el preset del modo)
+ *     rig:setView   { view: 'iso'|'front'|'side'|'top'|'well' }
+ *     rig:setLayers { layers: string[] }   conjunto exacto (ver 10-layers.js); se aplica DESPUÉS del preset
+ *     rig:ping      {}                     → el visor responde rig:ready + rig:state (+ rig:select)
  *   visor → app
- *     tacker:ready  { version: 1 }            visor arrancado (window.__rig + capa de producto listos)
- *     tacker:state  { mode, view, layers }    tras ready y cada vez que cambia modo, vista o capas
- *     tacker:select { id: string|null, name?, grade?: 'A'|'B'|'C', status? }   al cambiar el componente seleccionado
+ *     rig:ready  { version: 1 }            visor arrancado (window.__rig + capa de producto listos)
+ *     rig:state  { mode, view, layers }    tras ready y cada vez que cambia modo, vista o capas
+ *     rig:select { id: string|null, name?, grade?: 'A'|'B'|'C', status? }   al cambiar el componente seleccionado
  *
- * `grade` y `status` salen de la tabla META de la capa de producto (expuesta como window.__TACKER_META
+ * `grade` y `status` salen de la tabla META de la capa de producto (expuesta como window.__RIG_META
  * por un parche de build-legacy.mjs); sin entrada se usa lo mismo que el visor: 'C' / 'Aproximado'.
  * No agrega datos: solo reenvía lo que el visor ya sabe.
  */
@@ -28,7 +28,7 @@
   const LAYER_BUTTONS = ['t-zones', 'c-dims', 't-labels', 'c-wire', 't-explode', 'c-drops']
 
   let R = null
-  let booted = !!window.__tackerBooted
+  let booted = !!window.__rigBooted
   let started = false
   let lastState = ''
   let lastSelected
@@ -43,8 +43,8 @@
     }
   }
 
-  const layerApi = () => window.__tackerLayers
-  const modeApi = () => window.__tackerMode
+  const layerApi = () => window.__rigLayers
+  const modeApi = () => window.__rigMode
 
   function currentMode() {
     const m = modeApi()
@@ -69,18 +69,18 @@
     const key = JSON.stringify(s)
     if (!force && key === lastState) return
     lastState = key
-    post({ type: 'tacker:state', mode: s.mode, view: s.view, layers: s.layers })
+    post({ type: 'rig:state', mode: s.mode, view: s.view, layers: s.layers })
   }
 
   function sendSelect(force) {
     const id = (R && R.state && R.state.selected) || null
     if (!force && id === lastSelected) return
     lastSelected = id
-    if (!id) return post({ type: 'tacker:select', id: null })
-    const msg = { type: 'tacker:select', id: String(id) }
+    if (!id) return post({ type: 'rig:select', id: null })
+    const msg = { type: 'rig:select', id: String(id) }
     const comp = R.COMPONENTS && R.COMPONENTS[id]
     if (comp && typeof comp.name === 'string') msg.name = comp.name
-    const meta = (window.__TACKER_META && window.__TACKER_META[id]) || null
+    const meta = (window.__RIG_META && window.__RIG_META[id]) || null
     const grade = meta && GRADES.includes(meta.grade) ? meta.grade : 'C'
     const status = meta && typeof meta.status === 'string' ? meta.status : 'Aproximado'
     msg.grade = grade
@@ -89,7 +89,7 @@
   }
 
   function sendReady() {
-    post({ type: 'tacker:ready', version: VERSION })
+    post({ type: 'rig:ready', version: VERSION })
     sendState(true)
     sendSelect(true)
   }
@@ -99,27 +99,27 @@
       if (e.source !== window.parent) return
       const d = e.data
       if (!d || typeof d !== 'object' || typeof d.type !== 'string') return
-      if (!started) return // aún no arrancó: la app debe esperar a tacker:ready
+      if (!started) return // aún no arrancó: la app debe esperar a rig:ready
       switch (d.type) {
-        case 'tacker:setMode': {
+        case 'rig:setMode': {
           if (typeof d.mode !== 'string' || !MODES.includes(d.mode)) return
           const m = modeApi()
           if (m) m.set(d.mode)
           break
         }
-        case 'tacker:setView': {
+        case 'rig:setView': {
           if (typeof d.view !== 'string' || !VIEWS.includes(d.view)) return
           for (const b of document.querySelectorAll('#views button[data-view]'))
             if (b.dataset.view === d.view) b.click()
           break
         }
-        case 'tacker:setLayers': {
+        case 'rig:setLayers': {
           if (!Array.isArray(d.layers)) return
           const L = layerApi()
           if (L) L.apply(d.layers.filter((x) => typeof x === 'string'))
           break
         }
-        case 'tacker:ping':
+        case 'rig:ping':
           sendReady()
           return
         default:
@@ -166,7 +166,7 @@
   }
 
   window.addEventListener('message', onMessage)
-  document.addEventListener('tacker:boot', () => {
+  document.addEventListener('rig:boot', () => {
     booted = true
     maybeStart()
   })

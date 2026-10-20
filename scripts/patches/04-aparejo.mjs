@@ -12,7 +12,7 @@ export default [
     replace:
       'Se representan tres poleas móviles con garganta, seis ramales, gancho con pestillo, dos amelas y un elevador de tubing articulado ' +
       '(detalle aproximado a partir de fotos de unidades genéricas de catálogo; no es el equipo as-built). ' +
-      'Se agrega un elevador de varillas (sucker rod) apoyado en el piso de trabajo: su existencia y su ubicación en el TACKER 10 están pendientes de confirmar.',
+      'Se agrega un elevador de varillas (sucker rod) apoyado en el piso de trabajo: su existencia y su ubicación en el equipo 10 están pendientes de confirmar.',
   },
   {
     name: 'componente 04: peligros de referencia de elevadores y amelas (pendientes de validación, no son requisitos)',

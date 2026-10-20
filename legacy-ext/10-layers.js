@@ -1,5 +1,5 @@
 /*
- * 10-layers.js — API programática de las capas del visor V2: `window.__tackerLayers`.
+ * 10-layers.js — API programática de las capas del visor V2: `window.__rigLayers`.
  *
  *   ids            → ['zonas','cotas','etiquetas','malla','despiece','drops']
  *   get()          → ids de las capas encendidas (en el orden de `ids`)
@@ -84,5 +84,5 @@
     return apply([...next])
   }
 
-  window.__tackerLayers = { ids: IDS.slice(), get, set, apply }
+  window.__rigLayers = { ids: IDS.slice(), get, set, apply }
 })()

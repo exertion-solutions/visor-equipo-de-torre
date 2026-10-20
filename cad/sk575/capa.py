@@ -33,7 +33,7 @@ COLOR = {
     "sk575_planchada": "#8f9bb3", "sk575_pozo_vecino": "#7aa860", "sk575_piletas": "#9aa1a8",
     "sk575_manifold": "#4f8fe0", "sk575_bomba": "#d36b6b", "sk575_acumulador": "#3e7896",
 }
-FUENTE = ("modelo de referencia cad/sk575 (no as-built): spec sheet SK-575, placa API DKA104-330-08, plano TACKER "
+FUENTE = ("modelo de referencia cad/sk575 (no as-built): spec sheet SK-575, placa API DKA104-330-08, plano de la empresa "
           "8123-1002-2611, planos piso 8114-1006-02xx, plano HYCO 50162-813, LAYOUT-WS10-0001; detalle en "
           "docs/pdf-review/informe-sk575-2026-10-09.md")
 

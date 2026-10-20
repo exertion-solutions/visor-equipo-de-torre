@@ -1,7 +1,7 @@
 # Arquitectura
 
-TACKER DIGITAL RIG es una SPA React 19 + Vite + TypeScript que muestra el gemelo digital de un equipo
-Pulling/Workover (primero TACKER 10). La migración desde el visor HTML V2 es **por etapas**: el V2 sigue
+DIGITAL RIG es una SPA React 19 + Vite + TypeScript que muestra el gemelo digital de un equipo
+Pulling/Workover (primero Equipo 10). La migración desde el visor HTML V2 es **por etapas**: el V2 sigue
 operativo dentro de la app (iframe) mientras cada función se reimplementa en el motor nativo R3F y se
 verifica contra `docs/FEATURE_PARITY.md`. Evita una reescritura "big-bang" que pierda medición, corte,
 raycast, despiece, exportación, QHSE o animación.
@@ -29,10 +29,10 @@ no calculan geometría (usan `src/lib/geometry`). Alias `@/` → `src/`.
   `Source` (`verified`) y confianza A/B/C. `src/data/schema.ts` (zod) valida integridad; todo dato nuevo
   debe pasarlo. QHSE bow-tie: `Risk` (hazard → event → consequence), `Barrier` (`preventive` |
   `mitigative`), estatus `confirmed` / `procedure` / `goodPractice` / `pendingValidation`; `Rig.service`.
-  `src/data/rigs/tacker10.ts` tiene el rig TACKER 10 (4 componentes con envolvente CAD, confianza C, generadas en `cad/`) y la lista de GLB de la escena nativa; `equipment` y `training` siguen vacíos (cotas en `reference/v2-previo/src/technical-spec.js`).
+  `src/data/rigs/rig10.ts` tiene el rig Equipo 10 (4 componentes con envolvente CAD, confianza C, generadas en `cad/`) y la lista de GLB de la escena nativa; `equipment` y `training` siguen vacíos (cotas en `reference/v2-previo/src/technical-spec.js`).
 - **Stores** (`src/stores`): `modeStore` (EXPLORE / OPERATION / QHSE / TRAINING) y `viewerStore`
   (`engine`: `legacy` | `native`, `selectedComponentId`). Los modos son estado derivado, no mutan materiales.
-  Con el motor `legacy`, `LegacyRigViewer` reenvía el modo al V2 por `postMessage` (`tacker:setMode`,
+  Con el motor `legacy`, `LegacyRigViewer` reenvía el modo al V2 por `postMessage` (`rig:setMode`,
   URL `?embedded` que oculta la barra de modos propia del V2): `modeStore` es la única fuente de verdad. Contrato completo (ready/state/select, capas, URL) en `docs/LEGACY_BRIDGE.md`.
 - **Escena** (`src/scene`): `cameras/presets.ts` (vistas estándar), `controls/CameraRig.tsx`,
   `lighting/Lighting.tsx` (entorno procedural), `loaders/gltf.ts` (Draco + Meshopt + KTX2 con decoders
@@ -52,7 +52,7 @@ no calculan geometría (usan `src/lib/geometry`). Alias `@/` → `src/`.
           │                                   │
   <LegacyRigViewer> (iframe)            <Viewport> (Canvas R3F)
           │                                   │
-  public/legacy/TACKER10_Digital_Rig_V2.html  src/scene + src/components
+  public/legacy/Digital_Rig_V2.html  src/scene + src/components
   (copia runtime, autocontenida)              (paridad según FEATURE_PARITY.md)
           ▲
           │ copia (otro agente/paso)
@@ -65,15 +65,15 @@ no calculan geometría (usan `src/lib/geometry`). Alias `@/` → `src/`.
   Ruta con `import.meta.env.BASE_URL`; comunicación solo app → V2 por `postMessage` (el V2 valida
   `e.source === window.parent`).
 - `reference/legacy/` no se sirve ni se importa; `public/legacy/` es la copia que la app usa.
-  `public/legacy/TACKER10_Digital_Rig_V2.html` se abre también con doble clic desde
-  `ABRIR_TACKER10_DIGITAL_RIG.cmd` y lo cubren `tests/*.test.mjs`.
+  `public/legacy/Digital_Rig_V2.html` se abre también con doble clic desde
+  `ABRIR_DIGITAL_RIG.cmd` y lo cubren `tests/*.test.mjs`.
 - El iframe y el motor `legacy` se retiran solo cuando todas las filas críticas de
   `docs/FEATURE_PARITY.md` estén "verificado".
 
 ## Pipeline de assets GLB
 
 ```
-assets/source/<x>.glb  ──▶  npm run gltf:inspect  ──▶  npm run gltf:optimize -- <x>.glb  ──▶  public/models/tacker10/<x>.glb
+assets/source/<x>.glb  ──▶  npm run gltf:inspect  ──▶  npm run gltf:optimize -- <x>.glb  ──▶  public/models/rig10/<x>.glb
  (original, ignorado                (unidades, nombres,        (wrapper de @gltf-transform:            (versionado; se registra en
   por git, NUNCA se edita)           materiales, tris)          preserva jerarquía, meshopt + webp)      Component.model y se carga con
                                                                                                         src/scene/loaders/gltf.ts)

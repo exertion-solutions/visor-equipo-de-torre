@@ -37,7 +37,7 @@ description: Use when writing or reviewing 3D scene code in this project (three,
 - Corte de sección: un plano global (`renderer.clippingPlanes = [plane]`) es lo más simple para cortar todo el rig; la etiqueta debe decir "superficies abiertas, sin tapas ni sólidos CAD". Estado del plano en el store.
 - Medición: 2 puntos sobre la superficie, línea con `depthTest:false` y `renderOrder` alto, esferita en cada punto, etiqueta HTML proyectada (`Vector3.project`; ocultar si z∉[−1,1] o fuera de pantalla). Un tercer clic reinicia. **Rotular siempre "≈ x,xx m · modelo"**: es distancia sobre geometría aproximada, no una cota de ingeniería. Cálculo en `src/lib/geometry`.
 - Despiece: desplazamiento **autorado** por componente (`Component.explodeOffset`, metros a factor 1) × factor animado con lerp; no calcularlo desde centros. Al despiezar (factor>0) ocultar cotas, etiquetas y zonas QHSE porque quedan desalineadas.
-- Exportar GLB/PNG: nombrar el archivo según la confianza (p. ej. `TACKER10_Modelo_Aproximado.glb`). Para PNG, renderizar y llamar `toBlob` en el mismo tick en vez de `preserveDrawingBuffer:true` permanente.
+- Exportar GLB/PNG: nombrar el archivo según la confianza (p. ej. `RIG10_Modelo_Aproximado.glb`). Para PNG, renderizar y llamar `toBlob` en el mismo tick en vez de `preserveDrawingBuffer:true` permanente.
 
 ## Reglas de código
 

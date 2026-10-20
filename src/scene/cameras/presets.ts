@@ -1,7 +1,7 @@
 import type { Vec3 } from '@/lib/geometry'
 
 /**
- * Vistas estándar, heredadas del visor legacy (TACKER10_Digital_Rig_V2.html).
+ * Vistas estándar, heredadas del visor legacy (Digital_Rig_V2.html).
  * Convención de escena: origen = boca de pozo a nivel de terreno, +X hacia el mástil,
  * el carrier se extiende hacia -X, Z lateral, Y arriba. Unidades: metros.
  */

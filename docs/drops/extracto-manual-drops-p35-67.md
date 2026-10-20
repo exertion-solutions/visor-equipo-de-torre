@@ -149,7 +149,7 @@ Todo son **fotos y pictogramas de producto**, no esquemas del equipo ni diagrama
 
 Marcadas como inferencia; validar con un especialista antes de usar.
 - Los tipos de componente de este cuadernillo que **razonablemente existen en un equipo de torre** y podrían mapearse como puntos de control: luminarias/reflectores en altura, cajas de conexiones y bandejas portacables, altavoces, cámaras CCTV, antenas/sensores (viento) en altura, escaleras con jaula/anticaída, barandas y rodapiés de plataformas, rejillas/pisos, puertas de plataforma, mangueras colgantes/bucles de servicio, aparejos de cadena y accesorios de izaje (ganchos, cáncamos, elevadores de tubulares), válvulas con volante/cadena, cilindros de gas y estantes de almacenamiento.
-- Componentes del propio documento tipo "offshore" (grúa con pluma, plataformas flotantes, CCU, paredes contra el viento) pueden no aplicar a un equipo Tacker 10 terrestre.
+- Componentes del propio documento tipo "offshore" (grúa con pluma, plataformas flotantes, CCU, paredes contra el viento) pueden no aplicar a un equipo 10 terrestre.
 - La ubicación concreta de cada uno en la torre (corona, tramo, piso del enganchador) **no viene del documento**.
 
 ## 8. Dudas y texto dudoso / ilegible

@@ -1,4 +1,4 @@
-"""Utilidades comunes del pipeline CAD de TACKER DIGITAL RIG.
+"""Utilidades comunes del pipeline CAD de DIGITAL RIG.
 
 Convenciones (CLAUDE.md): 1 unidad = 1 metro. En CadQuery: Z arriba, +X hacia el mástil, Y lateral.
 Al exportar a glTF se pasa a Y arriba: (x, y, z) -> (x, z, -y).
@@ -11,11 +11,11 @@ import subprocess
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / "assets" / "source"  # ignorado por git; el original nunca se edita a mano
 SPEC_JS = ROOT / "reference" / "v2-previo" / "src" / "technical-spec.js"
-SOURCE_ID = "src-folleto"  # folleto Tacker 10 rev. 26/06/2024 (ver src/data)
+SOURCE_ID = "src-folleto"  # folleto Equipo 10 rev. 26/06/2024 (ver src/data)
 
 
 def load_spec():
-    js = "import(%s).then(m=>console.log(JSON.stringify(m.TACKER_10)))" % json.dumps(SPEC_JS.as_uri())
+    js = "import(%s).then(m=>console.log(JSON.stringify(m.RIG_10)))" % json.dumps(SPEC_JS.as_uri())
     return json.loads(subprocess.check_output(["node", "-e", js], text=True))
 
 

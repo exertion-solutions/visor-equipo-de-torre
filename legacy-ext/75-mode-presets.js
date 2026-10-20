@@ -16,13 +16,13 @@
  *
  * Cuándo se aplican: el parche de build-legacy.mjs envuelve `setMode` del visor y, DESPUÉS de que este
  * termine (incluidos sus propios clics en #t-zones y el modo QHSE de 50-drops-layer), emite el evento
- * `tacker:mode` en `document`. Sirve tanto al `tacker:setMode` (70-bridge.js) como a la barra interna
+ * `rig:mode` en `document`. Sirve tanto al `rig:setMode` (70-bridge.js) como a la barra interna
  * de modos (oculta al embeber, visible en modo autónomo). Al ir después, el preset gana siempre.
  *
  * Barra de modos (#v2-modebar, la crea el bundle): grupo con nombre accesible ("Modo de trabajo") y `aria-pressed` sincronizado
- * con el modo activo en cada `tacker:mode` (la tipografía, 12 px sin mayúsculas espaciadas, está en 60-ui-controls.js).
+ * con el modo activo en cada `rig:mode` (la tipografía, 12 px sin mayúsculas espaciadas, está en 60-ui-controls.js).
  *
- * Extras para pruebas: `window.__tackerPresets = { presets, apply(mode) }`.
+ * Extras para pruebas: `window.__rigPresets = { presets, apply(mode) }`.
  */
 ;(() => {
   const PRESETS = {
@@ -67,7 +67,7 @@
   function apply(mode) {
     const preset = Object.prototype.hasOwnProperty.call(PRESETS, mode) ? PRESETS[mode] : null
     const R = window.__rig
-    const L = window.__tackerLayers
+    const L = window.__rigLayers
     if (!preset || !R || !L) return false
     try {
       clearLeftovers(R)
@@ -94,12 +94,12 @@
     )
   }
 
-  document.addEventListener('tacker:mode', (e) => {
+  document.addEventListener('rig:mode', (e) => {
     apply(e && e.detail)
     syncModebar()
   })
-  document.addEventListener('tacker:boot', syncModebar)
-  if (window.__tackerBooted) syncModebar()
+  document.addEventListener('rig:boot', syncModebar)
+  if (window.__rigBooted) syncModebar()
 
-  window.__tackerPresets = { presets: PRESETS, apply }
+  window.__rigPresets = { presets: PRESETS, apply }
 })()

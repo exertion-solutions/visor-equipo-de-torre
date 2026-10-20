@@ -1,6 +1,6 @@
 # Paridad V2 → nativo (R3F)
 
-Checklist de migración del visor legacy `TACKER10_Digital_Rig_V2.html` (embebido en
+Checklist de migración del visor legacy `Digital_Rig_V2.html` (embebido en
 `public/legacy/`, evidencia inmutable en `reference/legacy/`) al motor nativo React + R3F.
 Contexto: `docs/ARCHITECTURE.md` y `docs/legacy-audit-2026-09-25.md`. Cómo migrar una fila: skill `legacy-migration`.
 
@@ -39,7 +39,7 @@ Las referencias `#id` son los controles del HTML legacy. Las skills son `threejs
 | Vistas estándar (crítica)                             | Operativo (`#views`: iso, frontal, lateral, superior, boca de pozo) | hecho: `src/scene/cameras/presets.ts`                                                   | TJ "Cámara"; AUD (5 vistas y convención de escena)                                                | `presets.test.ts` (existente) + manual: cada vista coincide con el legacy                                                                 |
 | Vista nocturna (no crítica)                           | Operativo (`#c-night`)                                              | en curso: toggle `viewerStore.night` (ver fila Sombreado CAD) | TJ "Convenciones" (entorno procedural en `src/scene/lighting`)                                    | Manual: alternar día/noche sin mutar materiales de forma irreversible                                                                     |
 | Panel de componentes / árbol (crítica)                | Operativo (`#tree`, `#tree-toggle`)                                 | pendiente                                                                               | Skill `digital-twin-architecture` (jerarquía Rig → Equipment → Component); AUD                    | Vitest del árbol derivado de `rigSchema` + manual: seleccionar en el árbol = seleccionar en escena                                        |
-| Carga GLB Draco / Meshopt / KTX2 (no crítica)         | GLB SK-575 embebido (`84-modelo-sk575.js`, meshopt)                | hecho: `src/scene/loaders/gltf.ts`, `RigModel.tsx`                                      | Skill `gltf-pipeline`                                                                             | Manual: cargar un GLB comprimido desde `public/models/tacker10/` (2026-09-30: 4 envolventes CAD de `cad/` en meshopt, 3 dibujadas en la escena nativa; el mástil sigue sin ubicarse)                                                 |
+| Carga GLB Draco / Meshopt / KTX2 (no crítica)         | GLB SK-575 embebido (`84-modelo-sk575.js`, meshopt)                | hecho: `src/scene/loaders/gltf.ts`, `RigModel.tsx`                                      | Skill `gltf-pipeline`                                                                             | Manual: cargar un GLB comprimido desde `public/models/rig10/` (2026-09-30: 4 envolventes CAD de `cad/` en meshopt, 3 dibujadas en la escena nativa; el mástil sigue sin ubicarse)                                                 |
 
 ## Notas
 
@@ -55,7 +55,7 @@ Funciones agregadas al V2 mediante `legacy-ext/` que el motor nativo deberá igu
 
 | Función | V2 (legacy-ext) | Nativo R3F | Gate |
 | ------- | --------------- | ---------- | ---- |
-| Capa DROPS (66 puntos, zonas A2, panel, hallazgos TK10) | operativa (`50-drops-layer.js`, botón `#c-drops`, auto en QHSE) | datos y schema hechos (`src/data/qhse/tacker10-drops.*`); visualización pendiente | test del schema (existente) + manual: marcadores, panel y leyenda |
+| Capa DROPS (66 puntos, zonas A2, panel, hallazgos TK10) | operativa (`50-drops-layer.js`, botón `#c-drops`, auto en QHSE) | datos y schema hechos (`src/data/qhse/rig10-drops.*`); visualización pendiente | test del schema (existente) + manual: marcadores, panel y leyenda |
 | Detalle de puntos DROPS en la geometría (`userData.dropsId`, 65/66) | geometría procedural oculta (capa 31, 2026-10-11); `dropsId` sin portar al SK-575: los marcadores usan el anclaje cualitativo y se rotulan siempre aproximados (`50-drops-layer.js`) | pendiente | inventario de ids de escena = ids del JSON (excepto BP-2 "NA") |
 | Rediseño visual (mástil, enganche, carrier, BOP, locación) | geometría procedural oculta (capa 31) desde 2026-10-11, reemplazada por el SK-575; la medición de 366 draw calls ya no aplica | pendiente | comparar capturas y `renderer.info` |
 | Interfaz: sin cartel de modo inferior y botón "Ocultar/Mostrar opciones" | operativo (`60-ui-controls.js`) | pendiente | manual: barras ocultas y escena a pantalla completa |

@@ -26,7 +26,7 @@ afterEach(() => {
 
 function frameWithBridge() {
   render(<App />)
-  const frame = screen.getByTitle(/Visor TACKER 10 V2/) as HTMLIFrameElement
+  const frame = screen.getByTitle(/Visor Digital Rig V2/) as HTMLIFrameElement
   const postMessage = vi.fn()
   const contentWindow = { postMessage } as unknown as Window
   Object.defineProperty(frame, 'contentWindow', { value: contentWindow, configurable: true })
@@ -41,7 +41,7 @@ describe('App · puente con el visor V2', () => {
   it('muestra "Cargando visor" hasta que el visor avisa ready', () => {
     const { fromFrame } = frameWithBridge()
     expect(screen.getByRole('status').textContent).toContain('Cargando visor')
-    fromFrame({ type: 'tacker:ready', version: 1 })
+    fromFrame({ type: 'rig:ready', version: 1 })
     expect(screen.queryByText(/Cargando visor/)).toBeNull()
     expect(useViewerStore.getState().legacyReady).toBe(true)
   })
@@ -49,15 +49,15 @@ describe('App · puente con el visor V2', () => {
   it('al recibir ready reenvía el modo actual', () => {
     const { postMessage, fromFrame } = frameWithBridge()
     act(() => useModeStore.setState({ mode: 'training' }))
-    fromFrame({ type: 'tacker:ready', version: 1 })
-    expect(postMessage).toHaveBeenCalledWith({ type: 'tacker:setMode', mode: 'training' }, '*')
+    fromFrame({ type: 'rig:ready', version: 1 })
+    expect(postMessage).toHaveBeenCalledWith({ type: 'rig:setMode', mode: 'training' }, '*')
   })
 
   it('tras ready envía setMode una sola vez (reenviarlo re-aplica el preset y pisaría las capas de la URL)', () => {
     const { postMessage, fromFrame } = frameWithBridge()
     act(() => useModeStore.setState({ mode: 'qhse' }))
-    fromFrame({ type: 'tacker:ready', version: 1 })
-    const modeCalls = postMessage.mock.calls.filter(([m]) => m.type === 'tacker:setMode')
+    fromFrame({ type: 'rig:ready', version: 1 })
+    const modeCalls = postMessage.mock.calls.filter(([m]) => m.type === 'rig:setMode')
     expect(modeCalls).toHaveLength(1)
   })
 
@@ -65,11 +65,11 @@ describe('App · puente con el visor V2', () => {
     const { fromFrame } = frameWithBridge()
     act(() => {
       window.dispatchEvent(
-        new MessageEvent('message', { data: { type: 'tacker:ready', version: 1 }, source: window }),
+        new MessageEvent('message', { data: { type: 'rig:ready', version: 1 }, source: window }),
       )
     })
     expect(useViewerStore.getState().legacyReady).toBe(false)
-    fromFrame({ type: 'tacker:select', id: 42 })
+    fromFrame({ type: 'rig:select', id: 42 })
     fromFrame('basura')
     expect(useViewerStore.getState().selection).toBeNull()
   })
@@ -78,7 +78,7 @@ describe('App · puente con el visor V2', () => {
     const { fromFrame } = frameWithBridge()
     act(() => useModeStore.setState({ mode: 'qhse' }))
     fromFrame({
-      type: 'tacker:state',
+      type: 'rig:state',
       mode: 'explore',
       view: 'top',
       layers: ['zonas', 'x', 'cotas'],
@@ -91,7 +91,7 @@ describe('App · puente con el visor V2', () => {
   it('la selección del visor muestra la confiabilidad geométrica en la barra de estado', () => {
     const { fromFrame } = frameWithBridge()
     fromFrame({
-      type: 'tacker:select',
+      type: 'rig:select',
       id: 'vientos',
       name: 'Vientos',
       grade: 'B',
@@ -100,7 +100,7 @@ describe('App · puente con el visor V2', () => {
     const chip = screen.getByTestId('selection-grade')
     expect(chip.textContent).toContain('Vientos')
     expect(chip.textContent).toContain('B · Parcial')
-    fromFrame({ type: 'tacker:select', id: null })
+    fromFrame({ type: 'rig:select', id: null })
     expect(screen.queryByTestId('selection-grade')).toBeNull()
   })
 })

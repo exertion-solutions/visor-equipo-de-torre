@@ -6,7 +6,7 @@ import { test } from 'node:test';
 
 const root = path.resolve(import.meta.dirname, '..');
 const src = fs.readFileSync(path.join(root, 'legacy-ext', '89-visitas.js'), 'utf8');
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8');
 
 /** Corre el módulo con un entorno simulado y devuelve el elemento, las URL pedidas y el estado. */
 async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new Map(), dnt = '0', respuesta, falla = false } = {}) {
@@ -43,7 +43,7 @@ async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new
   );
   post();
   await new Promise((r) => setTimeout(r, 10));
-  return { el, pedidos, estado: win.__tackerVisitas.estado(), storage };
+  return { el, pedidos, estado: win.__rigVisitas.estado(), storage };
 }
 
 test('el módulo está en el HTML generado y usa solo el servicio declarado, sin claves', () => {
@@ -55,7 +55,7 @@ test('el módulo está en el HTML generado y usa solo el servicio declarado, sin
 test('primera visita de la sesión: suma (hit), muestra el total y marca la sesión; la segunda solo lee', async () => {
   const storage = new Map();
   const a = await correr({ storage });
-  assert.match(a.pedidos[0], /\/hit\/tacker10-digital-rig-exertion\/visitas$/);
+  assert.match(a.pedidos[0], /\/hit\/rig10-digital-rig-exertion\/visitas$/);
   assert.equal(a.el.hidden, false);
   assert.equal(a.el.textContent, 'Visitas: ' + (1234).toLocaleString('es-AR'));
   assert.equal(a.estado, 'contada');
@@ -71,7 +71,7 @@ test('sin almacenamiento (iframe sandbox): cuenta por carga y no rompe', async (
 });
 
 test('localhost y file:// no cuentan ni muestran', async () => {
-  for (const url of ['http://localhost:5173/legacy/', 'http://127.0.0.1/x', 'file:///C:/visor/TACKER10.html']) {
+  for (const url of ['http://localhost:5173/legacy/', 'http://127.0.0.1/x', 'file:///C:/visor/RIG10.html']) {
     const r = await correr({ url });
     assert.equal(r.pedidos.length, 0, url);
     assert.equal(r.el.hidden, true, url);

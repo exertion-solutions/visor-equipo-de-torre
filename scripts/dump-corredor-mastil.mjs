@@ -11,7 +11,7 @@ const root = path.resolve(import.meta.dirname, '..')
 const out = process.argv.includes('--out')
   ? process.argv[process.argv.indexOf('--out') + 1]
   : 'cad/data/v2_corredor_mastil.json'
-const htmlPath = path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html')
+const htmlPath = path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html')
 const server = http.createServer((req, res) => {
   const p = path.join(
     path.dirname(htmlPath),

@@ -1,4 +1,4 @@
-# Guía de estilo realista y recorrido por componente — TACKER 10 (SK-575)
+# Guía de estilo realista y recorrido por componente — Equipo 10 (SK-575)
 
 Fecha: 2026-10-11 · Alcance: visor V2 (`public/legacy/`, módulos `legacy-ext/`) y motor nativo R3F (`src/scene/`).
 Estado: **propuesta**. No cambia datos, cotas ni QHSE. Documento de diseño, no de ingeniería.
@@ -20,7 +20,7 @@ conservar, copiarlas a `docs/preview/estilo/` en un cambio aparte.
 ### A.1 IADC — Interactive Rig (drillingmatters.org)
 
 **Es un equipo de perforación (drilling), no workover.** Se toma solo la interacción y el tratamiento de imagen; nada de
-su configuración (top drive, iron roughneck, bombas de lodo, zarandas, mesa rotary) aplica a Tacker 10.
+su configuración (top drive, iron roughneck, bombas de lodo, zarandas, mesa rotary) aplica a equipo 10.
 
 Inspección técnica (Playwright headless, DOM y red):
 
@@ -175,7 +175,7 @@ nueva sin fuente: la geometría de detalle (cartelas, recortes, espesores) es **
 | Mástil reticulado (`sk575_mastil`, 28 k publicados) | Barras de sección cuadrada | Montantes como **perfil L o C** extruido (sección D como referencia de topología, no de medidas); diagonales y horizontales en L; cartelas en nudos (una geometría, `InstancedMesh`); platinas y bulones en la junta de tramos; escalera con jaula; poleas de la corona visibles con su eje | +60–120 k | P1 |
 | Corona | Bloque en voladizo | Poleas (revolución) con garganta, guarda, pasarela con baranda, ojal de izaje; líneas que entran a cada polea | +15 k | P1 |
 | Piso de enganche (`sk575_enganche`, 68') | Plataforma simple | Peines (dedos) para tiros, baranda con rodapié, canasta del enganchador, punto de anclaje; grating alpha | +10 k | P1 |
-| Piso pulling (`sk575_piso`) | Losa + escaleras | Grating alpha, rodapiés, barandas con postes, escalera 45° con largueros C (helper `stair` de `tacker10.py`), cuñas y tapa de pozo | +10 k | P2 |
+| Piso pulling (`sk575_piso`) | Losa + escaleras | Grating alpha, rodapiés, barandas con postes, escalera 45° con largueros C (helper `stair` de `rig10.py`), cuñas y tapa de pozo | +10 k | P2 |
 | Malacate / cuadro (`sk575_cuadro`) | Tambores y discos | Cable enrollado en el tambor (textura/normal de espiras, no geometría), bandas de freno, guardas de metal desplegado (alpha), embragues con bulones | +20 k | P2 |
 | Cabina (`sk575_cabina`) | Volumen con vidrio | Vidrios con reflejo del entorno (depende de C.2), espejos, peldaños, manijas; interior no | +8 k | P2 |
 | Cilindros HYCO (`sk575_izaje`) | Camisa/etapas/vástago (B) | Acero cromado en vástagos, mangueras con sweep, orejas con pasador | +5 k | P2 |
@@ -196,7 +196,7 @@ texto `#DDE3EC`, acento `#DDBB65`), no un estilo nuevo.
 y caballetes · 15 Circulación (bomba, piletas, manifold). Cada parada referencia `componentId` existentes; ninguna crea
 componentes.
 
-**Datos de una parada** (JSON compartido por ambos motores, p. ej. `src/data/training/tacker10-recorrido.json`):
+**Datos de una parada** (JSON compartido por ambos motores, p. ej. `src/data/training/rig10-recorrido.json`):
 
 ```jsonc
 {
@@ -235,7 +235,7 @@ componentes.
 
 ## D. Referencia de topología: mástil reticulado workover (Chagoyén-Méndez et al., 2015)
 
-**Equipo del artículo: XJ-350 (SJ Petroleum Machinery). No es Tacker 10 ni el SK-575.** Páginas = numeración de la revista (página n del PDF = p. 20+n). Lo que sigue se usa solo como
+**Equipo del artículo: XJ-350 (SJ Petroleum Machinery). No es Equipo 10 ni el SK-575.** Páginas = numeración de la revista (página n del PDF = p. 20+n). Lo que sigue se usa solo como
 referencia de **forma** para modelar el reticulado con verosimilitud: **confianza C**, sin trasladar ninguna medida.
 
 | Elemento | Qué dice / muestra el artículo | Página |
@@ -249,7 +249,7 @@ referencia de **forma** para modelar el reticulado con verosimilitud: **confianz
 | Corona | Marco superior donde baja el aparejo (Fig. 2 a) | p. 25 |
 | Base | La torre apoya en un conjunto llamado **"tijera"** y este en una **base de vigas** sobre el suelo, ambas unidas entre sí y al camión | p. 23 |
 | Vientos | La torre se fija a tierra con cables; Fig. 3 muestra vientos a anclajes perimetrales y a nivel de plataforma | pp. 22, 26 |
-| Inclinación | El artículo declara inclinación respecto de la vertical para **su** equipo. **No se usa**: la inclinación de Tacker 10 sale de sus propias fuentes | p. 22 |
+| Inclinación | El artículo declara inclinación respecto de la vertical para **su** equipo. **No se usa**: la inclinación del equipo 10 sale de sus propias fuentes | p. 22 |
 
 Aplicación a `cad/sk575/` (estética, C): montantes en L o C según la foto/plano del SK-575 cuando exista; si no, L;
 diagonales y horizontales en L; cartelas soldadas en nudos; junta entre tramos con platinas. Ninguna sección, espesor,
@@ -284,13 +284,13 @@ un cálculo que no existe.
   id: 'src-ref-chagoyen-2015-xj350',
   kind: 'estimate',   // provisional: SourceKind no tiene "literatura"; 'estimate' impide que respalde confirmed/procedure
   title: 'Chagoyén-Méndez et al., Modelado y análisis de la torre del equipo de intervención de pozos de petróleo y gas (XJ-350 Workover Rig)',
-  ref: 'Centro Azúcar 42(2):21-30, 2015 · topología del reticulado: pp. 22-27 (Fig. 1-4) · otro equipo, no Tacker 10',
+  ref: 'Centro Azúcar 42(2):21-30, 2015 · topología del reticulado: pp. 22-27 (Fig. 1-4) · otro equipo, no equipo 10',
   verified: false,
 }
 ```
 
 Decisión pendiente del usuario: agregar `'literature'` a `SourceKind` (`src/types/rig.ts`) o mantener `'estimate'`. En
-cualquier caso solo puede respaldar notas de geometría C ("topología de referencia"), nunca un valor numérico de Tacker 10.
+cualquier caso solo puede respaldar notas de geometría C ("topología de referencia"), nunca un valor numérico del equipo 10.
 
 ---
 
@@ -303,5 +303,5 @@ cualquier caso solo puede respaldar notas de geometría C ("topología de refere
 5. P3 HDRI real, PNG de presentación con AO de un frame, vegetación.
 
 Nota de herramienta: `scripts/snap.mjs --file` sirve solo la carpeta del HTML, así que el fetch de
-`../models/tacker10/*.glb` da 404 y el V2 usa el respaldo base64 (funciona, pero las capturas no miden la ruta de carga
+`../models/rig10/*.glb` da 404 y el V2 usa el respaldo base64 (funciona, pero las capturas no miden la ruta de carga
 servida).

@@ -8,7 +8,7 @@ const root = path.resolve(import.meta.dirname, '..')
 const ext = (f) => fs.readFileSync(path.join(root, 'legacy-ext', f), 'utf8')
 
 test('Vista CAD: un cambio de modo con la vista encendida actualiza las capas a restaurar al apagarla', () => {
-  assert.match(ext('85-vista-cad.js'), /addEventListener\('tacker:mode',[\s\S]*?if \(previo\) previo\.layers = window\.__tackerLayers/)
+  assert.match(ext('85-vista-cad.js'), /addEventListener\('rig:mode',[\s\S]*?if \(previo\) previo\.layers = window\.__rigLayers/)
 })
 
 test('barra de modos: grupo con nombre accesible y aria-pressed sincronizado, 12 px sin mayúsculas', () => {

@@ -8,7 +8,7 @@ import test from 'node:test';
 const root = path.resolve(import.meta.dirname, '..');
 
 function build() {
-  const out = path.join(mkdtempSync(path.join(tmpdir(), 'tacker-perf-')), 'index.html');
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'rig-perf-')), 'index.html');
   const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', out], { cwd: root, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   return readFileSync(out, 'utf8');

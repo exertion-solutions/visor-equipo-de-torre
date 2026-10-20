@@ -1,9 +1,9 @@
 /*
- * TACKER 10 · 20-mast.js — rediseño visual del mástil, la corona, el piso de enganche y los vientos.
+ * Equipo 10 · 20-mast.js — rediseño visual del mástil, la corona, el piso de enganche y los vientos.
  *
  * Reemplaza `Ot.mastil` y `Ot.enganche` y envuelve `Ot.vientos` (las originales quedan como base de los vientos).
  * SOLO ESTÉTICO: los detalles (luminarias, poleas, grilletes, jaula del piso de enganche, etc.) sirven de soporte
- * visual a los puntos DROPS del Libro DROPS Tacker 2024 (RCCO Rev.03). Ninguna cota nueva es dato documentado.
+ * visual a los puntos DROPS del Libro DROPS 2024 (RCCO Rev.03). Ninguna cota nueva es dato documentado.
  *
  * ANCLAS FIJAS (otros módulos dependen de ellas; NO se mueven):
  *   - eje de las poleas de corona = t 30,4 sobre el eje local del mástil, x local .35 (`mn` = ni(30.4,.35,0));
@@ -614,7 +614,7 @@
     }
 
     // ═══════════════════════════════ PISO DE ENGANCHE (jaula) ═══════════════════════════════
-    // Estético / fuente: folleto TACKER 10 p1 (foto: jaula/caja grande colgada del mástil con logo TACKER) y Libro DROPS
+    // Estético / fuente: folleto Equipo 10 p1 (foto: jaula/caja grande colgada del mástil con logo de la empresa) y Libro DROPS
     // p7–11. El piso de enganche real NO tiene cotas en los documentos: huella y alturas aquí son aproximadas.
     // Detalle adicional: referencia CAD genérica `docs/references/enganche/` (tipología, no cota; ver README de esa carpeta).
 
@@ -745,7 +745,7 @@
       const t = Ml(g)
       t.name = 'acceso_y_enganchador'
 
-      // Logo: se reutiliza el material con textura del piso original (canvas "TACKER 10") corriendo la función original en vacío.
+      // Logo: se reutiliza el material con textura del piso original (canvas "Equipo 10") corriendo la función original en vacío.
       let logo = null
       let Plane = null
       try {
@@ -754,7 +754,7 @@
         scratch.traverse((o) => {
           if (!logo && o.isMesh && o.material && o.material.map) {
             logo = pn('#ffffff', 0.6, 0.05, { map: o.material.map })
-            logo.name = 'logo_TACKER'
+            logo.name = 'logo_EMPRESA'
             Plane = o.geometry.constructor
           }
         })
@@ -827,13 +827,13 @@
       buildContainmentArch(t)
       buildSkids(t)
 
-      // Logo TACKER en ambos paneles laterales (el del lado -z se gira para que se lea)
+      // Logo de la empresa en ambos paneles laterales (el del lado -z se gira para que se lea)
       if (logo && Plane) {
         for (const sgn of [1, -1]) {
           const p = new Mesh(new Plane(1.68, 0.42), logo)
           p.position.set(1.95, N + 0.6, sgn * 1.085)
           if (sgn < 0) p.rotation.y = PI
-          p.name = 'logo_TACKER'
+          p.name = 'logo_EMPRESA'
           ir(p)
           t.add(p)
         }

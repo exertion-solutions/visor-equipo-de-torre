@@ -6,7 +6,7 @@ Componente 12 del visor V2: **escalera y plataforma del enganchador** (`Ot.engan
 
 ## Imagen de referencia (modelo CAD genérico)
 
-**No es el equipo del TACKER 10.** Sirve para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin
+**No es el equipo 10.** Sirve para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin
 verificar: el PNG no se versiona (ver `.gitignore`); queda solo en la copia local de esta carpeta.
 
 | Archivo                                      | Qué muestra                                                                                                                                                       | Se usó para                                                                                          |
@@ -41,22 +41,22 @@ anima); el despiece solo desplaza el grupo `enganche` completo (+5, +3, 0), de m
 
 | Dato                                                                | Estado     | Fuente / nota                                                                                                  |
 | ------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
-| Existencia del piso de enganche y de los puntos DROPS PE-1 … PE-13  | confirmado | Libro DROPS Tacker 2024 (RCCO Rev.03), págs. 7–11; `docs/drops/extracto-libro-drops-tacker-y-tk10.md`         |
+| Existencia del piso de enganche y de los puntos DROPS PE-1 … PE-13  | confirmado | Libro DROPS 2024 (RCCO Rev.03), págs. 7–11; `docs/drops/extracto-libro-drops-rig-y-tk10.md`         |
 | Piso a 18,5 m (`boardHeight`) y anclaje al mástil                   | aproximado | Heredado del visor; el piso real no tiene cotas en los documentos                                              |
 | Huella 2,55 × 2,10 m, altura de paneles y del aro superior          | aproximado | Heredado del visor (envolvente sin cambios)                                                                    |
 | Chapa antideslizante (existencia y patrón)                          | aproximado | Tipología de la referencia CAD; espesor y tipo de chapa pendientes                                             |
 | 8 dedos de peine, paso 0,12 m, ancho 0,04 m, largo 0,86 m           | aproximado | Tipología de la referencia; el Libro DROPS solo dice "peines abulonados con eslinga 3/8"" (PE-6)              |
 | Peines en el lado −z del frente                                     | aproximado | Ubicación plausible respecto de PE-3 (pirosalva), PE-4 y PE-11; no documentada                                 |
-| Arco tubular de contención (x 1,05 · abertura ±0,5 m · cima N + 2,3) | aproximado | Tipología de la referencia; su existencia en el TACKER 10 es **pendiente**                                     |
-| Patines de apoyo (tubo Ø 0,11 m, x 0,25–3,00, z ±0,95)              | aproximado | Tipología de la referencia; su existencia en el TACKER 10 es **pendiente**                                     |
-| Paneles con barandas de 3 caños horizontales, nervios, rodapiés     | aproximado | Tipología de la referencia y foto del folleto (jaula con logo TACKER)                                          |
+| Arco tubular de contención (x 1,05 · abertura ±0,5 m · cima N + 2,3) | aproximado | Tipología de la referencia; su existencia en el equipo 10 es **pendiente**                                     |
+| Patines de apoyo (tubo Ø 0,11 m, x 0,25–3,00, z ±0,95)              | aproximado | Tipología de la referencia; su existencia en el equipo 10 es **pendiente**                                     |
+| Paneles con barandas de 3 caños horizontales, nervios, rodapiés     | aproximado | Tipología de la referencia y foto del folleto (jaula con logo de la empresa)                                          |
 | Trampolín (PE-5): bisagras, tacos, rodapiés                         | aproximado | El Libro solo documenta "abulonado, eslinga 3/8" con 4 eslabones"; el detalle es ilustrativo                   |
 | Puertas PE-7 y PE-11 con cadena de 8 y 5 eslabones                  | aproximado | El Libro documenta "bisagras soldadas, cadenas soldadas"; cantidad y forma de eslabones ilustrativas          |
 | Capacidad de carga del piso, del peine y del arco                   | pendiente  | Sin dato; no se muestra ninguna                                                                                |
 | Certificaciones / inspecciones del piso                             | pendiente  | Sin dato                                                                                                       |
 | Peligros nuevos (atrapamiento en peine, caída de tubulares, puerta)  | pendiente  | Rotulados "referencia, pendiente de validación" en el panel; ninguno se presenta como requisito              |
 
-Ficha de confiabilidad (`window.__TACKER_META.enganche`): se mantiene **C / Aproximado**; la nota lista lo pendiente.
+Ficha de confiabilidad (`window.__RIG_META.enganche`): se mantiene **C / Aproximado**; la nota lista lo pendiente.
 
 ## Presupuesto de rendimiento (renderer.info, escena completa, 1440 × 900)
 

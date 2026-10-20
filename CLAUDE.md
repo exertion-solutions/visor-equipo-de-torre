@@ -1,7 +1,7 @@
-# TACKER DIGITAL RIG
+# DIGITAL RIG
 
 Plataforma digital para equipos **Pulling/Workover** de servicios petroleros. Primera implementación:
-**TACKER 10 — Pulling / Workover Digital Twin**. Después: TACKER 05, 06, 11 y otros equipos.
+**Equipo 10 — Pulling / Workover Digital Twin**. Después: Equipo 05, 06, 11 y otros equipos.
 
 > Este workspace hereda `../CLAUDE.md` (proyectos de check lists SharePoint). Aquello NO aplica acá:
 > este proyecto no usa SharePoint ni Power Automate.
@@ -65,7 +65,7 @@ Tailwind 4 · shadcn/ui (radix, estilo nova) · Vitest 5 · ESLint 10 · Prettie
 npm run dev | build | preview | typecheck | lint | format
 npm test              # legacy (node --test tests/) + unit (vitest, src/**)
 npm run gltf:inspect -- assets/source/x.glb
-npm run gltf:optimize -- x.glb        # → public/models/tacker10/x.glb, original intacto
+npm run gltf:optimize -- x.glb        # → public/models/rig10/x.glb, original intacto
 npm run assets:decoders               # refresca public/decoders desde three
 ```
 
@@ -77,9 +77,9 @@ npm run assets:decoders               # refresca public/decoders desde three
 ```
 src/app · components/{viewer,equipment,qhse,operation,training,ui} · scene/{cameras,lighting,controls,loaders,effects}
 src/data/{rigs,equipment,qhse,training} · stores · hooks · lib/{three,geometry,units} · types
-public/{legacy,models/tacker10,textures,environments,decoders} · assets/source
+public/{legacy,models/rig10,textures,environments,decoders} · assets/source
 cad/ (CadQuery paramétrico → GLB en assets/source, ver cad/README.md; cad/sk575/ = modelo SK-575 en build123d, entorno aparte, ver cad/sk575/README.md) · legacy-ext/ (módulos del visor V2) · scripts/ (build-legacy, snap, gltf-*) · tests/ (node --test)
-docs/{fuentes/{tacker10,drops},drops,pdf-review,references,preview} · reference/{legacy,v2-previo}
+docs/{fuentes/{rig10,drops},drops,pdf-review,references,preview} · reference/{legacy,v2-previo}
 ```
 
 - `src/data/schema.ts` (zod) valida integridad: fuentes existentes, ids únicos, QHSE con fuente salvo
@@ -87,29 +87,37 @@ docs/{fuentes/{tacker10,drops},drops,pdf-review,references,preview} · reference
   Todo dato nuevo debe pasarlo.
 - Auditoría del legacy (patrones a migrar, inconsistencias, rendimiento): `docs/legacy-audit-2026-09-25.md`.
 
+## Nombres genéricos (sin marca)
+
+- El repo y el visor no llevan la marca de la empresa: texto visible, identificadores (`rig10`, `__rig*`, mensajes `rig:*`), archivos y
+  documentación usan nombres genéricos ("DIGITAL RIG", "Equipo 10", "la empresa"). No reintroducirla.
+- **Excepción única: `reference/legacy/`** (evidencia inmutable) conserva sus nombres y su texto originales. `scripts/build-legacy.mjs` le aplica en
+  memoria el renombrado de `scripts/lib/genericizar.mjs` (tabla de reglas, único archivo donde la marca puede aparecer) antes de parchearlo; por
+  eso los parches y los módulos `legacy-ext/` están escritos en términos genéricos.
+
 ## Visor legacy (NO tocar sin pedido explícito)
 
-- `public/legacy/TACKER10_Digital_Rig_V2.html` es un **archivo GENERADO**: no se edita a mano.
+- `public/legacy/Digital_Rig_V2.html` es un **archivo GENERADO**: no se edita a mano.
   `npm run build:legacy` (`scripts/build-legacy.mjs`) parte del original inmutable de `reference/legacy/`, le
   aplica parches (PCFShadowMap, favicon, puente de modo `?embedded`, hooks) y le inyecta los módulos
   `legacy-ext/NN-*.js` (`20-mast`, `30-carrier`, `40-wellsite`, `50-drops-layer`, `60-ui-controls`) y los datos
-  `src/data/qhse/tacker10-drops.json`. Un test falla si la copia de trabajo no coincide con el build.
-  La abre `ABRIR_TACKER10_DIGITAL_RIG.cmd`. Capturas headless: `npm run snap -- --file … --out …`.
+  `src/data/qhse/rig10-drops.json`. Un test falla si la copia de trabajo no coincide con el build.
+  La abre `ABRIR_DIGITAL_RIG.cmd`. Capturas headless: `npm run snap -- --file … --out …`.
 - **DROPS**: `docs/drops/README.md` (síntesis de los documentos de `docs/fuentes/drops/`), dataset canónico
-  `src/data/qhse/tacker10-drops.json` (66 puntos, zonas A2 Alto/Medio/Bajo **cualitativas**, sin radios).
+  `src/data/qhse/rig10-drops.json` (66 puntos, zonas A2 Alto/Medio/Bajo **cualitativas**, sin radios).
 - `reference/v2-previo/src/`: datos del visor V2 anterior que siguen vigentes (`technical-spec.js` = cotas
-  documentadas de Tacker 10, fuente de datos a migrar; `asset-manifest.js` = paleta física y manifiesto GLB).
+  documentadas del equipo 10, fuente de datos a migrar; `asset-manifest.js` = paleta física y manifiesto GLB).
   El resto del visor previo se eliminó (recuperable en el historial de git).
 
 ## Fuentes documentales
 
-Ver `docs/pdf-review/informe-tecnico-tacker.md` y los PDF de `docs/fuentes/tacker10/` (folleto Tacker 10 rev. 26/06/2024,
-layout TKR-10). Los documentos Tacker 11 son referencia de layout/seguridad: **no** alteran la
-geometría de Tacker 10 sin comprobar equivalencia. Anotaciones manuscritas no son cotas técnicas.
+Ver `docs/pdf-review/informe-tecnico-rig.md` y los PDF de `docs/fuentes/rig10/` (folleto Equipo 10 rev. 26/06/2024,
+layout TKR-10). Los documentos Equipo 11 son referencia de layout/seguridad: **no** alteran la
+geometría del equipo 10 sin comprobar equivalencia. Anotaciones manuscritas no son cotas técnicas.
 
-TACKER 10 = **Service King SK-575** (mástil DKA104-330-08). Relevamiento 2026-10-09 (placa API, spec sheet, planos TACKER,
+Equipo 10 = **Service King SK-575** (mástil DKA104-330-08). Relevamiento 2026-10-09 (placa API, spec sheet, planos de la empresa,
 manuales SK, layout WS10): `docs/pdf-review/informe-sk575-2026-10-09.md` (cotas A/B/C y conflictos). Esos documentos
-**no se versionan** (propiedad TACKER / repo público): índice en `docs/fuentes/tacker10/README-sk575.md`.
+**no se versionan** (propiedad de la empresa / repo público): índice en `docs/fuentes/rig10/README-sk575.md`.
 
 ## Skills de proyecto (`.claude/skills/`)
 

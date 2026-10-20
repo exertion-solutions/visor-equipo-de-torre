@@ -66,10 +66,10 @@ def cargar():
 
 
 def spec_sk575():
-    """Cotas documentadas (fuente única: reference/v2-previo/src/technical-spec.js → TACKER_10.sk575)."""
+    """Cotas documentadas (fuente única: reference/v2-previo/src/technical-spec.js → RIG_10.sk575)."""
     import subprocess
     js = (ROOT / "reference" / "v2-previo" / "src" / "technical-spec.js").as_uri()
-    out = subprocess.check_output(["node", "-e", "import(%s).then(m=>console.log(JSON.stringify(m.TACKER_10)))" % json.dumps(js)], text=True)
+    out = subprocess.check_output(["node", "-e", "import(%s).then(m=>console.log(JSON.stringify(m.RIG_10)))" % json.dumps(js)], text=True)
     return json.loads(out)
 
 
