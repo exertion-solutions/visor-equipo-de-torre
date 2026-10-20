@@ -2,13 +2,15 @@
   "id": "sk575_piletas",
   "confianza": "C",
   "alcance": "Piletas de circulación, preparación y ensayo + trip tank",
-  "triangulos": 46228,
+  "triangulos": 80444,
   "materiales": [
     "acero",
     "acero_oscuro",
     "amarillo",
     "azul",
+    "azul_bomba",
     "blanco",
+    "goma",
     "grating",
     "rojo",
     "vidrio"
@@ -17,7 +19,7 @@
   "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
   "as_built": false,
   "aristas": {
-    "segmentos": 19168,
+    "segmentos": 25451,
     "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
     "umbral_grados": 28,
     "excluye": [
@@ -28,9 +30,9 @@
   "publicado": {
     "archivo": "public/models/tacker10/sk575_piletas.glb",
     "optimize": "npm run gltf:optimize -- sk575_piletas.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 46228,
-    "triangulos_publicados": 20992,
-    "segmentos_aristas": 19168,
+    "triangulos_origen": 80444,
+    "triangulos_publicados": 32098,
+    "segmentos_aristas": 25451,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }
 }

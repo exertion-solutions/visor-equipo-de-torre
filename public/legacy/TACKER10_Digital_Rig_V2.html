@@ -5173,17 +5173,133 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
       S.box(C.RED, 2 * r + 0.02, 0.28, 0.04, LX, 1.65, -17.5 + dz)
       S.cyl('#7b8087', 0.2, 0.2, 0.2, LX, 2.7, -17.5 + dz, 'y', 10)
     }
-    // usina (grupo electrógeno John Deere, cabina insonorizada) junto al módulo "usinas" de la fila
-    S.box('#c5c9c3', 3.6, 2.2, 2.0, -29.6, 1.3, -26.6)
-    S.cyl('#3a3e45', 0.08, 0.08, 1.2, -30.7, 3.9, -26.0, 'y', 8)
-    for (let k = 0; k < 4; k++) S.box('#2b2f36', 0.12, 0.9, 0.04, -31.0 + k * 0.56, 1.4, -25.58)
+    // usina (grupo electrógeno diésel abierto, motor V12 con 2 filtros de aire, alternador, gabinete de control y radiador remoto)
+    // junto al módulo "usinas" de la fila. Referencia: foto de grupo CAT 3512 de catálogo (GENÉRICA: marca, modelo, potencia y
+    // consumo del equipo instalado PENDIENTES; ilustrativa, confianza C). Huella 5,6 × 2,0 m en el lugar de la usina anterior.
+    {
+      const UX = -29.6
+      const UZ = -26.6
+      const GY = '#E0A100' // amarillo de máquina (pintura)
+      const GYD = '#B98300' // sombra/arista del amarillo
+      const BK = '#16181C' // base, radiador y cañería (negro mate)
+      const BLUE_H = '#2D6FD0' // manguera de refrigerante
+      const u = (a) => UX + a // a lo largo de la usina (−2,8 gabinete … +2,8 radiador)
+      const v = (b) => UZ + b // lateral (−1,0 … +1,0)
+      // patín: viga de base profunda con alivianamientos y 4 orejas de izaje
+      S.box(BK, 5.6, 0.38, 2.0, UX, 0.19, UZ)
+      for (let k = 0; k < 7; k++)
+        S.box('#2B2F36', 0.5, 0.2, 0.03, u(-2.4 + k * 0.8), 0.19, v(1.0) + 0.005) // ventanas
+      for (const su of [-1, 1])
+        S.rod('#8E949A', [u(su * 2.7), 0.38, v(1.0)], [u(su * 2.7), 0.52, v(1.0)], 0.04, 6)
+      // gabinete de control (amarillo): puerta con tablero oscuro, luces, botonera y parada de emergencia
+      S.box(GY, 1.25, 1.65, 1.8, u(-2.17), 1.2, UZ) // cuerpo
+      S.box(GYD, 1.31, 0.05, 1.86, u(-2.17), 2.05, UZ) // techo con alero
+      S.box('#23272D', 0.55, 0.42, 0.03, u(-2.4), 1.7, v(0.91) + 0.0) // módulo de control
+      for (let k = 0; k < 4; k++)
+        S.box(k < 2 ? '#3CB45C' : '#E34A3A', 0.06, 0.04, 0.02, u(-2.55 + k * 0.1), 1.58, v(0.93))
+      S.cyl('#C62B1E', 0.045, 0.045, 0.03, u(-2.0), 1.2, v(0.92), 'z', 10) // parada de emergencia
+      S.box(GYD, 0.02, 1.3, 0.02, u(-2.17), 1.15, v(0.91)) // junta de puertas
+      // aletas de ventilación bajo el gabinete
+      for (let k = 0; k < 5; k++)
+        S.box('#2B2F36', 0.5, 0.03, 0.03, u(-2.17), 0.5 + k * 0.07, v(0.915))
+      // alternador (carcasa cilíndrica con ventana de ventilación y caja de bornes de goma)
+      S.cyl(GY, 0.52, 0.52, 1.1, u(-1.0), 1.02, UZ, 'x', 20)
+      S.cyl(GYD, 0.55, 0.55, 0.06, u(-1.52), 1.02, UZ, 'x', 20) // brida de unión
+      S.cyl('#23272D', 0.4, 0.4, 0.04, u(-0.42), 1.02, UZ, 'x', 16) // rejilla del ventilador
+      S.box('#15161A', 0.5, 0.42, 0.04, u(-1.55), 1.25, v(0.98)) // tapa de bornes (goma negra)
+      S.box(GYD, 0.28, 0.2, 0.03, u(-0.9), 1.0, v(0.53)) // placa de datos
+      // motor V12: bloque, cárter, dos bancadas de 6 tapas de balancines, colectores y múltiple de aire
+      S.box(GY, 2.0, 0.65, 1.0, u(0.5), 1.05, UZ) // bloque
+      S.box(GY, 1.9, 0.28, 0.8, u(0.55), 0.55, UZ) // cárter
+      for (const sz of [-1, 1])
+        for (let k = 0; k < 6; k++) {
+          S.box(GY, 0.22, 0.26, 0.34, u(-0.25 + k * 0.3), 1.52, v(sz * 0.3)) // tapa de balancines
+          S.rod(
+            BK,
+            [u(-0.25 + k * 0.3), 1.58, v(sz * 0.52)],
+            [u(-0.25 + k * 0.3), 1.2, v(sz * 0.5)],
+            0.016,
+            4,
+          ) // línea de inyección
+        }
+      S.cyl(GY, 0.13, 0.13, 2.0, u(0.55), 1.98, UZ, 'x', 14) // múltiple de aire/postenfriador
+      for (const sz of [-1, 1]) S.cyl(GY, 0.1, 0.1, 1.8, u(0.5), 1.74, v(sz * 0.55), 'x', 10) // colector lateral
+      // bomba de agua/aceite y tubos al frente (lado radiador)
+      S.cyl(GYD, 0.17, 0.17, 0.3, u(1.55), 1.0, v(0.55), 'x', 12)
+      S.rod(GY, [u(1.1), 0.62, v(0.42)], [u(1.1), 0.26, v(0.42)], 0.05, 6) // varilla de nivel / drenaje
+      // 2 filtros de aire cilíndricos con tapa abulonada y codos de entrada
+      for (const sz of [-1, 1]) {
+        S.cyl(GY, 0.36, 0.36, 0.55, u(-0.55), 2.2, v(sz * 0.52), 'x', 18)
+        S.cyl(GYD, 0.38, 0.38, 0.05, u(-0.85), 2.2, v(sz * 0.52), 'x', 18) // tapa
+        S.rod(GY, [u(-0.35), 1.95, v(sz * 0.5)], [u(-0.05), 1.62, v(sz * 0.4)], 0.13, 8) // codo hacia el turbo
+        for (let k = 0; k < 6; k++) {
+          const a = (2 * PI * k) / 6
+          S.cyl(
+            '#8E949A',
+            0.02,
+            0.02,
+            0.03,
+            u(-0.88),
+            2.2 + 0.3 * Math.cos(a),
+            v(sz * 0.52 + 0.3 * Math.sin(a)),
+            'x',
+            5,
+          )
+        }
+      }
+      // radiador remoto: bastidor negro de perfiles perforados, panel y ventilador con guarda, cañerías y mangueras azules
+      S.box(BK, 0.95, 2.55, 1.9, u(2.3), 1.65, UZ) // núcleo
+      for (const sz of [-1, 1]) S.box('#0E0F12', 0.1, 2.75, 0.1, u(2.78), 1.75, v(sz * 0.98)) // montantes
+      for (let k = 0; k < 5; k++) S.box('#2B2F36', 0.02, 0.5, 0.16, u(2.84), 0.8 + k * 0.5, v(0.98)) // perforaciones del montante
+      for (let k = 0; k < 6; k++)
+        S.box('#1E2126', 0.03, 2.2, 0.03, u(1.82), 1.65, v(-0.8 + k * 0.32)) // malla de la guarda
+      S.cyl('#23272D', 0.6, 0.6, 0.05, u(1.8), 1.9, UZ, 'x', 18) // aro del ventilador
+      S.rod(BK, [u(2.5), 0.38, v(-0.95)], [u(1.0), 2.9, v(-0.95)], 0.04, 6) // riostra diagonal
+      // cañerías de refrigerante: motor → radiador (2 codos grandes negros) y manguera azul con abrazaderas rojas
+      S.tube(
+        BK,
+        [
+          [u(1.4), 2.0, v(0.35)],
+          [u(1.5), 2.6, v(0.3)],
+          [u(1.9), 2.95, v(0.2)],
+          [u(2.2), 2.95, v(0.1)],
+        ],
+        0.11,
+      )
+      S.tube(
+        BK,
+        [
+          [u(1.45), 1.4, v(-0.45)],
+          [u(1.62), 0.9, v(-0.55)],
+          [u(1.9), 0.55, v(-0.4)],
+        ],
+        0.1,
+      )
+      S.tube(
+        BLUE_H,
+        [
+          [u(1.6), 1.3, v(0.6)],
+          [u(1.78), 1.7, v(0.8)],
+          [u(2.1), 1.5, v(0.9)],
+          [u(2.5), 1.0, v(0.95)],
+        ],
+        0.04,
+      )
+      for (const [x, y, z] of [
+        [1.55, 1.3, 0.62],
+        [2.4, 1.2, 0.95],
+      ])
+        S.cyl('#B3262B', 0.055, 0.055, 0.04, u(x), y, v(z), 'z', 8)
+      // jabalina de puesta a tierra
+      S.rod('#C9CDD0', [u(-2.6), 0.0, v(-1.15)], [u(-2.6), 0.4, v(-1.0)], 0.012, 4)
+    }
 
     // ── anclaje de pirosalva a 45 m del pozo en el eje del equipo, lado planchada (LAYOUT-WS10-0001, cota "45").
     //    Fuente en conflicto: LAYOUT TKR-10 (2025) lo pone a 30 m. Coincide con el anclaje del modelo SK-575 (sk575_vientos).
     S.box(C.CONC, 1.2, 0.3, 1.2, 45, 0.17, 0)
     S.loop('#4d5057', 45, 0.5, 0, 0.22, 'zy', 0, PI * 2, 0.03, 14)
 
-    // ── torres de iluminación blancas (estéticas): 4, apuntando al equipo
+    // ── torres de iluminación móviles (ilustrativas): 4, apuntando al equipo
     const towers = [
       [-24, 9],
       [-24, -9],
@@ -5195,37 +5311,80 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
     const halo = []
     for (const [tx, tz] of towers) {
       const face = Math.atan2(-tx, -tz) // yaw hacia el pozo
-      S.box('#e8eaea', 2.2, 0.3, 1.4, tx, 0.55, tz, face)
-      for (const [dx, dz] of [
-        [1.2, 0.85],
-        [1.2, -0.85],
-        [-1.2, 0.85],
-        [-1.2, -0.85],
-      ]) {
-        const c = Math.cos(face)
-        const s = Math.sin(face)
-        S.rod(
-          '#c9cdd0',
-          [tx + dx * c + dz * s, 0.45, tz - dx * s + dz * c],
-          [tx + dx * 1.6 * c + dz * 1.3 * s, 0.05, tz - dx * 1.6 * s + dz * 1.3 * c],
-          0.04,
-          5,
-        ) // estabilizadores
+      // torre de iluminación móvil (referencia: foto de torre de catálogo, GENÉRICA; marca, modelo y potencia PENDIENTES, ilustrativa):
+      // tráiler monoeje con carcasa de motor crema, 4 gatos estabilizadores, mástil telescópico galvanizado y 4 proyectores en 2×2.
+      // Local: dx a lo largo del tráiler (el mástil en dx = 0, lanza hacia −dx), dz lateral; yaw `face`.
+      const cf = Math.cos(face)
+      const sf = Math.sin(face)
+      const P = (dx, dz) => [tx + dx * cf + dz * sf, tz - dx * sf + dz * cf]
+      const Q = (col, w, h, d, dx, y, dz) => {
+        const [px, pz] = P(dx, dz)
+        S.box(col, w, h, d, px, y, pz, face)
       }
-      S.cyl('#e8eaea', 0.11, 0.11, 7.2, tx, 4.3, tz, 'y', 10)
-      S.cyl('#f4f5f3', 0.08, 0.08, 1.8, tx, 8.7, tz, 'y', 10)
+      const R = (col, a1, a2, r, seg = 8) => {
+        const [x1, z1] = P(a1[0], a1[2])
+        const [x2, z2] = P(a2[0], a2[2])
+        S.rod(col, [x1, a1[1], z1], [x2, a2[1], z2], r, seg)
+      }
+      const CREAM = '#D8CDB0'
+      const GALV = '#B9BEC2'
+      Q('#3a3e45', 2.6, 0.12, 0.9, -0.85, 0.58, 0) // bastidor
+      Q(CREAM, 1.5, 0.95, 1.0, -0.7, 1.2, 0) // carcasa del motor
+      Q('#C5B997', 1.54, 0.05, 1.04, -0.7, 1.7, 0) // tapa
+      for (const su of [-1, 1]) {
+        for (let k = 0; k < 5; k++) Q('#2b2f36', 0.5, 0.04, 0.02, -0.7, 1.0 + k * 0.1, su * 0.51) // celosías de ventilación
+        Q('#5a5f66', 0.4, 0.5, 0.02, -0.3, 1.25, su * 0.512) // puerta de servicio
+        R('#15171c', [-0.7, 0.4, su * 0.64], [-0.7, 0.4, su * 0.82], 0.36, 14) // rueda
+        R('#8e949a', [-0.7, 0.4, su * 0.64], [-0.7, 0.4, su * 0.84], 0.13, 8) // maza
+        Q(CREAM, 1.0, 0.05, 0.3, -0.7, 0.86, su * 0.72) // guardabarros
+      }
+      Q('#B3262B', 0.2, 0.06, 0.02, -0.95, 1.5, 0.515) // franja de marca (sin rótulo)
+      // lanza con acople, rueda/gato de maniobra y cadena de seguridad
+      R('#3a3e45', [-1.45, 0.58, 0.32], [-2.3, 0.62, 0], 0.035)
+      R('#3a3e45', [-1.45, 0.58, -0.32], [-2.3, 0.62, 0], 0.035)
+      Q('#2b2f36', 0.14, 0.1, 0.14, -2.34, 0.62, 0) // acople
+      R(GALV, [-1.8, 0.62, 0], [-1.8, 0.1, 0], 0.03, 6) // gato de lanza
+      Q(GALV, 0.22, 0.02, 0.18, -1.8, 0.09, 0)
+      // estabilizadores: brazo transversal + pata roscada + plato (4)
+      for (const [dx, dz] of [
+        [-1.5, 0.5],
+        [-1.5, -0.5],
+        [0.2, 0.5],
+        [0.2, -0.5],
+      ]) {
+        R(GALV, [dx, 0.62, dz * 0.5], [dx, 0.62, dz * 1.25], 0.025, 6)
+        R(GALV, [dx, 0.62, dz * 1.25], [dx, 0.1, dz * 1.25], 0.03, 6)
+        Q(GALV, 0.22, 0.02, 0.22, dx, 0.09, dz * 1.25)
+      }
+      // mástil telescópico: 3 tramos con collares y malacate; farolas 2×2 en travesaño
+      R(GALV, [0, 1.7, 0], [0, 4.4, 0], 0.085, 10)
+      R(GALV, [0, 4.4, 0], [0, 7.1, 0], 0.065, 10)
+      R(GALV, [0, 7.1, 0], [0, 9.55, 0], 0.048, 8)
+      for (const yy of [4.4, 7.1])
+        R('#8e949a', [0, yy - 0.05, 0], [0, yy + 0.05, 0], yy < 5 ? 0.1 : 0.078, 10)
+      Q('#2b2f36', 0.2, 0.22, 0.16, 0.12, 2.1, 0) // malacate
+      R('#2b2f36', [0.12, 2.0, 0], [0.12, 2.0, 0.2], 0.04, 6)
+      R(GALV, [0, 9.45, -0.5], [0, 9.45, 0.5], 0.03, 6) // travesaño de farolas
+      R(GALV, [0, 9.55, 0], [0, 9.95, 0], 0.03, 6)
       for (let k = 0; k < 4; k++) {
-        const ox = (k - 1.5) * 0.52
+        const ox = (k % 2 ? 1 : -1) * 0.34
+        const oy = (k < 2 ? 1 : -1) * 0.22
         const house = new K.Box(0.48, 0.34, 0.22)
         house.rotateX(0.5)
-        house.translate(ox, 0, 0)
+        house.translate(ox, oy, 0)
         house.rotateY(face)
         S.push(house, tx, 9.75, tz, '#3a3e45')
+        const rim = new K.Box(0.5, 0.36, 0.05)
+        rim.translate(0, 0, 0.1)
+        rim.rotateX(0.5)
+        rim.translate(ox, oy, 0)
+        rim.rotateY(face)
+        S.push(rim, tx, 9.75, tz, '#1b1d21') // marco del proyector
         for (const B of [LEN, LOFF]) {
           const lens = new K.Box(0.42, 0.28, 0.02)
-          lens.translate(0, 0, 0.12)
+          lens.translate(0, 0, 0.14)
           lens.rotateX(0.5)
-          lens.translate(ox, 0, 0)
+          lens.translate(ox, oy, 0)
           lens.rotateY(face)
           B.push(lens, tx, 9.75, tz, B === LEN ? '#fff3c4' : '#8a9096')
         }
@@ -6331,7 +6490,7 @@ window.__TACKER_SK575_FILES=["sk575_acumulador","sk575_aparejo","sk575_bomba","s
     note:
       'Piletas (plano, A): patín 12.000 × 2.400 mm, cuba 11.000 × 2.300 mm, alto 1.742 mm, compartimentos 4.500/4.500/2.000 mm (15,5/15,5/7 m³ = 38 m³); ' +
       'en el modelo el golpeador lleva un tanque de 3 m³. Fuente en conflicto: el folleto da pileta de ensayo de 40 m³ y cubicador de 3,5 m³ (equivalencia no confirmada). ' +
-      'Bomba triplex: huella 6 × 2,4 m (layout WS10, A); bomba y motor ilustrativos. Manifold de ahogo: esquema sin identificar con escala de otro equipo (TKR-08), ' +
+      'Bomba triplex: huella 6 × 2,4 m (layout WS10, A); power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad por referencia fotográfica genérica (C; marca, camisas, carrera y presión PENDIENTES), motor ilustrativo. Trip tank: huella ≈ 2,1 × 2,3 m (C) con escalera, nervaduras, rebose y bomba centrífuga de referencia genérica; capacidad PENDIENTE. Manifold de ahogo: esquema sin identificar con escala de otro equipo (TKR-08), ' +
       'no es el del TKR-10. Geometría aproximada, no as-built. Pendientes: presión de trabajo, conexiones y ruteo del golpeador.',
   }
 
