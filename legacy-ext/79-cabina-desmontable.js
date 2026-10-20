@@ -43,5 +43,5 @@ window.__rigExt.onPost((R) => {
   cab.add(soportes)
 
   if (R.invalidate) R.invalidate()
-  window.__tackerCabina = { DX, DZ, lado: '+Z', estado: 'pendingValidation' }
+  window.__rigCabina = { DX, DZ, lado: '+Z', estado: 'pendingValidation' }
 })

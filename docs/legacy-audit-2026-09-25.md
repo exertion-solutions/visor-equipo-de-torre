@@ -1,4 +1,4 @@
-# Auditoría del visor legacy — `TACKER10_Digital_Rig_V2.html`
+# Auditoría del visor legacy — `Digital_Rig_V2.html`
 
 Fecha: 2026-09-25. Lectura del código propio (no del bundle de three) y prueba en Chromium.
 Resultado funcional: carga sin errores, 43 botones sin fallas, PNG y GLB se generan, los 4 modos cambian.

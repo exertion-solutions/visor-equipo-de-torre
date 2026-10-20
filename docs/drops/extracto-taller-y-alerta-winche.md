@@ -106,7 +106,7 @@ Lectura para el gemelo digital [INFERIDO, no dicho]: el punto de control es la c
 - Qué es exactamente cada componente de las fotos 12-24 y cuál es el defecto marcado. Las fotos no tienen leyenda; solo las pp.4 y 5 tienen cruz roja.
 - **Ninguna altura, peso, par de apriete, frecuencia de inspección ni criterio de aceptación** salvo: alambre de bloqueo "no más de tres tornillos" y "no exceeder los 150mm" (T p.11); estadística de fallas en % (T p.3); ejes 0-80 kN y 0-20 s del gráfico (T p.7); altura del incidente 5,3 m (A p.1).
 - Qué método secundario (red, cable, eslinga) se exige para cada elemento concreto; el taller solo lo define de forma general (p.2).
-- Norma o procedimiento aplicable (API, ISO, OSHA, DROPS, IADC, procedimiento YPF/Tacker) por nombre y número.
+- Norma o procedimiento aplicable (API, ISO, OSHA, DROPS, IADC, procedimiento YPF/la empresa) por nombre y número.
 - Causa raíz del incidente del giratorio, tipo/modelo del giratorio y del seguro, tipo de equipo (perforación o pulling) y contratista.
 - Qué significan los 10 íconos del encabezado de A ni por qué se marca el 4º.
 

@@ -1,7 +1,7 @@
 # Catálogo de referencia (fabricantes y manuales genéricos)
 
-Relevamiento del 2026-10-11. Son fuentes de **referencia genérica**, no del TACKER 10 (Service King SK-575, mástil
-DKA104-330-08). **No alteran cotas ni capacidades del equipo**. Ningún valor de acá se carga en `src/data/rigs/tacker10.ts`
+Relevamiento del 2026-10-11. Son fuentes de **referencia genérica**, no del equipo 10 (Service King SK-575, mástil
+DKA104-330-08). **No alteran cotas ni capacidades del equipo**. Ningún valor de acá se carga en `src/data/rigs/rig10.ts`
 sin una fuente propia del equipo (placa, plano, planilla de inspección). Todas llevan `verified: false`. Las transcripciones
 de tablas en imagen las hizo un agente y no se revisaron contra el original.
 
@@ -19,14 +19,14 @@ fuera del repo, en el scratchpad de la sesión (`catalogo/catalogo.json`).
 | `src-ref-cbi-period-one`  | manufacturer | false    | CBI Manufacturing, página "Oilfield" — https://cbi-mfg.com/cbi-oilfield#products/oilfield/period-one-double-service-rig | Service rig Period 1 Double (carrier, mástil 105 ft / 200 klb en 6 líneas, corona, aparejo, guinches, malacate); Truck Mounted Single TMS69-120; malacate FAST450 / FAST450DB (tambores, frenos, pesos, envolvente) | Página comercial sin plano ni brochure PDF enlazado. Peso del aparejo "2,200" sin unidad. Equipo canadiense ("Period One Legal"), no comparable en carga con el SK-575 |
 
 Si alguna de estas fuentes se incorpora a `rig.sources`, va con `type` de referencia, `verified: false` y `ref` con URL +
-página, y solo para datos de **otros** equipos o rangos de norma, nunca como cota del TACKER 10.
+página, y solo para datos de **otros** equipos o rangos de norma, nunca como cota del equipo 10.
 
-## 2. Cruce con TACKER 10
+## 2. Cruce con equipo 10
 
 Criterio: "posible correspondencia" solo si coinciden fabricante/modelo **y** capacidad. Ningún ítem del catálogo
 llega a eso. Todo lo de abajo es referencia genérica.
 
-| Pieza TACKER 10 (dato del repo)                                  | Mejor referencia en el catálogo                                                                                                                                         | Tipo de coincidencia                                    |
+| Pieza Equipo 10 (dato del repo)                                  | Mejor referencia en el catálogo                                                                                                                                         | Tipo de coincidencia                                    |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | Aparejo IDECO 110 t (`src-folleto`)                              | Ninguno IDECO. Capacidad cercana: gancho Web Wilson 100 t (IADC p.427), bloque-gancho National 30G100 (IADC p.429), bloque McKissick 100 ton (CBI)                       | Solo capacidad; IDECO en NOV/IADC es malacate/mástil, no aparejo |
 | Amelas 150 t, Ø 3", largo útil 73" (`src-insp-sop1110`)         | Amela forjada "1-3/4" - 150 Ton" (IADC p.426, ojo sup. 3-1/2", inf. 1-3/4" nuevas); FET links 150–1750 t, 72–660"; radios API rango 101–150 t (IADC p.422)             | Capacidad. **Observación:** el nominal IADC 1-3/4" no coincide con "Ø 3""; puede ser otra cota (ojo/cuerpo). No se resuelve: medir/confirmar en la planilla |
@@ -41,7 +41,7 @@ llega a eso. Todo lo de abajo es referencia genérica.
 
 ## 3. Modelos útiles para detallar el 3D del SK-575
 
-Uso permitido: **forma y proporciones** de piezas cuya geometría del TACKER 10 es C (ilustrativa), rotulada
+Uso permitido: **forma y proporciones** de piezas cuya geometría del equipo 10 es C (ilustrativa), rotulada
 "referencia genérica, no as-built". Las cotas del equipo (cuando existan) mandan.
 
 | Pieza SK-575 a detallar                       | Referencia                                         | Cotas disponibles                                                                                       | Fuente / página           |

@@ -1,16 +1,16 @@
-"""TACKER 10 (Service King SK-575, pulling/workover) — modelo CAD de referencia (build123d). NO es as-built.
-Generado desde ~/cad/tacker10/tacker10.py; cada pieza se etiqueta con `comp()` = Component.id del visor.
+"""Equipo 10 (Service King SK-575, pulling/workover) — modelo CAD de referencia (build123d). NO es as-built.
+Generado desde ~/cad/rig10/rig10.py; cada pieza se etiqueta con `comp()` = Component.id del visor.
 Lo exporta cad/sk575/exportar.py (un GLB por componente, origen en la boca de pozo). Confianza por cota en
 docs/pdf-review/informe-sk575-2026-10-09.md.
 Documentado: mástil 31,7 m (tramo inferior 16,4 + superior 15,3).
 Carrier y cuadro de maniobras: SK575 Parts & Service Manual (vista lateral p23, bastidor p19: 40 ft, 5 ejes) + spec sheet.
-Plano LAYOUT-WS10-0001 (Layout Equipo TACKER TKR 10 RN119): carrier 18 m, subestructura 5 m, planchada 12 m,
+Plano LAYOUT-WS10-0001 (Layout Equipo TKR 10 RN119): carrier 18 m, subestructura 5 m, planchada 12 m,
 anclajes de vientos a 27,4 m (lado carrier) / 24,4 m (lado planchada) y ±26,8 m laterales. Resto estimado por foto.
 Manuales: BOP doble ram 11" 5M (Xinde 2FZ28-35II) + anular 11" 5M (FH28-35I); llave Gill 500; tubing 2-7/8" R2 (Tenaris);
 línea 2" HM (planos L602); corona/aparejo/cuñas (presentaciones API 8A/8B); vientos, anclajes y pirosalva (Módulo Transporte y Montaje YPF).
 Equipo = Service King SK-575, mástil SK 104-330-08 S/N DK-3033 (placa API 4F: 104', 8 líneas, 325.725 lb a 3,5° de la
 vertical, base a 4'-0"; vientos A 3/4" / B 5/8" EEIPS). Corona: 4 poleas 24" + 30" línea rápida (spec sheet SK-575).
-Plano TACKER 8123-1002-2611 (Equipo TKR10): piso 3606 [12'], piso de enganche 20629 [68'], mástil 31710 [104'].
+Plano 8123-1002-2611 (Equipo TKR10): piso 3606 [12'], piso de enganche 20629 [68'], mástil 31710 [104'].
 Piso pulling: planos 8114-1006-0200/0201/0210/0212 (2600 × 3304, abertura 730 × 700). Escalera: EscaleraPisoPulling (45°, C 180).
 Fuente: X:\\Mantenimiento WS\\Planos Tecnicos\\TKR-10 y ...\\COC's - Trazabilidad\\Equipos\\Rig TKR-10\\COC.
 CAD: metros, X a lo largo del carrier (+X hacia el pozo), Y lateral, Z arriba. Salida: un GLB por material + STEP."""
@@ -180,7 +180,7 @@ for k in range(9):
 railing([(XF, -1.2, ZM + 0.08), (XF + 1.9, -1.2, ZM + 0.08), (XF + 1.9, 1.2, ZM + 0.08), (XF, 1.2, ZM + 0.08)],
         h=1.1, step=0.95, mat="acero")
 add("rojo", box(XF, XF + 2.2, -1.30, -1.25, ZM + 0.2, ZM + 1.15, f=0.01))
-txt = extrude(Text("TACKER 10", font_size=0.5, font_style=FontStyle.BOLD), amount=0.02)
+txt = extrude(Text("EQUIPO 10", font_size=0.5, font_style=FontStyle.BOLD), amount=0.02)
 add("blanco", Pos(XF + 1.1, -1.30, ZM + 0.67) * Rot(90, 0, 0) * txt)
 for k, v in parts.items():     # contra-rotación sobre la bisagra: con el mástil a 3,5° el piso queda horizontal
     if k[0] == "sk575_mastil/sk575_enganche":
@@ -345,7 +345,7 @@ add("acero_oscuro", box(xc(66), xc(72), -0.65, 0.65, ZK, 2.75, f=0.02))
 for k in range(12):
     add("acero", box(xc(65.5), xc(66), -0.6, 0.6, ZK + 0.1 + k * 0.11, ZK + 0.14 + k * 0.11))
 gabinete(xc(85), xc(156), 114 * IN, z0=ZK, hw=1.15)
-txt = extrude(Text("TACKER 10", font_size=0.3, font_style=FontStyle.BOLD), amount=0.015)
+txt = extrude(Text("EQUIPO 10", font_size=0.3, font_style=FontStyle.BOLD), amount=0.015)
 add("blanco", Pos((xc(85) + xc(156)) / 2, -1.165, 2.2) * Rot(90, 0, 0) * txt)
 add("acero", bar((xc(150), 0.85, 114 * IN), (xc(150), 0.85, 3.9), 0.065))                 # escape con mata-chispas
 add("acero_oscuro", Pos(xc(150), 0.85, 3.2) * (Cylinder(0.16, 0.9) - Cylinder(0.145, 1.0)))
@@ -687,7 +687,7 @@ def rot_bop(x, y, z):
     return (WXP + y, -(x - WXP), z)
 
 
-# ───────────────────────── Stack BOP estándar WS 7-1/16" 10 ksi (plano TACKER 8127-1110-004 rev 4) ─────────────────────────
+# ───────────────────────── Stack BOP estándar WS 7-1/16" 10 ksi (plano 8127-1110-004 rev 4) ─────────────────────────
 # Plano "ESQUEMA TÍPICO STACK BOP ESTÁNDAR - 7 1/16" 10 KSI" (DJLeyria, 30/09/2026, 1:30; src-plano-bop-8127, no se versiona).
 # Cotas rotuladas (A), de abajo hacia arriba: 792 ram simple [1] + carretel [2] · 760 cruz con salidas (sin número en la
 # lista: "13" falta) · 1232 doble ram + shear [6] · 127 carretel 10k→5k [7] · 815 anular 5k [8]. Las parciales suman 3,726 m;
@@ -987,7 +987,7 @@ for k in (2, 5):                                                                
         add("rojo", bar(u, v, 0.012))
 
 comp("sk575_piso")
-# ───────────────────────── piso de trabajo (planos TACKER 8114-1006-0200/0201/0210/0212) ─────────────────────────
+# ───────────────────────── piso de trabajo (planos 8114-1006-0200/0201/0210/0212) ─────────────────────────
 # Central 2600 × 2300 (UPN 100 + chapa semilla de melón 3/16") + 2 laterales 2500 × 500 × 190 → 2600 × 3304.
 # Abertura de pozo 730 × 700 a 770 del borde lado mástil; panel removible (RVB) 1100 × 680 hacia la V.
 X0 = WXP - 0.77 - 0.365                                           # borde lado mástil
@@ -1142,7 +1142,7 @@ add("rojo", Pos(WX, WY, 2.7) * Torus(0.22, 0.025))
 comp("sk575_piletas")
 # ───────────────────────── locación: piletas, choke manifold, bomba, acumulador (LAYOUT-WS10-0001) ─────────────────────────
 # Posiciones medidas en el layout respecto al eje del pozo (x a lo largo de la planchada, y hacia las piletas).
-# Piletas: plano "Pileta TACKER 1-2-3" (golpeador / zaranda / preparadora): patín 12000 × 2400, cuba 11000 × 2300,
+# Piletas: plano "Pileta 1-2-3" (golpeador / zaranda / preparadora): patín 12000 × 2400, cuba 11000 × 2300,
 # alto 1742 (2011 con baranda), compartimentos 4500 / 4500 / 2000 (15,5 / 15,5 / 7 m3).
 def pileta(x0, y0, tipo):
     """Pileta autotransportable de 12 m a lo largo de X, esquina (x0, y0)."""
@@ -1289,7 +1289,7 @@ add("acero", bar((TX1 - 0.35, PY, 0.45), (WXP + 2.1, PY, 0.45), 0.055))
 add("acero", bar((WXP + 2.1, PY, 0.45), (WXP + 2.1, PY, PZ), 0.055))
 
 comp("sk575_manifold")
-# manifold de ahogo (esquema TACKER M1–M12) con la escala del choke Thrubore B20-9908: columnas a 64,03", filas a 62,18".
+# manifold de ahogo (esquema de la empresa M1–M12) con la escala del choke Thrubore B20-9908: columnas a 64,03", filas a 62,18".
 # Fila de entrada: choke hidráulico – M4 – M2 – M9 (cruz, entrada "de pozo") – M1 – M3 – choke manual.
 # Bajadas al colector: M6 (izq.), M7 + M8 (centro, sigue como línea de venteo al campo), M5 (der.).
 # Colector con M10 en el extremo; salidas M12 (reserva / al campo con presión regulada) y M11 (al golpeador).

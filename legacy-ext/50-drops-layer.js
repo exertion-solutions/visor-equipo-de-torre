@@ -1,7 +1,7 @@
 /*
- * TACKER 10 · capa DROPS del visor V2 (legacy) — módulo legacy-ext/50-drops-layer.js
+ * Equipo 10 · capa DROPS del visor V2 (legacy) — módulo legacy-ext/50-drops-layer.js
  *
- * Qué hace (todo derivado de `window.__TACKER_DROPS`; no inventa radios, alturas ni medidas):
+ * Qué hace (todo derivado de `window.__RIG_DROPS`; no inventa radios, alturas ni medidas):
  *   1. Botón "Zonas DROPS" (#c-drops) en la barra INSPECCIÓN. En modo QHSE se activa sola y se
  *      desactiva al salir (si fue automática); el botón conmuta a mano.
  *   2. Tiñe ~35 % la base (`color`) de los materiales de cada componente con el color de la zona
@@ -14,7 +14,7 @@
  *      inspección TK10. El aviso "El A2 no define radios ni distancias…" va fuera de lo plegable (#qp-avisos): siempre visible.
  *   6. Al desactivar se restauran colores y se elimina todo el DOM, listeners y el rAF.
  *
- * Contrato de datos: ver docs/drops y src/data/qhse/tacker10-drops.json (schemaVersion 1).
+ * Contrato de datos: ver docs/drops y src/data/qhse/rig10-drops.json (schemaVersion 1).
  * Expone `R.drops = { isActive, setActive, openSection, openComponent, anclajes }` (útil para pruebas).
  */
 ;(() => {
@@ -22,7 +22,7 @@
   if (!window.__rigExt) return
 
   window.__rigExt.onPost((R) => {
-    const DATA = window.__TACKER_DROPS
+    const DATA = window.__RIG_DROPS
     if (!DATA || !Array.isArray(DATA.points) || !Array.isArray(DATA.sections)) return
 
     // ───────────────────────── constantes ─────────────────────────
@@ -176,7 +176,7 @@
           return onMast(24.5)
         case 'piso-enganche':
           // 20,629 m: piso de enganche a 68 ft (plano 8123-1002-2611, A, src-plano-8123). El 18,5 m previo era el boardHeight
-          // del V2 procedural (src-legacy-v2): fuente en conflicto registrada en src/data/rigs/tacker10.ts.
+          // del V2 procedural (src-legacy-v2): fuente en conflicto registrada en src/data/rigs/rig10.ts.
           return onMast(20.629)
         case 'debajo-piso-enganche':
           return onMast(9)

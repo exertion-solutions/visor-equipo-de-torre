@@ -1,6 +1,6 @@
 // Publica el SK-575: `npm run gltf:optimize` de cada assets/source/sk575_*.glb con simplify DECLARADO (mismo valor que el
 // default del CLI 4.5: --simplify true, error 1e-4 de la extensión de la malla, sin ratio) y escribe
-// public/models/tacker10/<id>.meta.json = meta de origen + triángulos/aristas publicados.
+// public/models/rig10/<id>.meta.json = meta de origen + triángulos/aristas publicados.
 // Uso: node cad/sk575/publicar.mjs [sk575_carrier ...]        (sin argumentos: todos)
 //      node cad/sk575/publicar.mjs --contar <glb...>            (solo cuenta triángulos/segmentos, p. ej. el "antes")
 import { spawnSync } from 'node:child_process'
@@ -9,7 +9,7 @@ import path from 'node:path'
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..')
 const SRC = path.join(ROOT, 'assets', 'source')
-const OUT = path.join(ROOT, 'public', 'models', 'tacker10')
+const OUT = path.join(ROOT, 'public', 'models', 'rig10')
 const SIMPLIFY = ['--simplify', 'true', '--simplify-error', '0.0001', '--simplify-ratio', '0']
 
 /** Triángulos (mode 4) y segmentos (mode 1) de un GLB, del JSON: el `count` de los accessors no requiere decodificar meshopt. */
@@ -52,7 +52,7 @@ for (const id of ids) {
   const meta = JSON.parse(fs.readFileSync(path.join(SRC, `${id}.meta.json`), 'utf8'))
   const pub = contar(path.join(OUT, `${id}.glb`))
   meta.publicado = {
-    archivo: `public/models/tacker10/${id}.glb`,
+    archivo: `public/models/rig10/${id}.glb`,
     optimize: `npm run gltf:optimize -- ${id}.glb ${SIMPLIFY.join(' ')}`,
     triangulos_origen: meta.triangulos,
     triangulos_publicados: pub.tris,

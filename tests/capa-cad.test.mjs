@@ -7,13 +7,13 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const dataPath = path.join(root, 'src', 'data', 'cad', 'capa-cad.json')
 const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
 
 test('el V2 ya no trae la Capa CAD: el SK-575 es el único equipo (los datos siguen para el motor nativo)', () => {
   assert.ok(!html.includes('/* 77-capa-cad.js */'))
-  assert.ok(!html.includes('window.__TACKER_CAD='))
+  assert.ok(!html.includes('window.__RIG_CAD='))
 })
 
 test('4 ítems con procedencia y estado; el mástil es ILUSTRATIVO', () => {

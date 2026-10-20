@@ -5,7 +5,7 @@ textos en `scripts/patches/04-aparejo.mjs`; ficha en `legacy-ext/41-meta-aparejo
 
 ## Imágenes de referencia (unidades genéricas)
 
-**No son el equipo del TACKER 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin verificar (fotos de
+**No son el equipo 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built. Origen y licencia sin verificar (fotos de
 catálogo de terceros): no se embeben en el HTML ni se versionan (copia local convertida a PNG en `.tmp/refs-png/`). **Ninguna capacidad estampada en las
 fotos (75 t, 42 t, TH 250…) se transcribió**: son de otras unidades.
 
@@ -43,13 +43,13 @@ visibilidad de todo el árbol: no hizo falta cambiarlo. Los nombres aparecen en 
 
 | Dato                                                                             | Estado       | Fuente / nota                                                                                                            |
 | -------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Aparejo IDECO 110 t con 6 líneas                                                 | confirmado   | Folleto TACKER 10 rev. 26/06/2024. El Libro DROPS (BP-3) dice 8 líneas de 1 1/8": **fuente en conflicto**, se mantienen 6 |
+| Aparejo IDECO 110 t con 6 líneas                                                 | confirmado   | Folleto Equipo 10 rev. 26/06/2024. El Libro DROPS (BP-3) dice 8 líneas de 1 1/8": **fuente en conflicto**, se mantienen 6 |
 | Amelas BJ Tool Pusher 150 t · elevador BJ 100 t                                  | confirmado   | Folleto. Las capacidades pertenecen a cada componente y no se suman                                                      |
 | Envolvente: placas 0,90 m de ancho, poleas r≈0,36 m, amelas ≈1,26 m, elevador Ø0,60 m | aproximado   | Tamaños del modelo anterior del visor (esquemático), usados como envolvente                                              |
 | Forma del bloque (cúpula, faldón, ranuras), poleas de garganta Ø0,77 m, eje, guardas | aproximado   | Tipología de las fotos; poleas 2,5 cm más grandes que el modelo anterior para que el ramal (x=±0,36) apoye en la garganta |
 | Gancho forjado (centro y=−1,40 m, radio medio 0,225 m, espesor 0,13 m), pestillo | aproximado   | Tipología de las fotos                                                                                                   |
 | Amelas: eslabón plano de 0,055 m con ojos ovalados, 0,36 m a cada lado del eje   | aproximado   | Foto del eslabón; distancia pasador a pasador 1,275 m (antes 1,26 m)                                                     |
-| Elevador de tubing: dos mitades con bisagra, inserto de bronce, traba, asas      | aproximado   | Foto tipo Y-series (unidad genérica); el modelo del elevador BJ del TACKER 10 es **pendiente**                            |
+| Elevador de tubing: dos mitades con bisagra, inserto de bronce, traba, asas      | aproximado   | Foto tipo Y-series (unidad genérica); el modelo del elevador BJ del equipo 10 es **pendiente**                            |
 | Existencia del elevador de varillas en el equipo                                 | pendiente    | No hay documento que lo confirme                                                                                         |
 | Ubicación del elevador de varillas (`ROD_ELEVATOR`: x −0,85 · z −0,95 · y 2,34 m) | pendiente    | Elegida por plausibilidad: de pie sobre el piso de trabajo, esquina −X/−Z. Tamaño ≈0,22 × 0,16 m, asa de 0,46 m: aproximado |
 | Color de bloque, gancho, amelas y elevadores                                     | pendiente    | Amarillo/naranja/rojo de las fotos. `APAREJO_COLOR = 'RED'` pinta todo de rojo                                           |

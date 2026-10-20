@@ -1,5 +1,5 @@
 /*
- * TACKER 10 · runtime de extensiones del visor V2 (legacy).
+ * Equipo 10 · runtime de extensiones del visor V2 (legacy).
  * Se inyecta ANTES del bundle del visor. Cada módulo `legacy-ext/NN-*.js` se registra con:
  *   window.__rigExt.onPre(api => { ... })   // justo antes de construir los componentes
  *   window.__rigExt.onPost(R => { ... })    // al terminar de arrancar el visor

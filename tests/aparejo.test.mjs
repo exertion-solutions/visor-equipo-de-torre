@@ -8,7 +8,7 @@ import { test } from 'node:test'
 import * as THREE from 'three'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const read = (f) => fs.readFileSync(path.join(root, 'legacy-ext', f), 'utf8')
 const aparejoSrc = read('41-aparejo.js')
 
@@ -29,7 +29,7 @@ test('la ficha del 04: geometría SK-575 (C) y líneas como fuente en conflicto 
   assert.match(meta, /grade: 'C',\s*status: 'Fuente en conflicto'/)
   assert.ok(meta.includes('placa 8') && meta.includes('folleto 6'), 'C1 rotulado, no elegido')
   assert.ok(meta.includes('Pendientes: enhebrado real'))
-  assert.ok(meta.includes("document.addEventListener('tacker:boot'"))
+  assert.ok(meta.includes("document.addEventListener('rig:boot'"))
   assert.ok(html.includes('/* 41-meta-aparejo.js */'))
 })
 
@@ -43,7 +43,7 @@ test('color y ubicación del elevador de varillas son configurables y están mar
 
 test('wrapAparejo delega en 41-aparejo.js y no toca la paleta ni el kit Batch', () => {
   const wellsite = read('40-wellsite.js')
-  assert.ok(wellsite.includes('window.__tackerAparejo'))
+  assert.ok(wellsite.includes('window.__rigAparejo'))
   assert.ok(wellsite.includes('redesign.build(g, api, { K, Batch, dropsGroup })'))
 })
 
@@ -188,7 +188,7 @@ test('todo lo que cuelga del aparejo animado es hijo de bloque_viajero; el eleva
 })
 
 test('presupuesto: mallas fusionadas por material (≤ 3 draw calls más que el original) y ≤ +9.000 triángulos', () => {
-  const orig = buildAparejo((s) => s.replace('const redesign = window.__tackerAparejo', 'const redesign = null'))
+  const orig = buildAparejo((s) => s.replace('const redesign = window.__rigAparejo', 'const redesign = null'))
   const neu = buildAparejo()
   const stats = (g) => {
     const list = meshesOf(g)

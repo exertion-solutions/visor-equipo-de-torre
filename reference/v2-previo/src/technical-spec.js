@@ -1,6 +1,6 @@
-// Fuente principal: documentación Tacker 10 incluida en la carpeta del proyecto.
+// Fuente principal: documentación Equipo 10 incluida en la carpeta del proyecto.
 // Las cotas se expresan en metros salvo indicación contraria.
-export const TACKER_10 = Object.freeze({
+export const RIG_10 = Object.freeze({
   mast: Object.freeze({
     model: 'Service King SK104-330',
     heightM: 31.6992,
@@ -42,7 +42,7 @@ export const TACKER_10 = Object.freeze({
     accumulatorM: Object.freeze([8, 2.4]),
   }),
   // Relevamiento 2026-10-09 (ver docs/pdf-review/informe-sk575-2026-10-09.md). No reemplaza las cotas de arriba:
-  // donde difieren, src/data/rigs/tacker10.ts registra el conflicto. `src` = sourceId de cada cota.
+  // donde difieren, src/data/rigs/rig10.ts registra el conflicto. `src` = sourceId de cada cota.
   sk575: Object.freeze({
     mast: Object.freeze({
       model: 'SK DKA104-330-08', serial: 'DK-3033', src: 'src-placa-api',
@@ -72,7 +72,7 @@ export const TACKER_10 = Object.freeze({
       sandDrumIn: Object.freeze([42, 8]), sandBarrelIn: Object.freeze([16, 43.75]), discAssistIn: 48.5,
     }),
     hoisting: Object.freeze({ linksT: 150, linksLengthIn: 73, linksDiaIn: 3, elevatorBoreIn: 3.21875, src: 'src-insp-sop1110' }),
-    // Plano TACKER 8127-1110-004 rev 4 "Esquema típico stack BOP estándar 7-1/16\" 10 ksi" (WS STD). Parciales de abajo hacia arriba:
+    // Plano 8127-1110-004 rev 4 "Esquema típico stack BOP estándar 7-1/16\" 10 ksi" (WS STD). Parciales de abajo hacia arriba:
     // ram simple + carretel · cruz · doble ram + shear · carretel 10k→5k · anular 5k. Suman 3,726; el total rotulado dice 3,731.
     bopStack: Object.freeze({
       src: 'src-plano-bop-8127', boreIn: 7.0625, ramsPsi: 10000, annularPsi: 5000,

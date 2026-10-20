@@ -5,14 +5,14 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const src = fs.readFileSync(path.join(root, 'legacy-ext', '76-secuencia-montaje.js'), 'utf8')
 const doc = fs.readFileSync(path.join(root, 'docs', 'secuencia-montaje-tipica.md'), 'utf8')
 const COMPONENT_IDS = ['mastil', 'subestructura', 'malacate', 'aparejo', 'motor', 'cabina', 'bop', 'llave', 'caballetes', 'circulacion', 'vientos', 'enganche', 'camion']
 
 test('el módulo entra en el HTML generado', () => {
   assert.ok(html.includes('/* 76-secuencia-montaje.js */'))
-  assert.ok(html.includes('__tackerSeq'))
+  assert.ok(html.includes('__rigSeq'))
 })
 
 test('8 pasos numerados, cada uno con título', () => {
@@ -30,7 +30,7 @@ test('solo referencia componentes que existen y cada uno entra una sola vez', ()
 
 test('se declara ilustrativa y pendiente de validar, y no inventa números', () => {
   assert.match(src, /pendingValidation/)
-  assert.match(src, /no es el procedimiento de Tacker ni un requisito/i)
+  assert.match(src, /no es el procedimiento de la empresa ni un requisito/i)
   assert.match(doc, /pendingValidation/)
   // sin cargas, tiempos ni distancias en los textos de los pasos
   const textos = [...src.matchAll(/texto:\s*(?:\n\s*)?'([^']+)'/g)].map((m) => m[1]).join(' ')

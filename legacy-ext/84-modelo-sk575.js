@@ -2,8 +2,8 @@
  * 84-modelo-sk575.js — MODELO SK-575 (CAD build123d) en el visor V2, con el aspecto del visor CAD de referencia
  * (~/cad/visor.py, skill `equipo-3d`): materiales PBR por pieza, mapa de entorno tipo "room", aristas a 28° y desgaste.
  *
- * Datos: los 16 GLB `public/models/tacker10/sk575_*.glb` (cad/sk575/modelo.py → exportar.py → gltf:optimize), cargados con
- * fetch desde ../models/tacker10/ (respaldo base64 `window.__TACKER_SK575_GLB` en sk575-glb.js, ver scripts/build-legacy.mjs)
+ * Datos: los 16 GLB `public/models/rig10/sk575_*.glb` (cad/sk575/modelo.py → exportar.py → gltf:optimize), cargados con
+ * fetch desde ../models/rig10/ (respaldo base64 `window.__RIG_SK575_GLB` en sk575-glb.js, ver scripts/build-legacy.mjs)
  * + el decodificador meshopt (`window.__MeshoptDecoder`).
  * El V2 no trae GLTFLoader: este lector cubre solo el contrato de esos GLB (nodos TRS, primitivas con POSITION/NORMAL/índices,
  * EXT_meshopt_compression, KHR_mesh_quantization, PBR metallic-roughness) y las aristas horneadas `<nodo>_aristas` (LINES,
@@ -15,10 +15,10 @@
  * Es EL equipo del V2: cada componente SK-575 se integra en su grupo procedural (despiece, selección, aislado, corte, malla, modos,
  * secuencia de montaje, izamiento y aparejo animado) y TODA la geometría procedural pasa a una capa invisible (también la casilla
  * del maquinista, que el SK-575 no modela). Sub-nodos del GLB con grupo propio: cabina y motor (dentro del carrier) y piso de
- * enganche (dentro del mástil, sigue al 2.º tramo). API para pruebas: `window.__tackerSk575 = { ready, isOn, sinPieza, stats }`.
+ * enganche (dentro del mástil, sigue al 2.º tramo). API para pruebas: `window.__rigSk575 = { ready, isOn, sinPieza, stats }`.
  */
 window.__rigExt.onPost((R) => {
-  const FILES = window.__TACKER_SK575_FILES
+  const FILES = window.__RIG_SK575_FILES
   const MD = window.__MeshoptDecoder
   if (!FILES || !FILES.length || !MD || !R.scene || !R.three || !R.renderer) return
   const T = R.three
@@ -27,7 +27,7 @@ window.__rigExt.onPost((R) => {
   )
   const invalidate = () => typeof R.invalidate === 'function' && R.invalidate()
   const SIN_SOMBRA = /_(cable|luz|vidrio)$/ // por nombre de material (exportar.py)
-  // medición de la carga (window.__tackerSk575.stats); fuente = 'fetch' | 'base64'
+  // medición de la carga (window.__rigSk575.stats); fuente = 'fetch' | 'base64'
   const stats = { fuente: '', bytesMs: 0, decodeMs: 0 }
   // aristas horneadas: un solo material para todas (como visor.py); no participan del picking ni proyectan sombra
   const lineaMat = new T.LineBasicMaterial({ color: '#0b0d10', transparent: true, opacity: 0.55 })
@@ -115,7 +115,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
   const NC = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }
 
   // ───────── bytes de los GLB: fetch por http(s); respaldo base64 (--standalone o sk575-glb.js) ─────────
-  // Servido (Pages, iframe de la app): ../models/tacker10/<id>.glb, binario, sin el +33 % del base64 ni el atob.
+  // Servido (Pages, iframe de la app): ../models/rig10/<id>.glb, binario, sin el +33 % del base64 ni el atob.
   // file:// no admite fetch y el iframe sandbox (origen opaco) necesita CORS del servidor: si falla cualquier GLB se usa el
   // base64 para todos (un <script> clásico carga también por file:// y sin CORS).
   const desdeB64 = (b64) => {
@@ -125,14 +125,14 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     return bin
   }
   const respaldoB64 = () =>
-    window.__TACKER_SK575_GLB
-      ? Promise.resolve(window.__TACKER_SK575_GLB)
+    window.__RIG_SK575_GLB
+      ? Promise.resolve(window.__RIG_SK575_GLB)
       : new Promise((ok, mal) => {
           const s = document.createElement('script')
           s.src = 'sk575-glb.js' // junto al HTML (scripts/build-legacy.mjs)
           s.onload = () =>
-            window.__TACKER_SK575_GLB
-              ? ok(window.__TACKER_SK575_GLB)
+            window.__RIG_SK575_GLB
+              ? ok(window.__RIG_SK575_GLB)
               : mal(new Error('sk575-glb.js sin datos'))
           s.onerror = () => mal(new Error('no se pudo cargar sk575-glb.js'))
           document.head.appendChild(s)
@@ -140,11 +140,11 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
   async function bytesGlb() {
     const t0 = performance.now()
     let out = null
-    if (!window.__TACKER_SK575_GLB && /^https?:$/.test(location.protocol)) {
+    if (!window.__RIG_SK575_GLB && /^https?:$/.test(location.protocol)) {
       try {
         const bufs = await Promise.all(
           FILES.map((id) =>
-            fetch(new URL('../models/tacker10/' + id + '.glb', location.href)).then((r) => {
+            fetch(new URL('../models/rig10/' + id + '.glb', location.href)).then((r) => {
               if (!r.ok) throw new Error(id + ': HTTP ' + r.status)
               return r.arrayBuffer()
             }),
@@ -228,7 +228,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
       mat.name = m.name || ''
       if (!emisiva) {
         mat.onBeforeCompile = desgaste
-        mat.customProgramCacheKey = () => 'tacker-sk575-desgaste'
+        mat.customProgramCacheKey = () => 'rig-sk575-desgaste'
       }
       return mat
     })
@@ -397,7 +397,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     n.matrixAutoUpdate = false
     const previo = R.scene.onBeforeRender
     R.scene.onBeforeRender = function (...a) {
-      giro.makeRotationZ(window.__tackerErect?.plegado?.() || 0)
+      giro.makeRotationZ(window.__rigErect?.plegado?.() || 0)
       m.copy(mastG.matrixWorld).invert().multiply(sup.matrixWorld).multiply(base).multiply(giro)
       // tolerancia: el producto con la inversa no repite bits y 80-perf rehace la sombra ante cualquier cambio
       if (m.elements.some((v, i) => Math.abs(v - n.matrix.elements[i]) > 1e-7)) {
@@ -526,7 +526,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     for (const n of buscar(G.llave, 'sk575_llave_cable')) pares.push([n, cablesCorona])
     // los tiros (parados contra el piso de enganche) aparecen con el izamiento (fase 3) y solo con el mástil a la vista; no
     // dependen de la casilla del aparejo en el árbol
-    const E = window.__tackerErect
+    const E = window.__rigErect
     for (const n of buscar(G.caballetes, 'sk575_tiros_'))
       pares.push([n, () => conMastil() && (!E || E.progress() >= E.fases.extendEnd)])
     if (!pares.length) return
@@ -612,7 +612,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         if (R.groups.cabina) R.groups.cabina.position.set(0, 0, 0)
         const despiece = Object.values(R.groups).map((G) => [G, G.position.clone()])
         for (const [G] of despiece) G.position.set(0, 0, 0)
-        const E = window.__tackerErect
+        const E = window.__rigErect
         const p0 = E ? E.progress() : 1
         if (E) (E.pause(), E.set(1))
         R.scene.updateMatrixWorld(true)
@@ -633,7 +633,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
     return carga
   }
 
-  window.__tackerSk575 = {
+  window.__rigSk575 = {
     ready: () => carga,
     isOn: () => true,
     sinPieza: () => [], // cabina, motor y enganche ya tienen pieza SK propia (sub-nodos del GLB)

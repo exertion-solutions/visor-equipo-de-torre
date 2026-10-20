@@ -1,0 +1,34 @@
+{
+  "id": "sk575_bomba",
+  "confianza": "C",
+  "alcance": "Bomba triplex sobre patín: power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad (referencia fotográfica genérica; modelo, camisas, carrera y presión del equipo PENDIENTES)",
+  "triangulos": 61564,
+  "materiales": [
+    "acero",
+    "acero_oscuro",
+    "amarillo",
+    "azul_bomba",
+    "blanco",
+    "rojo"
+  ],
+  "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
+  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "as_built": false,
+  "aristas": {
+    "segmentos": 18756,
+    "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
+    "umbral_grados": 28,
+    "excluye": [
+      "luz",
+      "vidrio"
+    ]
+  },
+  "publicado": {
+    "archivo": "public/models/rig10/sk575_bomba.glb",
+    "optimize": "npm run gltf:optimize -- sk575_bomba.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
+    "triangulos_origen": 61564,
+    "triangulos_publicados": 44096,
+    "segmentos_aristas": 18756,
+    "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
+  }
+}

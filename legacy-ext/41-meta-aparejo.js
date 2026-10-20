@@ -1,7 +1,7 @@
 /*
- * 41-meta-aparejo.js · ficha de confiabilidad (`__TACKER_META`) del componente 04 `aparejo`.
- * La tabla META la crea el módulo de producto DESPUÉS del bundle: se aplica cuando el visor arranca (`tacker:boot`) o de inmediato si ya arrancó.
- * Grado C = confianza de la GEOMETRÍA visible (modelo SK-575, src-modelo-sk575). La de cada dato va en el texto (tacker10.ts, sk575_aparejo).
+ * 41-meta-aparejo.js · ficha de confiabilidad (`__RIG_META`) del componente 04 `aparejo`.
+ * La tabla META la crea el módulo de producto DESPUÉS del bundle: se aplica cuando el visor arranca (`rig:boot`) o de inmediato si ya arrancó.
+ * Grado C = confianza de la GEOMETRÍA visible (modelo SK-575, src-modelo-sk575). La de cada dato va en el texto (rig10.ts, sk575_aparejo).
  * Líneas: conflicto C1 (placa 8 dibujadas · folleto 6) rotulado, no elegido.
  */
 ;(() => {
@@ -19,9 +19,9 @@
   }
 
   const applyMeta = () => {
-    const meta = window.__TACKER_META
+    const meta = window.__RIG_META
     if (meta && meta.aparejo) Object.assign(meta.aparejo, META_APAREJO)
   }
-  if (window.__tackerBooted) applyMeta()
-  else document.addEventListener('tacker:boot', applyMeta, { once: true })
+  if (window.__rigBooted) applyMeta()
+  else document.addEventListener('rig:boot', applyMeta, { once: true })
 })()

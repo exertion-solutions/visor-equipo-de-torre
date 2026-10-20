@@ -7,11 +7,11 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const mast = fs.readFileSync(path.join(root, 'legacy-ext', '20-mast.js'), 'utf8')
 const meta = fs.readFileSync(path.join(root, 'legacy-ext', '43-meta-enganche.js'), 'utf8')
 const drops = JSON.parse(
-  fs.readFileSync(path.join(root, 'src', 'data', 'qhse', 'tacker10-drops.json'), 'utf8'),
+  fs.readFileSync(path.join(root, 'src', 'data', 'qhse', 'rig10-drops.json'), 'utf8'),
 )
 
 /** Bloque `Ot.enganche = (g) => {…}` hasta el comentario de VIENTOS (zona propia de este componente). */
@@ -25,7 +25,7 @@ test('el piso de enganche conserva TODOS los grupos DROPS PE-x que dibujaba (los
   )
   // PE-10 y PE-13 (vientos) los dibuja `Ot.vientos`; todos existen en el dataset DROPS del Libro
   const ids = new Set(drops.points.map((p) => p.id))
-  for (let i = 1; i <= 13; i++) assert.ok(ids.has(`PE-${i}`), `PE-${i} en tacker10-drops.json`)
+  for (let i = 1; i <= 13; i++) assert.ok(ids.has(`PE-${i}`), `PE-${i} en rig10-drops.json`)
 })
 
 test('la altura del piso (N = 18,5) y el anclaje al marco local del mástil no cambian', () => {
@@ -61,7 +61,7 @@ test('los textos del componente 12 se aplican y los peligros nuevos son "pendien
 test('la ficha de confiabilidad del 12 sigue en grado C / Aproximado y detalla lo pendiente', () => {
   assert.match(meta, /grade: 'C',\s*status: 'Aproximado'/)
   assert.ok(meta.includes('Pendientes: cotas reales del piso y del peine'))
-  assert.ok(meta.includes("document.addEventListener('tacker:boot'"))
+  assert.ok(meta.includes("document.addEventListener('rig:boot'"))
   assert.ok(html.includes('/* 43-meta-enganche.js */'))
 })
 

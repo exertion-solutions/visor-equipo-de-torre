@@ -5,7 +5,7 @@ Componente 07 del visor V2: **BOP, acumulador y choke manifold** (`legacy-ext/40
 
 ## Imágenes de referencia (unidades genéricas)
 
-**No son el equipo del TACKER 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built.
+**No son el equipo 10.** Sirven para la tipología y el nivel de detalle, nunca como cota as-built.
 Origen y licencia sin verificar (fotos de catálogo de terceros): no se embeben en el HTML y **no están versionadas en git** (ver `.gitignore`); se guardan solo en la copia local de esta carpeta.
 
 | Archivo                                | Qué muestra                                                                     | Se usó para                                                                 |
@@ -22,7 +22,7 @@ Origen y licencia sin verificar (fotos de catálogo de terceros): no se embeben 
 
 | Dato                                                        | Estado        | Fuente / nota                                                                                               |
 | ----------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| BOP Cameron anular + doble ariete, 7 1/16", 5M              | confirmado    | Folleto TACKER 10 rev. 26/06/2024; acta de prueba del acumulador TK-10 (06/10/2023)                         |
+| BOP Cameron anular + doble ariete, 7 1/16", 5M              | confirmado    | Folleto Equipo 10 rev. 26/06/2024; acta de prueba del acumulador TK-10 (06/10/2023)                         |
 | HCR de 2 1/16" (lado choke/kill)                            | confirmado    | Acta de prueba del acumulador TK-10 (06/10/2023). No se modela un tercer ariete ni drilling spool             |
 | Acumulador 8 × 2,4 m, 5 botellones, 3.000 psi               | confirmado    | Folleto / LAYOUT TKR-10. El acta TK-10 dice "abiertos 4 líneas": no contradice, se mantienen los 5 botellones |
 | Posición del choke manifold (x≈3,4 · z≈−4,3)                | confirmado    | Jorge (posición en locación)                                                                                |
@@ -66,8 +66,8 @@ Distribución (triángulos): BOP 8.244 (pintura 1.672 · acero 5.036 · manguera
 
 ## Fuentes que no se pudieron leer
 
-`CHOKE MANIFOLD TKR05 2376-2111.PDF` y `P&DI Diagram Workover Rig TACKER TKR10.pdf` (carpeta `diagramas equipos`): la lectura
-fue denegada. Con ellos se podría cerrar el ruteo y afinar la tipología del choke con un equipo Tacker real.
+`CHOKE MANIFOLD TKR05 2376-2111.PDF` y `P&DI Diagram Workover Rig TKR10.pdf` (carpeta `diagramas equipos`): la lectura
+fue denegada. Con ellos se podría cerrar el ruteo y afinar la tipología del choke con un equipo de la empresa real.
 
 ## Otros componentes
 

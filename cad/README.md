@@ -1,4 +1,4 @@
-# cad/ — modelado paramétrico (CadQuery) de TACKER DIGITAL RIG
+# cad/ — modelado paramétrico (CadQuery) de DIGITAL RIG
 
 Flujo estilo SolidWorks (variables → ecuaciones → operaciones → verificación → export) con la skill
 `diseno-cad-solidworks`. Las cotas salen de `reference/v2-previo/src/technical-spec.js` (fuente única,
@@ -8,7 +8,7 @@ se leen con `node`); no se duplican en Python.
 python -m venv %USERPROFILE%\cad-env && %USERPROFILE%\cad-env\Scripts\pip install -r cad/requirements.txt
 %USERPROFILE%\cad-env\Scripts\python cad/build.py      # genera y verifica; exit 1 si una cota no cierra
 npm run gltf:inspect -- assets/source/mastil.glb        # revisar antes de optimizar
-npm run gltf:optimize -- mastil.glb                     # → public/models/tacker10/ (decisión aparte)
+npm run gltf:optimize -- mastil.glb                     # → public/models/rig10/ (decisión aparte)
 ```
 
 ## Convenciones
@@ -29,7 +29,7 @@ Los valores documentados se leen de `technical-spec.js` con `"@spec:mast.heightM
 python cad/build.py                                         # genera y verifica todo
 python cad/cli.py mastil --set n_pan_inf=10 --set Db=1.8    # otras medidas (salida mastil_mod.glb)
 python cad/cli.py piso_trabajo minimo                       # preset (h = 1 m)
-python cad/cli.py mastil tacker10                           # falla: PENDIENTE (falta plano del fabricante)
+python cad/cli.py mastil rig10                           # falla: PENDIENTE (falta plano del fabricante)
 ```
 
 `cad/catalogo.json` guarda la procedencia por dato (`REF_OEM`, `REPRESENTATIVO`, `DERIVADO`, `PENDIENTE`) y `catalogo.dato()` falla ante un
@@ -49,19 +49,19 @@ y de base para auditar las cotas del legacy. No se registran en `Component.model
 
 ## SK-575 completo (`cad/sk575/`, build123d)
 
-Modelo de referencia del TACKER 10 entero (Service King SK-575 en locación, 16 componentes `sk575_*`, ≈ 1,09 M tris,
+Modelo de referencia del equipo 10 entero (Service King SK-575 en locación, 16 componentes `sk575_*`, ≈ 1,09 M tris,
 1,6 MB optimizado). Entorno **aparte** (build123d 0.13 / OCP 8, incompatible con este `cad-env`), verificación de 13
-cotas contra `technical-spec.js` → `TACKER_10.sk575` y un GLB por componente. Ver [`sk575/README.md`](sk575/README.md)
+cotas contra `technical-spec.js` → `RIG_10.sk575` y un GLB por componente. Ver [`sk575/README.md`](sk575/README.md)
 y el informe [`docs/pdf-review/informe-sk575-2026-10-09.md`](../docs/pdf-review/informe-sk575-2026-10-09.md).
 Confianza de geometría B (izaje, piso) o C (resto); **no es as-built**.
 
 ## Ejemplos
 
 `examples/choke_manifold_ilustrativo/`: choke manifold genérico reconstruido de una imagen de proveedor (`ref.png`, solo local: no se versiona).
-**No es Tacker 10**, escala PENDIENTE (unidades = px), IoU 0,58. Solo ilustrativo; no usar en el visor.
+**No es Equipo 10**, escala PENDIENTE (unidades = px), IoU 0,58. Solo ilustrativo; no usar en el visor.
 
 ## Próximos candidatos (necesitan dato fuente)
 
 Cubiertos en forma ilustrativa (C) por `cad/sk575/`: BOP, acumulador, piletas, bomba, manifold. Siguen faltando datos fuente:
-diámetro nominal del BOP instalado (conflicto 7-1/16" vs 11"), choke manifold real de Tacker 10 (el B20-9908 es del TKR-08,
+diámetro nominal del BOP instalado (conflicto 7-1/16" vs 11"), choke manifold real del equipo 10 (el B20-9908 es del TKR-08,
 solo escala), secciones y reticulado del mástil (el manual SK no trae planos de arreglo general).

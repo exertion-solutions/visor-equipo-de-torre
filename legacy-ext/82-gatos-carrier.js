@@ -9,7 +9,7 @@
  * (siguen su visibilidad y su selección). En el montaje se bajan en el paso 4 ("posicionamiento y nivelación") y en la animación del
  * izamiento se bajan primero (81-izamiento-mastil.js). No se modelan cargas ni nivelación real.
  *
- * API: `window.__tackerGatos = { set(d), get(), posiciones }` con d en [0, 1] (0 = recogidos, 1 = apoyados en el terreno).
+ * API: `window.__rigGatos = { set(d), get(), posiciones }` con d en [0, 1] (0 = recogidos, 1 = apoyados en el terreno).
  */
 window.__rigExt.onPost((R) => {
   const T = R.three
@@ -83,10 +83,10 @@ window.__rigExt.onPost((R) => {
   set(1)
 
   // Montaje: los gatos bajan recién en el paso 4 (nivelación). Antes (paso 3: descarga) están recogidos.
-  document.addEventListener('tacker:seq-step', (e) => {
+  document.addEventListener('rig:seq-step', (e) => {
     const k = Number(e.detail)
     set(k === 3 ? 0 : 1)
   })
 
-  window.__tackerGatos = { set, get: () => d, posiciones }
+  window.__rigGatos = { set, get: () => d, posiciones }
 })

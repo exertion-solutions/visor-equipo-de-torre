@@ -6,17 +6,21 @@ import { test } from 'node:test';
 
 const root = path.resolve(import.meta.dirname, '..');
 const src = fs.readFileSync(path.join(root, 'legacy-ext', '89-visitas.js'), 'utf8');
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8');
 
 /** Corre el módulo con un entorno simulado y devuelve el elemento, las URL pedidas y el estado. */
-async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new Map(), dnt = '0', respuesta, falla = false } = {}) {
+async function correr({ conPadre = false, url = 'https://visor.ejemplo.com/legacy/', storage = new Map(), dnt = '0', respuesta, falla = false } = {}) {
   const u = new URL(url);
   const pedidos = [];
   const el = { hidden: true, textContent: '' };
   const bar = { appendChild: () => {} };
   let post;
+  const mensajes = [];
+  const oyentes = [];
   const win = {
     __rigExt: { onPost: (f) => (post = f) },
+    addEventListener: (t, f) => oyentes.push([t, f]),
+    parent: conPadre ? { postMessage: (m) => mensajes.push(m) } : null,
     sessionStorage: storage && {
       getItem: (k) => (storage.has(k) ? storage.get(k) : null),
       setItem: (k, v) => storage.set(k, v),
@@ -43,7 +47,7 @@ async function correr({ url = 'https://visor.ejemplo.com/legacy/', storage = new
   );
   post();
   await new Promise((r) => setTimeout(r, 10));
-  return { el, pedidos, estado: win.__tackerVisitas.estado(), storage };
+  return { el, pedidos, mensajes, oyentes, win, estado: win.__rigVisitas.estado(), storage };
 }
 
 test('el módulo está en el HTML generado y usa solo el servicio declarado, sin claves', () => {
@@ -55,7 +59,7 @@ test('el módulo está en el HTML generado y usa solo el servicio declarado, sin
 test('primera visita de la sesión: suma (hit), muestra el total y marca la sesión; la segunda solo lee', async () => {
   const storage = new Map();
   const a = await correr({ storage });
-  assert.match(a.pedidos[0], /\/hit\/tacker10-digital-rig-exertion\/visitas$/);
+  assert.match(a.pedidos[0], /\/hit\/rig10-digital-rig-exertion\/visitas$/);
   assert.equal(a.el.hidden, false);
   assert.equal(a.el.textContent, 'Visitas: ' + (1234).toLocaleString('es-AR'));
   assert.equal(a.estado, 'contada');
@@ -71,7 +75,7 @@ test('sin almacenamiento (iframe sandbox): cuenta por carga y no rompe', async (
 });
 
 test('localhost y file:// no cuentan ni muestran', async () => {
-  for (const url of ['http://localhost:5173/legacy/', 'http://127.0.0.1/x', 'file:///C:/visor/TACKER10.html']) {
+  for (const url of ['http://localhost:5173/legacy/', 'http://127.0.0.1/x', 'file:///C:/visor/RIG10.html']) {
     const r = await correr({ url });
     assert.equal(r.pedidos.length, 0, url);
     assert.equal(r.el.hidden, true, url);
@@ -89,4 +93,19 @@ test('si el servicio falla o responde mal, el contador queda oculto', async () =
   assert.equal(caido.estado, 'error');
   const raro = await correr({ respuesta: { value: 'abc' } });
   assert.equal(raro.el.hidden, true);
+});
+
+test('embebido: publica el total al padre y lo reenvía ante rig:ping', async () => {
+  const r = await correr({ conPadre: true });
+  assert.deepEqual(r.mensajes, [{ type: 'rig:visitas', value: 1234 }]);
+  const [, oyente] = r.oyentes.find(([t]) => t === 'message');
+  oyente({ source: r.win.parent, data: { type: 'rig:ping' } });
+  assert.equal(r.mensajes.length, 2);
+  oyente({ source: {}, data: { type: 'rig:ping' } }); // de otro origen: se ignora
+  assert.equal(r.mensajes.length, 2);
+});
+
+test('sin padre (página directa) no publica nada', async () => {
+  const r = await correr();
+  assert.deepEqual(r.mensajes, []);
 });

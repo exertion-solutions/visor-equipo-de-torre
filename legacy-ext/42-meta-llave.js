@@ -1,9 +1,9 @@
 /*
- * 42-meta-llave.js · TACKER 10 · ficha de confiabilidad del componente 08 (`llave`: llave hidráulica, contrafuerza y cuñas).
+ * 42-meta-llave.js · Equipo 10 · ficha de confiabilidad del componente 08 (`llave`: llave hidráulica, contrafuerza y cuñas).
  *
- * `__TACKER_META` es la tabla del módulo de producto, que se crea DESPUÉS del bundle: se completa cuando el módulo arranca
- * (`tacker:boot`) o de inmediato si ya arrancó. Misma técnica que la ficha del componente 07 (final de 40-wellsite.js).
- * Grado C / Aproximado: la forma es una tipología genérica de referencia, no el equipo del TACKER 10.
+ * `__RIG_META` es la tabla del módulo de producto, que se crea DESPUÉS del bundle: se completa cuando el módulo arranca
+ * (`rig:boot`) o de inmediato si ya arrancó. Misma técnica que la ficha del componente 07 (final de 40-wellsite.js).
+ * Grado C / Aproximado: la forma es una tipología genérica de referencia, no el equipo 10.
  */
 ;(() => {
   'use strict'
@@ -19,9 +19,9 @@
       'modelo, torque y capacidad, rango de diámetros, presión hidráulica y color real (rojo de la referencia).',
   }
   const applyMeta = () => {
-    const meta = window.__TACKER_META
+    const meta = window.__RIG_META
     if (meta && meta.llave) Object.assign(meta.llave, META_LLAVE)
   }
-  if (window.__tackerBooted) applyMeta()
-  else document.addEventListener('tacker:boot', applyMeta, { once: true })
+  if (window.__rigBooted) applyMeta()
+  else document.addEventListener('rig:boot', applyMeta, { once: true })
 })()

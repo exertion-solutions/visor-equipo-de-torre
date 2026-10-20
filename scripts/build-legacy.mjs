@@ -1,22 +1,23 @@
 // Genera el visor V2 de trabajo a partir del ORIGINAL inmutable (reference/legacy/) + parches + módulos legacy-ext/.
 //
-//   node scripts/build-legacy.mjs                       → escribe public/legacy/TACKER10_Digital_Rig_V2.html
+//   node scripts/build-legacy.mjs                       → escribe public/legacy/Digital_Rig_V2.html
 //   node scripts/build-legacy.mjs --out .tmp/x/index.html [--only 10-a.js,20-b.js]
 //        → escribe SOLO ese archivo (para probar sin pisar la copia de trabajo).
-//        --drops <json> usa otro JSON de datos DROPS (por defecto src/data/qhse/tacker10-drops.json).
+//        --drops <json> usa otro JSON de datos DROPS (por defecto src/data/qhse/rig10-drops.json).
 //        --only limita los módulos legacy-ext incluidos (siempre entra 00-runtime.js y el bloque de datos).
 //        --standalone incrusta los GLB del SK-575 en el HTML (un solo archivo, ~5 MB) en vez de escribir sk575-glb.js.
 //
 // GLB del SK-575: el HTML servido (Pages, iframe de la app, `vite dev`) los baja con fetch desde
-// ../models/tacker10/sk575_*.glb (legacy-ext/84-modelo-sk575.js). Respaldo (file:// o fetch fallido, p. ej. el iframe
+// ../models/rig10/sk575_*.glb (legacy-ext/84-modelo-sk575.js). Respaldo (file:// o fetch fallido, p. ej. el iframe
 // sandbox contra un servidor sin CORS): `sk575-glb.js` junto al HTML, con los mismos GLB en base64. Un <script> clásico
-// carga también por file://, así ABRIR_TACKER10_DIGITAL_RIG.cmd sigue funcionando sin servidor.
+// carga también por file://, así ABRIR_DIGITAL_RIG.cmd sigue funcionando sin servidor.
 //
 // Cada parche exige EXACTAMENTE 1 coincidencia: si el original cambia, el build falla en vez de corromper.
 // Además deduplica la foto de referencia embebida dos veces (ver dedupeRefImage).
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { genericizarHtml } from './lib/genericizar.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const original = path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html')
@@ -30,7 +31,7 @@ const argValue = (flag) => {
 const outArg = argValue('--out')
 const dropsJson = argValue('--drops')
   ? path.resolve(root, argValue('--drops'))
-  : path.join(root, 'src', 'data', 'qhse', 'tacker10-drops.json')
+  : path.join(root, 'src', 'data', 'qhse', 'rig10-drops.json')
 const only = argValue('--only')?.split(',').filter(Boolean)
 const standalone = args.includes('--standalone')
 /** Respaldo base64 de los GLB del SK-575, junto al HTML (lo carga legacy-ext/84-modelo-sk575.js). */
@@ -97,26 +98,26 @@ const patches = [
   },
   {
     name: 'favicon inline',
-    find: '<title>TACKER 10',
+    find: '<title>Equipo 10',
     replace:
-      '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230b0d12%27/%3E%3Cpath d=%27M16 4v24M10 28h12M12 10h8M13 16h6%27 stroke=%27%23f2b632%27 stroke-width=%272.5%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3C/svg%3E">\n<title>TACKER 10',
+      '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230b0d12%27/%3E%3Cpath d=%27M16 4v24M10 28h12M12 10h8M13 16h6%27 stroke=%27%23f2b632%27 stroke-width=%272.5%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3C/svg%3E">\n<title>Equipo 10',
   },
   {
-    name: 'tabla META de la capa de producto → window.__TACKER_META',
+    name: 'tabla META de la capa de producto → window.__RIG_META',
     find: 'const MODE={',
-    replace: 'window.__TACKER_META=META;const MODE={',
+    replace: 'window.__RIG_META=META;const MODE={',
   },
   {
-    name: 'puente de modo (?embedded oculta la barra; setMode envuelto → evento tacker:mode; tacker:boot)',
+    name: 'puente de modo (?embedded oculta la barra; setMode envuelto → evento rig:mode; rig:boot)',
     find: "mb.addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b)setMode(b.dataset.m)});setMode('explore');",
     replace:
       "mb.addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(b)setMode(b.dataset.m)});setMode('explore');\n" +
-      '    // Modo embebido (iframe de la app TACKER DIGITAL RIG): la app controla el modo por postMessage (legacy-ext/70-bridge.js) y se oculta la barra propia.\n' +
+      '    // Modo embebido (iframe de la app DIGITAL RIG): la app controla el modo por postMessage (legacy-ext/70-bridge.js) y se oculta la barra propia.\n' +
       "    if(new URLSearchParams(location.search).has('embedded'))mb.style.display='none';\n" +
-      '    // `setMode` (barra interna Y postMessage) emite `tacker:mode` DESPUÉS de terminar: 75-mode-presets.js aplica ahí los presets de capas.\n' +
-      "    const __setMode0=setMode;setMode=function(m){__setMode0(m);try{document.dispatchEvent(new CustomEvent('tacker:mode',{detail:m}))}catch(e){console.error(e)}};\n" +
-      '    window.__tackerMode={set:m=>{if(Object.prototype.hasOwnProperty.call(MODE,m))setMode(m)},get:()=>mode,list:Object.keys(MODE)};\n' +
-      "    window.__tackerBooted=true;document.dispatchEvent(new Event('tacker:boot'));",
+      '    // `setMode` (barra interna Y postMessage) emite `rig:mode` DESPUÉS de terminar: 75-mode-presets.js aplica ahí los presets de capas.\n' +
+      "    const __setMode0=setMode;setMode=function(m){__setMode0(m);try{document.dispatchEvent(new CustomEvent('rig:mode',{detail:m}))}catch(e){console.error(e)}};\n" +
+      '    window.__rigMode={set:m=>{if(Object.prototype.hasOwnProperty.call(MODE,m))setMode(m)},get:()=>mode,list:Object.keys(MODE)};\n' +
+      "    window.__rigBooted=true;document.dispatchEvent(new Event('rig:boot'));",
   },
   {
     name: 'hook PRE: antes de construir los componentes',
@@ -195,7 +196,9 @@ function safeJsonForScript(obj) {
 let glbB64 = null
 
 function build() {
-  let html = fs.readFileSync(original, 'utf8')
+  // El original (evidencia inmutable) conserva su nombre y su texto; el visor generado sale con nombres genéricos: se le aplica el
+  // mismo renombrado que al resto del repo (scripts/lib/genericizar.mjs) ANTES de los parches, que ya están escritos en términos genéricos.
+  let html = genericizarHtml(fs.readFileSync(original, 'utf8'))
 
   for (const p of patches) {
     const n = html.split(p.find).length - 1
@@ -210,15 +213,15 @@ function build() {
 
   if (fs.existsSync(dropsJson)) {
     blocks.push(
-      '/* datos DROPS (src/data/qhse/tacker10-drops.json) */\nwindow.__TACKER_DROPS=' +
+      '/* datos DROPS (src/data/qhse/rig10-drops.json) */\nwindow.__RIG_DROPS=' +
         safeJsonForScript(JSON.parse(fs.readFileSync(dropsJson, 'utf8'))) +
         ';',
     )
   }
-  const vpJson = path.join(root, 'src', 'data', 'viewpoints', 'tacker10-viewpoints.json')
+  const vpJson = path.join(root, 'src', 'data', 'viewpoints', 'rig10-viewpoints.json')
   if (fs.existsSync(vpJson)) {
     blocks.push(
-      '/* viewpoints del recorrido en primera persona (src/data/viewpoints/tacker10-viewpoints.json) */\nwindow.__TACKER_VIEWPOINTS=' +
+      '/* viewpoints del recorrido en primera persona (src/data/viewpoints/rig10-viewpoints.json) */\nwindow.__RIG_VIEWPOINTS=' +
         safeJsonForScript(JSON.parse(fs.readFileSync(vpJson, 'utf8'))) +
         ';',
     )
@@ -226,7 +229,7 @@ function build() {
   const izJson = path.join(root, 'src', 'data', 'cad', 'izamiento.json')
   if (fs.existsSync(izJson)) {
     blocks.push(
-      '/* datos del izamiento del mástil (src/data/cad/izamiento.json) */\nwindow.__TACKER_IZAMIENTO=' +
+      '/* datos del izamiento del mástil (src/data/cad/izamiento.json) */\nwindow.__RIG_IZAMIENTO=' +
         safeJsonForScript(JSON.parse(fs.readFileSync(izJson, 'utf8'))) +
         ';',
     )
@@ -234,14 +237,14 @@ function build() {
   // Cilindros de izaje y vientos del SK-575 (meta de cad/sk575/exportar.py): 81-izamiento-mastil.js anima esas piezas y
   // tiende los vientos dinámicos entre sus extremos, así la pose de la animación empalma con la final.
   const skMeta = (id) => {
-    const f = path.join(root, 'public', 'models', 'tacker10', id + '.meta.json')
+    const f = path.join(root, 'public', 'models', 'rig10', id + '.meta.json')
     return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null
   }
   const izMeta = skMeta('sk575_izaje')
   const vientosMeta = skMeta('sk575_vientos')
   if (izMeta || vientosMeta) {
     blocks.push(
-      '/* cilindros y vientos SK-575 (public/models/tacker10/sk575_{izaje,vientos}.meta.json) */\nwindow.__TACKER_SK575_META=' +
+      '/* cilindros y vientos SK-575 (public/models/rig10/sk575_{izaje,vientos}.meta.json) */\nwindow.__RIG_SK575_META=' +
         safeJsonForScript({
           izaje: izMeta?.cilindros?.lista ?? [],
           vientos: vientosMeta?.cables ?? [],
@@ -251,7 +254,7 @@ function build() {
   }
   // Modelo SK-575 (legacy-ext/84-modelo-sk575.js): la lista de GLB + el decodificador meshopt de three (MIT, incrustado).
   // Los GLB van por fetch; el base64 queda como respaldo en sk575-glb.js (o dentro del HTML con --standalone).
-  const modelsDir = path.join(root, 'public', 'models', 'tacker10')
+  const modelsDir = path.join(root, 'public', 'models', 'rig10')
   const meshopt = path.join(
     root,
     'node_modules',
@@ -289,18 +292,18 @@ function build() {
       ]),
     )
     blocks.push(
-      '/* GLB del modelo SK-575 (public/models/tacker10/sk575_*.glb) */\nwindow.__TACKER_SK575_FILES=' +
+      '/* GLB del modelo SK-575 (public/models/rig10/sk575_*.glb) */\nwindow.__RIG_SK575_FILES=' +
         JSON.stringify(Object.keys(map)) +
         ';',
     )
-    glbB64 = 'window.__TACKER_SK575_GLB=' + safeJsonForScript(map) + ';'
+    glbB64 = 'window.__RIG_SK575_GLB=' + safeJsonForScript(map) + ';'
     if (standalone) blocks.push('/* GLB en base64 (--standalone) */\n' + glbB64)
   }
   for (const f of readExtModules().filter((f) => f !== runtimeFile)) {
     blocks.push(`/* ${f} */\n` + fs.readFileSync(path.join(extDir, f), 'utf8'))
   }
 
-  const ext = `<script id="tacker-ext">\n${blocks.join('\n')}\n</script>\n`
+  const ext = `<script id="rig-ext">\n${blocks.join('\n')}\n</script>\n`
   if (html.split(BUNDLE_ANCHOR).length - 1 !== 1)
     throw new Error('No se encontró el ancla del bundle')
   html = html.replace(BUNDLE_ANCHOR, () => ext + BUNDLE_ANCHOR)
@@ -310,7 +313,7 @@ function build() {
 const html = build()
 const targets = outArg
   ? [path.resolve(root, outArg)]
-  : [path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html')]
+  : [path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html')]
 
 for (const t of targets) {
   fs.mkdirSync(path.dirname(t), { recursive: true })

@@ -44,7 +44,7 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
 
 const baseCompile = Material.prototype.onBeforeCompile
 const baseKey = Material.prototype.customProgramCacheKey
-const wearKey = () => 'tacker-wear'
+const wearKey = () => 'rig-wear'
 
 function materials(root: Object3D): MeshStandardMaterial[] {
   const out = new Set<MeshStandardMaterial>()

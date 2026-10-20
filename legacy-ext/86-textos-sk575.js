@@ -2,8 +2,8 @@
  * 86-textos-sk575.js · textos del V2 alineados con el SK-575 (único equipo visible desde 84-modelo-sk575.js).
  *
  * El original (reference/legacy/, inmutable) describe la geometría procedural, hoy oculta. Este módulo reescribe EN RUNTIME:
- *  1. Fichas `__TACKER_META` de mastil, subestructura, motor, cabina, camion, malacate, caballetes y vientos: `grade` = confianza de la
- *     GEOMETRÍA visible (modelo SK-575 = C); la confianza de cada dato va en el texto con su fuente (src/data/rigs/tacker10.ts).
+ *  1. Fichas `__RIG_META` de mastil, subestructura, motor, cabina, camion, malacate, caballetes y vientos: `grade` = confianza de la
+ *     GEOMETRÍA visible (modelo SK-575 = C); la confianza de cada dato va en el texto con su fuente (src/data/rigs/rig10.ts).
  *     Aparejo, BOP, enganche y circulación tienen su ficha en 41/40/43/44.
  *  2. Controles de `aparejo` y `vientos` (`R.COMPONENTS[id].epp`): recomendación, pendiente de validación (sin procedimiento).
  *  3. Párrafos del modal "Referencia, criterios y alcance". La nota del izamiento la escribe 81.
@@ -137,7 +137,7 @@
   ]
 
   function aplicar() {
-    const meta = window.__TACKER_META
+    const meta = window.__RIG_META
     if (meta)
       // cabina no tiene ficha en el original (el visor mostraba un genérico): se crea completa
       for (const [id, m] of Object.entries(META_SK)) meta[id] = Object.assign(meta[id] || {}, m)
@@ -153,6 +153,6 @@
           if (el.innerHTML.includes(viejo)) el.innerHTML = el.innerHTML.replace(viejo, nuevo)
   }
 
-  if (window.__tackerBooted) aplicar()
-  else document.addEventListener('tacker:boot', aplicar, { once: true })
+  if (window.__rigBooted) aplicar()
+  else document.addEventListener('rig:boot', aplicar, { once: true })
 })()

@@ -1,7 +1,7 @@
 // E2E del visor V2 con el modelo SK-575 (Chrome instalado + playwright-core, igual que scripts/snap.mjs).
 //
-//   npm run test:e2e                         → public/legacy/TACKER10_Digital_Rig_V2.html (copia de trabajo)
-//   E2E_URL=https://…/TACKER10_Digital_Rig_V2.html npm run test:e2e   → el sitio publicado
+//   npm run test:e2e                         → public/legacy/Digital_Rig_V2.html (copia de trabajo)
+//   E2E_URL=https://…/Digital_Rig_V2.html npm run test:e2e   → el sitio publicado
 //
 // Una sola página para todas las pruebas (cargar el V2 con render por software tarda). `afterEach` deja el estado de
 // partida aunque una prueba falle (sin fallas en cascada). Capturas en .tmp/e2e/. Se omite si no hay Chrome (en CI
@@ -15,7 +15,7 @@ import { chromium } from 'playwright-core'
 
 const root = path.resolve(import.meta.dirname, '..')
 const pub = path.join(root, 'public')
-const V2 = '/legacy/TACKER10_Digital_Rig_V2.html'
+const V2 = '/legacy/Digital_Rig_V2.html'
 const shots = path.join(root, '.tmp', 'e2e')
 let browser, page, server, url
 let ortho0 // proyección con la que arranca el V2 (hoy ortográfica)
@@ -37,10 +37,10 @@ const abrir = async (viewport) => {
   const p = await browser.newPage({ viewport })
   vigilar(p)
   await p.goto(url, { waitUntil: 'load', timeout: 120_000 })
-  await p.waitForFunction(() => window.__tackerSk575 && window.__tackerSk575.ready(), null, {
+  await p.waitForFunction(() => window.__rigSk575 && window.__rigSk575.ready(), null, {
     timeout: 120_000,
   })
-  await p.evaluate(() => window.__tackerSk575.ready())
+  await p.evaluate(() => window.__rigSk575.ready())
   return p
 }
 
@@ -48,7 +48,7 @@ before(async () => {
   url = process.env.E2E_URL
   if (!url) {
     // http local efímero que sirve public/ como Pages (el V2 usa módulos y blobs que file:// no permite en headless):
-    // /legacy/… el HTML y su respaldo sk575-glb.js, /models/tacker10/… los GLB que baja con fetch. Sin cabeceras CORS:
+    // /legacy/… el HTML y su respaldo sk575-glb.js, /models/rig10/… los GLB que baja con fetch. Sin cabeceras CORS:
     // /host.html lo embebe en un iframe sandbox (origen opaco, como la app) → el fetch falla y entra el respaldo base64.
     const tipos = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript' }
     server = http.createServer((req, res) => {
@@ -89,10 +89,10 @@ afterEach(async () => {
   if (skip || !page) return
   await page.evaluate((ortho0) => {
     const R = window.__rig
-    window.__tackerVistaCad?.off()
-    window.__tackerSeq?.close()
-    window.__tackerErect?.pause()
-    window.__tackerErect?.set(1)
+    window.__rigVistaCad?.off()
+    window.__rigSeq?.close()
+    window.__rigErect?.pause()
+    window.__rigErect?.set(1)
     R.setExplode(0)
     const h = document.getElementById('hoist')
     if (h && Number(h.value) !== 14) {
@@ -103,7 +103,7 @@ afterEach(async () => {
     if (!!R.view.ortho !== ortho0) document.getElementById('c-ortho').click()
     const explorar = document.querySelector('#v2-modebar button[data-m="explore"]')
     if (explorar) explorar.click()
-    else window.__tackerPresets.apply('explore')
+    else window.__rigPresets.apply('explore')
   }, ortho0)
 })
 
@@ -156,7 +156,7 @@ test('el equipo es el SK-575: 16 componentes integrados, nada procedural a la vi
     return {
       comps: ids.size,
       procVisibles,
-      capaCad: !!window.__tackerCad || !!R.scene.getObjectByName('capa_cad'),
+      capaCad: !!window.__rigCad || !!R.scene.getObjectByName('capa_cad'),
     }
   })
   assert.equal(r.comps, 16)
@@ -171,7 +171,7 @@ test('cada componente del árbol tiene al menos 1 malla visible o se declara sin
   if (skip) return t.skip(skip)
   const vacios = await page.evaluate(() => {
     const R = window.__rig
-    const sin = new Set([...(window.__tackerSk575.sinPieza?.() ?? [])])
+    const sin = new Set([...(window.__rigSk575.sinPieza?.() ?? [])])
     const out = []
     for (const [id, G] of Object.entries(R.groups)) {
       if (sin.has(id)) continue
@@ -246,7 +246,7 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa, los cilindros SK se anim
   if (skip) return t.skip(skip)
   const r = await page.evaluate(async () => {
     const R = window.__rig
-    const E = window.__tackerErect
+    const E = window.__rigErect
     const M = R.groups.mastil
     const pivote = M.children.find((c) => c.name === 'mastil_pivote')
     const tramoSup = pivote.children.find((c) => c.name === 'mastil_tramo_superior')
@@ -317,7 +317,7 @@ test('izamiento: el 1.er tramo gira, el 2.º telescopa, los cilindros SK se anim
   assert.ok(r.rotFinal < 1e-6, `el pivote no vuelve a su ángulo: ${r.rotFinal}`)
   assert.equal(r.supY, 0)
   for (const p of [0, 0.35, 0.65, 1]) {
-    await page.evaluate((p) => window.__tackerErect.set(p), p)
+    await page.evaluate((p) => window.__rigErect.set(p), p)
     await cuadro()
     await snap('04-izamiento-' + String(Math.round(p * 100)).padStart(3, '0'))
   }
@@ -328,10 +328,10 @@ test('izamiento sin saltos: cilindros y vientos a p = 0,999 coinciden con la pos
   if (skip) return t.skip(skip)
   const r = await page.evaluate(() => {
     const R = window.__rig
-    const E = window.__tackerErect
+    const E = window.__rigErect
     const M = R.groups.mastil
     const V = R.three.Vector3
-    const META = window.__TACKER_SK575_META
+    const META = window.__RIG_SK575_META
     const topes = () => {
       R.scene.updateMatrixWorld(true)
       return META.izaje.flatMap((c) =>
@@ -394,7 +394,7 @@ test('cabina, motor y enganche: piezas SK propias, visibles y con resaltado que 
           propio: brilla(R.materials[id]),
           carrier: brilla(R.materials.camion),
           mastil: brilla(R.materials.mastil),
-          sinPieza: window.__tackerSk575.sinPieza(),
+          sinPieza: window.__rigSk575.sinPieza(),
         }
       },
       [id, nodo],
@@ -414,7 +414,7 @@ test('cabina, motor y enganche: piezas SK propias, visibles y con resaltado que 
   // el piso de enganche sigue al 2.º tramo: en la fase 3 (el mástil todavía gira) se mueve con él
   const despegue = await page.evaluate(async () => {
     const R = window.__rig
-    const E = window.__tackerErect
+    const E = window.__rigErect
     const V = R.three.Vector3
     const n = R.groups.enganche.getObjectByName('sk575_enganche')
     const sup = R.groups.mastil.getObjectByName('mastil_tramo_superior')
@@ -546,7 +546,7 @@ test('piso de enganche: plegado (> 60°) a p = 0,35 y horizontal (< 2°) a p = 1
       const n = R.groups.enganche.getObjectByName('sk575_enganche')
       const Q = n.quaternion.constructor
       const sup = R.groups.mastil.getObjectByName('mastil_tramo_superior')
-      window.__tackerErect.set(p)
+      window.__rigErect.set(p)
       await new Promise((ok) => {
         R.invalidate()
         requestAnimationFrame(() => requestAnimationFrame(ok))
@@ -575,11 +575,11 @@ test('piso de enganche: plegado (> 60°) a p = 0,35 y horizontal (< 2°) a p = 1
   )
   assert.ok(m1.horizontal < 2, `a p = 1 el piso no queda horizontal: ${m1.horizontal.toFixed(2)}°`)
   for (const p of [0.35, 0.7, 0.9, 1]) {
-    await page.evaluate((p) => window.__tackerErect.set(p), p)
+    await page.evaluate((p) => window.__rigErect.set(p), p)
     await cuadro()
     await snap('10-enganche-izamiento-' + String(Math.round(p * 100)).padStart(3, '0'))
   }
-  await page.evaluate(() => window.__tackerErect.set(1))
+  await page.evaluate(() => window.__rigErect.set(1))
 })
 
 // Hallazgos 2 (3d-perf #7 y código #2). Espera el fix en 84 (`sincronizarIzamiento`): cables del cuadro y de la llave atados
@@ -605,7 +605,7 @@ test('montaje paso 5: sin mástil no se ven cables colgando y los tiros siguen a
     }
   }
   const leer = () => page.evaluate(`(${visibles})()`)
-  await page.evaluate(() => window.__tackerSeq.go(5))
+  await page.evaluate(() => window.__rigSeq.go(5))
   await cuadro()
   const p5 = await leer()
   await snap('05-montaje-paso5')
@@ -617,13 +617,13 @@ test('montaje paso 5: sin mástil no se ven cables colgando y los tiros siguen a
   assert.ok(!p5.tiros.some(Boolean), 'tiros visibles sin mástil')
 
   await page.evaluate(() => {
-    window.__tackerSeq.close()
-    window.__tackerErect.set(0.35)
+    window.__rigSeq.close()
+    window.__rigErect.set(0.35)
   })
   await cuadro()
   const p035 = await leer()
   assert.ok(!p035.tiros.some(Boolean), 'con el mástil acostado los tiros SK no deberían verse')
-  await page.evaluate(() => window.__tackerErect.set(1))
+  await page.evaluate(() => window.__rigErect.set(1))
   await cuadro()
   const p1 = await leer()
   assert.ok(p1.tiros.every(Boolean), 'al terminar el izamiento los tiros vuelven')
@@ -632,10 +632,10 @@ test('montaje paso 5: sin mástil no se ven cables colgando y los tiros siguen a
 test('DROPS: la capa se enciende con marcadores y sin errores de consola', async (t) => {
   if (skip) return t.skip(skip)
   const errores0 = problemas.length
-  await page.evaluate(() => window.__tackerLayers.set('drops', true))
+  await page.evaluate(() => window.__rigLayers.set('drops', true))
   await hasta(() => !!window.__rig.drops?.isActive())
   const r = await page.evaluate(() => ({
-    capas: window.__tackerLayers.get(),
+    capas: window.__rigLayers.get(),
     marcadores: document.querySelectorAll('#drops-markers > *').length,
   }))
   await snap('06-drops')
@@ -671,12 +671,12 @@ test('Vista CAD: desde ortográfica pasa a perspectiva, noche y sin entorno; al 
   await camara('OrthographicCamera')
   const antes = await estado()
   assert.equal(antes.cam, 'OrthographicCamera')
-  await page.evaluate(() => window.__tackerVistaCad.on())
+  await page.evaluate(() => window.__rigVistaCad.on())
   await camara('PerspectiveCamera')
   assert.deepEqual(await estado(), { cam: 'PerspectiveCamera', noche: true, entorno: false })
   await cuadro()
   await snap('04-vista-cad')
-  await page.evaluate(() => window.__tackerVistaCad.off())
+  await page.evaluate(() => window.__rigVistaCad.off())
   await camara('OrthographicCamera')
   assert.deepEqual(await estado(), antes)
 })
@@ -686,19 +686,19 @@ test('modo QHSE y Vista CAD: al apagarla quedan las capas del modo (en ambos ór
   if (skip) return t.skip(skip)
   const modo = (m) =>
     page.evaluate((m) => document.querySelector(`#v2-modebar button[data-m="${m}"]`).click(), m)
-  const capas = () => page.evaluate(() => window.__tackerLayers.get())
+  const capas = () => page.evaluate(() => window.__rigLayers.get())
   const delModo = (c) => c.includes('zonas') && c.includes('drops')
 
   await modo('qhse')
-  await page.evaluate(() => window.__tackerVistaCad.on())
-  await page.evaluate(() => window.__tackerVistaCad.off())
+  await page.evaluate(() => window.__rigVistaCad.on())
+  await page.evaluate(() => window.__rigVistaCad.off())
   const a = await capas()
   assert.ok(delModo(a), `QHSE → Vista CAD on/off: ${a.join()}`)
 
   await modo('explore')
-  await page.evaluate(() => window.__tackerVistaCad.on())
+  await page.evaluate(() => window.__rigVistaCad.on())
   await modo('qhse')
-  await page.evaluate(() => window.__tackerVistaCad.off())
+  await page.evaluate(() => window.__rigVistaCad.off())
   const b = await capas()
   assert.ok(delModo(b), `Vista CAD on → QHSE → off: ${b.join()}`)
 })
@@ -706,12 +706,12 @@ test('modo QHSE y Vista CAD: al apagarla quedan las capas del modo (en ambos ór
 test('modos: los cuatro presets aplican y operación aísla aparejo + malacate', async (t) => {
   if (skip) return t.skip(skip)
   const r = await page.evaluate(() => {
-    const P = window.__tackerPresets
+    const P = window.__rigPresets
     const G = window.__rig.groups
     const out = {}
     for (const m of ['operation', 'qhse', 'training', 'explore']) {
       out[m] = { ok: P.apply(m), carrier: G.camion.visible, aparejo: G.aparejo.visible }
-      if (m === 'qhse') out.qhseCapas = window.__tackerLayers.get()
+      if (m === 'qhse') out.qhseCapas = window.__rigLayers.get()
     }
     return out
   })
@@ -755,9 +755,9 @@ test('móvil 390×844: sin tarjeta del SK-575 ni "Referencia del conjunto"; la b
 test('GLB del SK-575: servido por http se bajan con fetch (el HTML no trae el base64)', async (t) => {
   if (skip) return t.skip(skip)
   const r = await page.evaluate(() => ({
-    fuente: window.__tackerSk575.stats.fuente,
-    b64: !!window.__TACKER_SK575_GLB,
-    glb: window.__TACKER_SK575_FILES.length,
+    fuente: window.__rigSk575.stats.fuente,
+    b64: !!window.__RIG_SK575_GLB,
+    glb: window.__RIG_SK575_FILES.length,
   }))
   assert.deepEqual(r, { fuente: 'fetch', b64: false, glb: 16 })
 })
@@ -773,17 +773,17 @@ test('GLB del SK-575: en un iframe sandbox sin CORS entra el respaldo base64 (sk
     await p.goto(url.replace(V2, '/host.html'), { waitUntil: 'commit', timeout: 120_000 })
     let f
     while (!(f = p.frames().find((x) => x !== p.mainFrame()))) await p.waitForTimeout(100)
-    await f.waitForFunction(() => window.__tackerSk575 && window.__tackerSk575.ready(), null, {
+    await f.waitForFunction(() => window.__rigSk575 && window.__rigSk575.ready(), null, {
       timeout: 120_000,
     })
     const r = await f.evaluate(async () => {
-      await window.__tackerSk575.ready()
+      await window.__rigSk575.ready()
       const ids = new Set(
         window.__rig.pickables
           .filter((m) => m.material?.name?.startsWith('sk575_'))
           .map((m) => m.material.name.split('_').slice(0, 2).join('_')),
       )
-      return { fuente: window.__tackerSk575.stats.fuente, origen: self.origin, comps: ids.size }
+      return { fuente: window.__rigSk575.stats.fuente, origen: self.origin, comps: ids.size }
     })
     assert.deepEqual(r, { fuente: 'base64', origen: 'null', comps: 16 })
   } finally {
@@ -863,7 +863,7 @@ test('recorridos: cada viewpoint ubica la cámara, resalta el equipo y muestra l
   }))
   try {
     const r = await page.evaluate(() => {
-      const VP = window.__tackerVp
+      const VP = window.__rigVp
       return VP.list().map((v) => {
         VP.go(v.id, { instant: true })
         const cam = window.__rig.camera()
@@ -889,13 +889,13 @@ test('recorridos: cada viewpoint ubica la cámara, resalta el equipo y muestra l
     }
     await page.evaluate(() => {
       document.getElementById('vp-toggle').click()
-      window.__tackerVp.go('acumulador', { instant: true })
+      window.__rigVp.go('acumulador', { instant: true })
     })
     await cuadro()
     await snap('11-viewpoint-acumulador')
   } finally {
     await page.evaluate(() => {
-      window.__tackerVp.back({ instant: true })
+      window.__rigVp.back({ instant: true })
       document.getElementById('vp-panel').classList.add('collapsed')
     })
   }
@@ -920,7 +920,7 @@ test('recorridos: doble clic sobre el manifold resuelve su viewpoint', async (t)
   if (skip) return t.skip(skip)
   try {
     const id = await page.evaluate(async () => {
-      const VP = window.__tackerVp
+      const VP = window.__rigVp
       VP.go('manifold', { instant: true })
       await new Promise((r) => requestAnimationFrame(r))
       const R = window.__rig
@@ -930,7 +930,7 @@ test('recorridos: doble clic sobre el manifold resuelve su viewpoint', async (t)
     })
     assert.equal(id, 'manifold')
   } finally {
-    await page.evaluate(() => window.__tackerVp.back({ instant: true }))
+    await page.evaluate(() => window.__rigVp.back({ instant: true }))
   }
 })
 
@@ -939,7 +939,7 @@ test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a
   try {
     const andar = (ms) =>
       page.evaluate(async (ms) => {
-        const VP = window.__tackerVp
+        const VP = window.__rigVp
         const c = window.__rig.camera()
         const a = c.position.clone()
         VP.keys.add('KeyW')
@@ -948,7 +948,7 @@ test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a
         return { d: a.distanceTo(c.position), y: c.position.y, z: c.position.z }
       }, ms)
     await page.evaluate(() => {
-      const VP = window.__tackerVp
+      const VP = window.__rigVp
       // headless concede el Pointer Lock y lo suelta enseguida (= ESC): se camina con teclado, ESC por keydown
       window.__rig.renderer.domElement.requestPointerLock = () =>
         Promise.reject(new Error('sin lock'))
@@ -957,7 +957,7 @@ test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a
     })
     // colisión sin depender de los FPS: pasos de 2,3 cm (1,4 m/s a 60 FPS) desde el viewpoint, que queda sobre el canto del gabinete
     const rozando = await page.evaluate(() => {
-      const VP = window.__tackerVp
+      const VP = window.__rigVp
       const c = window.__rig.camera()
       let { x, z } = c.position
       for (let i = 0; i < 300 && VP.libre(x, z, 0, -0.023); i++) z -= 0.023
@@ -976,14 +976,14 @@ test('recorridos: caminata a 1,70 m y ~1,4 m/s, choca con la bomba, ESC vuelve a
     await snap('12-caminata-bomba')
     await page.keyboard.press('Escape')
     const r = await page.evaluate(() => ({
-      walking: window.__tackerVp.walking(),
+      walking: window.__rigVp.walking(),
       orbit: window.__rig.controls().enabled,
     }))
     assert.deepEqual(r, { walking: false, orbit: true })
   } finally {
     await page.evaluate(() => {
-      window.__tackerVp.walk(false)
-      window.__tackerVp.back({ instant: true })
+      window.__rigVp.walk(false)
+      window.__rigVp.back({ instant: true })
     })
   }
 })
@@ -995,7 +995,7 @@ test('recorridos: el recorrido guiado vive en Entrenamiento (anterior / siguient
       document.querySelector('#v2-modebar button[data-m="training"]').click(),
     )
     const r = await page.evaluate(() => {
-      const VP = window.__tackerVp
+      const VP = window.__rigVp
       const visible = getComputedStyle(document.getElementById('vp-tour')).display !== 'none'
       VP.tour.next()
       const a = VP.current()
@@ -1022,7 +1022,7 @@ test('recorridos: el recorrido guiado vive en Entrenamiento (anterior / siguient
     })
     assert.equal(fuera, 'none')
   } finally {
-    await page.evaluate(() => window.__tackerVp.back({ instant: true }))
+    await page.evaluate(() => window.__rigVp.back({ instant: true }))
   }
 })
 

@@ -20,12 +20,12 @@ const strict = args.includes('--strict')
 const layout = JSON.parse(
   fs.readFileSync(path.join(root, 'cad', 'data', 'layout_tkr10.json'), 'utf8'),
 )
-const { TACKER_10: spec } = await import(
+const { RIG_10: spec } = await import(
   pathToFileURL(path.join(root, 'reference', 'v2-previo', 'src', 'technical-spec.js')).href
 )
 
 // ── servidor estático efímero para el HTML (usa blobs/módulos)
-const htmlPath = path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html')
+const htmlPath = path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html')
 const server = http.createServer((req, res) => {
   const p = path.join(
     path.dirname(htmlPath),

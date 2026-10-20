@@ -26,7 +26,7 @@
     "esbeltez_pared": [0.05, 0.4]
   },
   "presets": {
-    "tacker10": {
+    "rig10": {
       "h_inf": "@spec:mast.lowerSectionM",
       "h_sup": "@spec:mast.upperSectionM",
       "Db": null,

@@ -1,8 +1,8 @@
 /*
- * 41-aparejo.js · TACKER 10 · componente 04 `aparejo` (bloque viajero, gancho, amelas y elevadores).
+ * 41-aparejo.js · Equipo 10 · componente 04 `aparejo` (bloque viajero, gancho, amelas y elevadores).
  *
  * Lo invoca `wrapAparejo` (40-wellsite.js) justo después de que el visor construye su aparejo original:
- *   window.__tackerAparejo.build(g, api, { K, Batch, dropsGroup })
+ *   window.__rigAparejo.build(g, api, { K, Batch, dropsGroup })
  * Conserva las 6 líneas animadas del visor (`ramal_visual`, estado interno `Lh`) y el grupo `bloque_viajero` (`wh`, lo mueve el deslizador
  * `#hoist` / `#c-play`): todo lo que cuelga del bloque es HIJO de `bloque_viajero`, así sigue la animación. Reemplaza las placas, poleas, vástago,
  * gancho, amelas y elevador por versiones con más detalle y agrega un elevador de varillas (sucker rod) fuera del aparejo animado.
@@ -20,7 +20,7 @@
  * revolución), porque el visor es un HTML autocontenido y no expone Lathe/Extrude. 1 u = 1 m · +X = boca del gancho · Z = ancho del bloque.
  *
  * ESTADO DE LOS DATOS (detalle en docs/references/bloque-viajero-elevadores/README.md):
- *   confirmado  · aparejo IDECO 110 t con 6 líneas, amelas BJ 150 t, elevador BJ 100 t (folleto TACKER 10 rev. 26/06/2024).
+ *   confirmado  · aparejo IDECO 110 t con 6 líneas, amelas BJ 150 t, elevador BJ 100 t (folleto Equipo 10 rev. 26/06/2024).
  *   aproximado  · toda la forma y las cotas (envolvente = tamaños del modelo anterior: placas 0,9 × 1,1 m, poleas r≈0,36 m, amelas ≈1,26 m entre
  *                 pasadores, elevador Ø0,60 m). Las fotos de referencia son unidades GENÉRICAS de catálogo: sirven de tipología, no de cota.
  *   pendiente   · color real, tipo/modelo del elevador y de las amelas, existencia y posición del elevador de varillas, dimensiones as-built.
@@ -51,7 +51,7 @@
 
   /**
    * Elevador de varillas (sucker rod): apoyado de pie sobre el piso de trabajo (cota superior 2,34 m), en la esquina −X/−Z, lejos de la llave, del
-   * poste de retenida y de la boca de pozo. UBICACIÓN PENDIENTE: no hay dato de dónde se estiba en el TACKER 10 (ni si el equipo lo usa).
+   * poste de retenida y de la boca de pozo. UBICACIÓN PENDIENTE: no hay dato de dónde se estiba en el equipo 10 (ni si el equipo lo usa).
    * `visible: false` lo oculta sin tocar el resto del aparejo.
    */
   const ROD_ELEVATOR = { visible: true, x: -0.85, y: 2.34, z: -0.95, yaw: 0.5 }
@@ -709,5 +709,5 @@
     }
   }
 
-  window.__tackerAparejo = { build, ROD_ELEVATOR, APAREJO_COLOR }
+  window.__rigAparejo = { build, ROD_ELEVATOR, APAREJO_COLOR }
 })()

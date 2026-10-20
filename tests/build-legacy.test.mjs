@@ -13,7 +13,7 @@ const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 const ORIGINAL_SHA256 = '5a40ef06dc12afc4a6c6aef6419188fd13e6c0a8f228336cc4bed4ab18d4b44b';
 
 function build(...extra) {
-  const out = path.join(mkdtempSync(path.join(tmpdir(), 'tacker-legacy-')), 'index.html');
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'rig-legacy-')), 'index.html');
   const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', out, ...extra], {
     cwd: root,
     encoding: 'utf8',
@@ -27,10 +27,10 @@ test('el original en reference/legacy/ sigue inmutable', () => {
 });
 
 test('public/legacy es exactamente el build actual (sin edición manual)', () => {
-  const out = path.join(mkdtempSync(path.join(tmpdir(), 'tacker-legacy-')), 'index.html');
+  const out = path.join(mkdtempSync(path.join(tmpdir(), 'rig-legacy-')), 'index.html');
   const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', out], { cwd: root, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
-  assert.equal(sha256(read('public', 'legacy', 'TACKER10_Digital_Rig_V2.html')), sha256(readFileSync(out)), 'public/legacy desactualizado');
+  assert.equal(sha256(read('public', 'legacy', 'Digital_Rig_V2.html')), sha256(readFileSync(out)), 'public/legacy desactualizado');
   assert.equal(
     sha256(read('public', 'legacy', 'sk575-glb.js')),
     sha256(readFileSync(path.join(path.dirname(out), 'sk575-glb.js'))),
@@ -39,15 +39,15 @@ test('public/legacy es exactamente el build actual (sin edición manual)', () =>
 });
 
 test('--standalone incrusta los GLB en el HTML (un solo archivo) y no escribe sk575-glb.js', () => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'tacker-legacy-'));
+  const dir = mkdtempSync(path.join(tmpdir(), 'rig-legacy-'));
   const r = spawnSync(process.execPath, ['scripts/build-legacy.mjs', '--out', path.join(dir, 'x.html'), '--standalone'], {
     cwd: root,
     encoding: 'utf8',
   });
   assert.equal(r.status, 0, r.stderr);
   const html = readFileSync(path.join(dir, 'x.html'), 'utf8');
-  assert.match(html, /window\.__TACKER_SK575_GLB=\{/);
-  assert.match(html, /window\.__TACKER_SK575_FILES=\[/);
+  assert.match(html, /window\.__RIG_SK575_GLB=\{/);
+  assert.match(html, /window\.__RIG_SK575_FILES=\[/);
   assert.deepEqual(readdirSync(dir), ['x.html']);
 });
 
@@ -55,11 +55,11 @@ test('el build inyecta los hooks, el runtime y los datos DROPS validados', () =>
   const html = build().toString('utf8');
   assert.match(html, /runPre\(\{Ot:Ot/);
   assert.match(html, /runPost\(window\.__rig\)/);
-  assert.match(html, /<script id="tacker-ext">/);
-  assert.match(html, /window\.__TACKER_DROPS=/);
-  const data = JSON.parse(read('src', 'data', 'qhse', 'tacker10-drops.json'));
+  assert.match(html, /<script id="rig-ext">/);
+  assert.match(html, /window\.__RIG_DROPS=/);
+  const data = JSON.parse(read('src', 'data', 'qhse', 'rig10-drops.json'));
   assert.equal(data.points.length, 66);
-  assert.ok(!html.includes('</script><script id="tacker-ext">'), 'el bloque de extensión debe ir antes del bundle');
+  assert.ok(!html.includes('</script><script id="rig-ext">'), 'el bloque de extensión debe ir antes del bundle');
 });
 
 test('--only limita los módulos incluidos y siempre entra el runtime', () => {
@@ -103,7 +103,7 @@ test('foto de referencia: el original la embebe 2 veces idénticas y el build de
   assert.equal(built.length, 1, 'debe quedar una sola data-URI JPEG');
   assert.equal(built[0][1], uris[0][1]);
   assert.match(html, /<img id="ref-thumb"[^>]* src="data:image\/jpeg;base64,/);
-  assert.match(html, /<img id="ref-full" alt="Torre TACKER 10 de referencia">/);
+  assert.match(html, /<img id="ref-full" alt="Torre Equipo 10 de referencia">/);
   // el src se restituye al abrir el diálogo (60-ui-controls)
   assert.match(html, /refDialog\.showModal = \(\) =>/);
   assert.match(html, /refFull\.src = refThumb/);
@@ -114,7 +114,7 @@ test('modo embebido: se oculta el título propio del visor y standalone lo conse
   assert.match(html, /html\.v2-embedded header \.title\{display:none!important\}/);
   assert.match(html, /classList\.add\('v2-embedded'\)/);
   // la regla depende de una clase que solo se agrega con ?embedded: el título del HTML sigue estando
-  assert.match(html, /<div class="title"><h1>TACKER /);
+  assert.match(html, /<div class="title"><h1>Equipo /);
   assert.match(html, /const smallWindow = window\.innerWidth < 1100/);
 });
 
@@ -141,7 +141,7 @@ test('despiece: la perilla arranca en 0 y se restituye el valor recordado en fas
 });
 
 test('sin <meta> vacíos en el <head> (visor generado ni index.html)', () => {
-  for (const file of [['public', 'legacy', 'TACKER10_Digital_Rig_V2.html'], ['index.html']]) {
+  for (const file of [['public', 'legacy', 'Digital_Rig_V2.html'], ['index.html']]) {
     const html = read(...file).toString('utf8');
     const head = html.slice(0, html.indexOf('</head>'));
     assert.doesNotMatch(head, /<meta\s*\/?>/i, `${file.join('/')}: <meta> sin atributos`);

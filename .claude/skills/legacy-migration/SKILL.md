@@ -1,6 +1,6 @@
 ---
 name: legacy-migration
-description: Use when migrating a function of the legacy V2 HTML viewer (public/legacy/TACKER10_Digital_Rig_V2.html) to the native React/R3F engine, when marking or auditing rows of docs/FEATURE_PARITY.md, or before touching public/legacy/ or reference/legacy/. Defines the step-by-step flow and the immutability rules.
+description: Use when migrating a function of the legacy V2 HTML viewer (public/legacy/Digital_Rig_V2.html) to the native React/R3F engine, when marking or auditing rows of docs/FEATURE_PARITY.md, or before touching public/legacy/ or reference/legacy/. Defines the step-by-step flow and the immutability rules.
 ---
 
 # legacy-migration
@@ -44,13 +44,13 @@ Migración por etapas: el V2 sigue operativo (iframe, motor `legacy`) hasta que 
 ## Puente app ↔ visor V2 embebido
 
 - El iframe corre con `sandbox="allow-scripts allow-downloads"` **sin** `allow-same-origin` (con `allow-scripts` anularía el sandbox). Origen opaco: la app no toca el DOM del V2 ni al revés.
-- Comunicación solo por `postMessage`. Hoy existe un mensaje: app → V2 `{ type: 'tacker:setMode', mode }` (`LegacyRigViewer`), activo con la URL `?embedded` (oculta la barra de modos del V2). El V2 valida `e.source === window.parent`.
-- Para exponer otra función del V2 a la app (p. ej. selección → `viewerStore.selectComponent`), agregar un mensaje **tipado y con lista blanca** en ambos lados: el parche (ancla única) va en `scripts/build-legacy.mjs`, se regenera con `npm run build:legacy`, se documenta en `reference/legacy/README.md` y se cubre en `tests/tacker10-html.test.mjs`.
+- Comunicación solo por `postMessage`. Hoy existe un mensaje: app → V2 `{ type: 'rig:setMode', mode }` (`LegacyRigViewer`), activo con la URL `?embedded` (oculta la barra de modos del V2). El V2 valida `e.source === window.parent`.
+- Para exponer otra función del V2 a la app (p. ej. selección → `viewerStore.selectComponent`), agregar un mensaje **tipado y con lista blanca** en ambos lados: el parche (ancla única) va en `scripts/build-legacy.mjs`, se regenera con `npm run build:legacy`, se documenta en `reference/legacy/README.md` y se cubre en `tests/rig10-html.test.mjs`.
 - No aceptar mensajes con `eval`/HTML del otro lado ni cargar recursos externos en el V2: su seguridad depende de ser autocontenido.
 
 ## El V2 de trabajo se GENERA (no se edita a mano)
 
-- `public/legacy/TACKER10_Digital_Rig_V2.html` sale de `npm run build:legacy` = original inmutable de `reference/legacy/` + parches con ancla única (el build falla si el original cambia) + módulos `legacy-ext/NN-*.js` + datos `window.__TACKER_DROPS`. Un test (`tests/build-legacy.test.mjs`) falla si la copia de trabajo difiere del build.
+- `public/legacy/Digital_Rig_V2.html` sale de `npm run build:legacy` = original inmutable de `reference/legacy/` + parches con ancla única (el build falla si el original cambia) + módulos `legacy-ext/NN-*.js` + datos `window.__RIG_DROPS`. Un test (`tests/build-legacy.test.mjs`) falla si la copia de trabajo difiere del build.
 - Módulos: `00-runtime.js` (`__rigExt.onPre(api)` antes de construir componentes, `onPost(R)` al terminar), `20-mast`, `30-carrier`, `40-wellsite` (geometría), `50-drops-layer` (capa), `60-ui-controls` (barras de opciones y card de referencia). Un error dentro de un módulo se captura y no rompe el visor.
 - API `onPre`: `Ot` (registro de constructores por componente), helpers `le/De/Ne/vl/Wd/Ml/ta/pn/ir/D/ni`, `gt`, `Hn`, `Zt`, `mn`. API `onPost` (`R`): `scene`, `three.{Mesh,BoxGeometry,…}`, `camera()`, `groups`, `materials`, `pickables`, `state`, `invalidate`. Si un módulo necesita más, ampliar `PRE_API`/`THREE_CLASSES` en `scripts/build-legacy.mjs`.
 - Flujo para una mejora del V2: editar/crear `legacy-ext/NN-*.js` → `node scripts/build-legacy.mjs --out .tmp/x/index.html --only NN-*.js` → `npm run snap -- --file .tmp/x/index.html --out .tmp/x/a.png` (Chrome headless propio; seguro en paralelo; con varios a la vez usar `--eval "el.click()"` en lugar de `--click` para evitar timeouts del render por software) → mirar la captura → `npm run build:legacy` → `npm test`.

@@ -8,7 +8,7 @@ Entradas (medidas del V2, no inventadas): `cad/data/v2_corredor_mastil.json` (pe
 
 Como el equipo del carrier del V2 queda bajo la trayectoria del mástil, una posición totalmente horizontal (0°) lo atravesaría: se calcula el
 ángulo mínimo de transporte (elevación sobre la horizontal) con el que la cara inferior del mástil libra el perfil con un margen, y se
-dimensiona el soporte de traslado (CadQuery, sólidos válidos). Salida: src/data/cad/izamiento.json -> window.__TACKER_IZAMIENTO.
+dimensiona el soporte de traslado (CadQuery, sólidos válidos). Salida: src/data/cad/izamiento.json -> window.__RIG_IZAMIENTO.
 Unidades: m y grados. Marco del V2: +X hacia el mástil, carrier hacia −X, Y arriba.
 """
 import json

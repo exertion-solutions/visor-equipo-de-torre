@@ -7,7 +7,7 @@ import { configureGltfLoader } from './gltf'
 import { enableShadows } from './shadows'
 
 interface RigModelProps {
-  /** Ruta bajo public/, p. ej. `/models/tacker10/mast.glb`. Unidades: metros, Y arriba. */
+  /** Ruta bajo public/, p. ej. `/models/rig10/mast.glb`. Unidades: metros, Y arriba. */
   url: string
 }
 

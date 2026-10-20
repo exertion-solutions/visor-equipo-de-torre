@@ -27,10 +27,10 @@ afterEach(() => {
 describe('App', () => {
   it('por defecto renderiza el visor V2 en un iframe con el src correcto', () => {
     render(<App />)
-    const frame = screen.getByTitle(/Visor TACKER 10 V2/)
+    const frame = screen.getByTitle(/Visor Digital Rig V2/)
     expect(frame.tagName).toBe('IFRAME')
     expect(frame.getAttribute('src')).toBe(
-      `${import.meta.env.BASE_URL}legacy/TACKER10_Digital_Rig_V2.html?embedded`,
+      `${import.meta.env.BASE_URL}legacy/Digital_Rig_V2.html?embedded`,
     )
     expect(screen.queryByTestId('native-viewport')).toBeNull()
     expect(screen.getByRole('button', { name: /V2 compatible/ }).getAttribute('aria-pressed')).toBe(
@@ -43,7 +43,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: /R3F nativo/ }))
     expect(await screen.findByTestId('native-viewport')).toBeTruthy()
     // El iframe NO se desmonta (conserva estado y evita re-descargar ≈7 MB): solo se oculta.
-    const frame = screen.getByTitle(/Visor TACKER 10 V2/)
+    const frame = screen.getByTitle(/Visor Digital Rig V2/)
     expect(frame.parentElement?.className).toContain('hidden')
     expect(screen.getByRole('button', { name: /R3F nativo/ }).getAttribute('aria-pressed')).toBe(
       'true',
@@ -83,7 +83,7 @@ describe('App', () => {
 
   it('el modo de la app se reenvía al visor V2 embebido por postMessage una vez que está listo', () => {
     render(<App />)
-    const frame = screen.getByTitle(/Visor TACKER 10 V2/) as HTMLIFrameElement
+    const frame = screen.getByTitle(/Visor Digital Rig V2/) as HTMLIFrameElement
     const postMessage = vi.fn()
     const contentWindow = { postMessage } as unknown as Window
     Object.defineProperty(frame, 'contentWindow', { value: contentWindow, configurable: true })
@@ -91,27 +91,27 @@ describe('App', () => {
     // Antes de ready no se envía nada (el visor aún no escucha).
     act(() => useModeStore.getState().setMode('qhse'))
     expect(postMessage).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'tacker:setMode' }),
+      expect.objectContaining({ type: 'rig:setMode' }),
       '*',
     )
 
     act(() => {
       window.dispatchEvent(
         new MessageEvent('message', {
-          data: { type: 'tacker:ready', version: 1 },
+          data: { type: 'rig:ready', version: 1 },
           source: contentWindow,
         }),
       )
     })
-    expect(postMessage).toHaveBeenLastCalledWith({ type: 'tacker:setMode', mode: 'qhse' }, '*')
+    expect(postMessage).toHaveBeenLastCalledWith({ type: 'rig:setMode', mode: 'qhse' }, '*')
 
     act(() => useModeStore.getState().setMode('training'))
-    expect(postMessage).toHaveBeenLastCalledWith({ type: 'tacker:setMode', mode: 'training' }, '*')
+    expect(postMessage).toHaveBeenLastCalledWith({ type: 'rig:setMode', mode: 'training' }, '*')
   })
 
   it('el iframe usa sandbox real: sin allow-same-origin', () => {
     render(<App />)
-    const sandbox = screen.getByTitle(/Visor TACKER 10 V2/).getAttribute('sandbox') ?? ''
+    const sandbox = screen.getByTitle(/Visor Digital Rig V2/).getAttribute('sandbox') ?? ''
     expect(sandbox).toContain('allow-scripts')
     expect(sandbox).not.toContain('allow-same-origin')
   })

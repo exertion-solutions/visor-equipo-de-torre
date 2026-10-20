@@ -6,9 +6,11 @@ export function TopBar() {
     <header className="bg-card/60 flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-3 py-2 sm:px-4">
       <div className="min-w-0 flex-1 basis-56">
         <h1 className="truncate text-sm font-semibold tracking-wide">
-          TACKER DIGITAL RIG <span className="text-muted-foreground">·</span> TACKER 10
+          DIGITAL RIG <span className="text-muted-foreground">·</span> Equipo Pulling / Workover
         </h1>
-        <p className="text-muted-foreground truncate text-xs">Pulling / Workover Digital Twin</p>
+        <p className="text-muted-foreground truncate text-xs">
+          Gemelo digital de servicios de pozo
+        </p>
       </div>
       {/* En <640px la barra de modos hace scroll horizontal en vez de desbordar la página. */}
       <nav

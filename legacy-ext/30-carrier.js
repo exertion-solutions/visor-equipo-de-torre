@@ -1,11 +1,11 @@
 /*
- * TACKER 10 · 30-carrier.js — rediseño visual del carrier y su equipamiento.
+ * Equipo 10 · 30-carrier.js — rediseño visual del carrier y su equipamiento.
  *
  * Reemplaza `Ot.camion`, `Ot.subestructura`, `Ot.cabina`, `Ot.motor` y `Ot.malacate` (esta última conserva el grupo
  * `tambor_principal` del visor, que el aparejo hace girar). SOLO ESTÉTICO: el modelo sirve de soporte visual a los
- * puntos DROPS del Libro DROPS Tacker 2024 (RCCO Rev.03). Ninguna cota nueva es dato documentado.
+ * puntos DROPS del Libro DROPS 2024 (RCCO Rev.03). Ninguna cota nueva es dato documentado.
  *
- * DATOS DOCUMENTADOS que se respetan (folleto Tacker 10 rev. 26/06/2024 y layout TKR-10):
+ * DATOS DOCUMENTADOS que se respetan (folleto Equipo 10 rev. 26/06/2024 y layout TKR-10):
  *   - carrier Service King SK-575 de 5 ejes; envolvente operativa ~18 m × 4 m;
  *   - piso de trabajo 2,6 (largo, x) × 3,3 m (ancho, z), telescópico y deslizante, altura regulable 1–4 m
  *     (el modelo lo mantiene en 2,30 m, como el visor y como el resto de los componentes: llave, BOP, mástil);
@@ -531,7 +531,7 @@
     const M = kit.materials('camion')
     const b = kit.builder('camion')
 
-    // El cartel "TACKER 10" del visor usa una textura de canvas: se rescata del original y se reubica.
+    // El cartel "Equipo 10" del visor usa una textura de canvas: se rescata del original y se reubica.
     const scratch = {
       kids: [],
       add(o) {

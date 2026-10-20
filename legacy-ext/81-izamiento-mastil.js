@@ -1,7 +1,7 @@
 /*
  * 81-izamiento-mastil.js — izamiento del mástil, ILUSTRATIVO (paso 6 de la secuencia de montaje, 76-secuencia-montaje.js).
  *
- * SECUENCIA (aportada por el usuario, experto del equipo; estatus `pendingValidation`, no es el procedimiento de Tacker):
+ * SECUENCIA (aportada por el usuario, experto del equipo; estatus `pendingValidation`, no es el procedimiento de la empresa):
  *   0. Se bajan los gatos de nivelación del carrier (82-gatos-carrier.js).
  *   1. Pistón de izaje del 1.er tramo: el mástil gira de 0° (acostado sobre el carrier) a 90° (vertical).
  *   2. Izaje del 2.º tramo: un segundo pistón extiende el tramo que va EMBUTIDO dentro del 1.º.
@@ -20,7 +20,7 @@
  * Limitación conocida: el cable del malacate hacia la corona está fusionado con el acero del malacate: se oculta (con el resto del acero
  * del malacate) mientras dura el izamiento y reaparece al montar la corona.
  *
- * API: `window.__tackerErect = { set(p), play(), pause(), progress(), fases, largos(), plegado() }` con p en [0, 1];
+ * API: `window.__rigErect = { set(p), play(), pause(), progress(), fases, largos(), plegado() }` con p en [0, 1];
  * `plegado()` = giro del piso de enganche sobre su bisagra respecto de la pose de trabajo (rad, + = rebatido hacia arriba). La UI aparece en el paso 6.
  */
 window.__rigExt.onPost((R) => {
@@ -32,7 +32,7 @@ window.__rigExt.onPost((R) => {
 
   const { bx, by, a: aFinal, scale: S } = R.mast
   // Datos de cad/izamiento.py (medidos del V2): ángulo mínimo de transporte, largo de camisa y soporte de traslado.
-  const D = window.__TACKER_IZAMIENTO || {}
+  const D = window.__RIG_IZAMIENTO || {}
   const EPS0 = Number.isFinite(D.elevacion_transporte) ? D.elevacion_transporte : 22 // ° sobre la horizontal en transporte
   const THETA0 = -(Math.PI / 2) + (EPS0 * Math.PI) / 180 // eje respecto de la vertical (− = hacia la cabina)
   const CAMISA =
@@ -133,7 +133,7 @@ window.__rigExt.onPost((R) => {
   // ───────── cilindros de izaje del SK-575 (84 los integra en el grupo `mastil` con la pose armada) ─────────
   // Regla de sk575_izaje.meta.json: la camisa gira sobre su pivote del carrier hasta apuntar al empuje (oreja del mástil, gira con
   // el pivote); la extensión e = L − cerrado se reparte etapa1 → etapa2 → vástago. Ilustrativo: no es cálculo ni simulación.
-  const META = window.__TACKER_SK575_META || {}
+  const META = window.__RIG_SK575_META || {}
   const V3 = (a) => new T.Vector3().fromArray(a)
   const Q = P.quaternion.constructor
   const M4 = P.matrix.constructor
@@ -304,7 +304,7 @@ window.__rigExt.onPost((R) => {
     const completo = p >= 1
     const raise = ease((p - PHASE.jacksEnd) / (PHASE.raiseEnd - PHASE.jacksEnd))
     const ext = ease((p - PHASE.raiseEnd) / (PHASE.extendEnd - PHASE.raiseEnd))
-    if (window.__tackerGatos) window.__tackerGatos.set(completo ? 1 : ease(p / PHASE.jacksEnd))
+    if (window.__rigGatos) window.__rigGatos.set(completo ? 1 : ease(p / PHASE.jacksEnd))
     // θ: ángulo del eje respecto de la vertical (+ hacia la boca de pozo). Acostado hacia atrás: −90°. Final: el del V2.
     const tens = ease((p - PHASE.extendEnd) / (1 - PHASE.extendEnd))
     // Fase 1: de la posición de transporte a 90° (vertical). Fase 2: vertical. Fase 3: los vientos tensos llevan el mástil a su plomo final.
@@ -422,7 +422,7 @@ window.__rigExt.onPost((R) => {
     pause()
     set(Number(e.target.value) / 100)
   })
-  document.addEventListener('tacker:seq-step', (e) => {
+  document.addEventListener('rig:seq-step', (e) => {
     const en6 = e.detail === 6
     box.hidden = !en6
     if (!en6) {
@@ -431,14 +431,14 @@ window.__rigExt.onPost((R) => {
     }
     ui.update()
   })
-  document.addEventListener('tacker:mode', () => {
+  document.addEventListener('rig:mode', () => {
     pause()
     if (p < 1) set(1)
     box.hidden = true
   })
   ui.update()
 
-  window.__tackerErect = {
+  window.__rigErect = {
     set,
     play,
     pause,

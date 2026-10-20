@@ -6,14 +6,14 @@
  * visual y acumulativo.
  *
  * FUENTE Y ESTATUS: la lista de pasos es la "secuencia típica de montaje" aportada por el usuario (docs/secuencia-montaje-tipica.md).
- * NO es el procedimiento de Tacker ni una exigencia de empresa, cliente o norma: estatus `pendingValidation`. La asignación de
+ * NO es el procedimiento de la empresa ni una exigencia de empresa, cliente o norma: estatus `pendingValidation`. La asignación de
  * componentes a cada paso es una lectura visual orientativa del modelo, no una afirmación de ingeniería. Los pasos 1-3 y 8 son en
  * buena parte documentales (reunión, verificaciones, pruebas): no tienen geometría propia y el panel lo dice.
  *
  * NO se anima el izamiento del mástil (no hay secuencia ni ángulos documentados) ni se inventan tiempos, cargas o distancias.
  * Antorcha y separador no están modelados: el panel los marca "sin geometría".
  *
- * Extras para pruebas: `window.__tackerSeq = { steps, go(n), current() }`.
+ * Extras para pruebas: `window.__rigSeq = { steps, go(n), current() }`.
  */
 window.__rigExt.onPost(() => {
   const $ = (id) => document.getElementById(id)
@@ -170,7 +170,7 @@ window.__rigExt.onPost(() => {
       line.title = ''
       status.innerHTML =
         '<div class="sq-text">«Todo» vuelve a mostrar todos los componentes.</div>' +
-        '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de Tacker ni un requisito. Recorrido visual, no simulación.</div>'
+        '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
       return
     }
     const s = STEPS[current - 1]
@@ -182,7 +182,7 @@ window.__rigExt.onPost(() => {
       `<div class="sq-text">${s.texto}</div>` +
       `<div class="sq-meta" title="${names.join(' · ')}">${s.geo ? 'Se suma en este paso: ' + (s.add.join(', ') || '—') : 'Paso documental: sin geometría propia.'}` +
       `${vis.length ? ' · Visibles: ' + names.length + ' de ' + ALL.length : ' · Sin componentes visibles'}${s.nota ? ' · ' + s.nota : ''}</div>` +
-      '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de Tacker ni un requisito. Recorrido visual, no simulación.</div>'
+      '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
   }
 
   function go(n) {
@@ -190,7 +190,7 @@ window.__rigExt.onPost(() => {
     current = k
     setVisible(k === 0 ? null : visibleAt(k - 1))
     render()
-    document.dispatchEvent(new CustomEvent('tacker:seq-step', { detail: k }))
+    document.dispatchEvent(new CustomEvent('rig:seq-step', { detail: k }))
   }
   const pop = () => document.getElementById('tm-pop-montaje')
   function open() {
@@ -205,7 +205,7 @@ window.__rigExt.onPost(() => {
   $('sq-close').addEventListener('click', close)
 
   // Un cambio de modo aplica su propio preset de componentes: la secuencia deja de mandar.
-  document.addEventListener('tacker:mode', () => {
+  document.addEventListener('rig:mode', () => {
     if (current !== 0) {
       current = 0
       render()
@@ -213,7 +213,7 @@ window.__rigExt.onPost(() => {
   })
   render()
 
-  window.__tackerSeq = {
+  window.__rigSeq = {
     steps: STEPS,
     go,
     open,

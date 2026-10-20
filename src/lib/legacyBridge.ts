@@ -46,13 +46,13 @@ export function normalizeLayers(input: readonly unknown[]): LegacyLayer[] {
 
 // ── app → visor ─────────────────────────────────────────────────────────────────────────────
 export type AppToLegacyMessage =
-  | { type: 'tacker:setMode'; mode: AppMode }
-  | { type: 'tacker:setView'; view: LegacyView }
-  | { type: 'tacker:setLayers'; layers: LegacyLayer[] }
-  | { type: 'tacker:ping' }
+  | { type: 'rig:setMode'; mode: AppMode }
+  | { type: 'rig:setView'; view: LegacyView }
+  | { type: 'rig:setLayers'; layers: LegacyLayer[] }
+  | { type: 'rig:ping' }
 
 /** Compat: nombre histórico del mensaje de modo. */
-export type LegacySetModeMessage = Extract<AppToLegacyMessage, { type: 'tacker:setMode' }>
+export type LegacySetModeMessage = Extract<AppToLegacyMessage, { type: 'rig:setMode' }>
 
 // ── visor → app ─────────────────────────────────────────────────────────────────────────────
 export interface LegacySelection {
@@ -63,9 +63,11 @@ export interface LegacySelection {
 }
 
 export type LegacyToAppMessage =
-  | { type: 'tacker:ready'; version: number }
-  | { type: 'tacker:state'; mode: AppMode | null; view: LegacyView | null; layers: LegacyLayer[] }
-  | { type: 'tacker:select'; selection: LegacySelection | null }
+  | { type: 'rig:ready'; version: number }
+  | { type: 'rig:state'; mode: AppMode | null; view: LegacyView | null; layers: LegacyLayer[] }
+  | { type: 'rig:select'; selection: LegacySelection | null }
+  /** Total del contador de visitas (legacy-ext/89-visitas.js); solo se publica en sitios http(s) no locales. */
+  | { type: 'rig:visitas'; value: number }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 const strOrNull = (v: unknown): string | null => (typeof v === 'string' && v ? v : null)
@@ -74,21 +76,20 @@ const strOrNull = (v: unknown): string | null => (typeof v === 'string' && v ? v
 export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
   if (!isRecord(data) || typeof data.type !== 'string') return null
   switch (data.type) {
-    case 'tacker:ready':
-      return { type: 'tacker:ready', version: typeof data.version === 'number' ? data.version : 0 }
-    case 'tacker:state':
+    case 'rig:ready':
+      return { type: 'rig:ready', version: typeof data.version === 'number' ? data.version : 0 }
+    case 'rig:state':
       return {
-        type: 'tacker:state',
+        type: 'rig:state',
         mode: isAppMode(data.mode) ? data.mode : null,
         view: isLegacyView(data.view) ? data.view : null,
         layers: Array.isArray(data.layers) ? normalizeLayers(data.layers) : [],
       }
-    case 'tacker:select': {
-      if (data.id === null || data.id === undefined)
-        return { type: 'tacker:select', selection: null }
+    case 'rig:select': {
+      if (data.id === null || data.id === undefined) return { type: 'rig:select', selection: null }
       if (typeof data.id !== 'string' || !data.id) return null
       return {
-        type: 'tacker:select',
+        type: 'rig:select',
         selection: {
           id: data.id,
           name: strOrNull(data.name),
@@ -97,6 +98,10 @@ export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
         },
       }
     }
+    case 'rig:visitas':
+      return typeof data.value === 'number' && Number.isInteger(data.value) && data.value >= 0
+        ? { type: 'rig:visitas', value: data.value }
+        : null
     default:
       return null
   }

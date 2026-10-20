@@ -25,12 +25,12 @@ Archivo: `POWSG020 Caída de Objetos desde Altura 02.pdf`
 - Elabora/Revisa/Aprueba figuran **solo con iniciales** (GDP, HA, PC). No hay nombres ni cargos. **[DUDOSO]** No se puede saber quién es quién por el documento.
 - La pág. 1 dice "Página 1 de 4" pero el resto dice "de 7" y el archivo tiene 7 págs. Error de la portada.
 - No se ve sello de "copia controlada" en la copia que tenemos (PDF).
-- **Clasificación como `procedure`**: es un procedimiento del SGI de Tacker, con revisión y firmantes (por iniciales) y aplica a "todas las Operaciones realizadas en TACKER SRL". Puede tratarse como procedimiento corporativo aprobado (rev. 02). Salvedad: no es específico del Tacker 10 (ver 1.3) y las aprobaciones son solo iniciales.
+- **Clasificación como `procedure`**: es un procedimiento del SGI de la empresa, con revisión y firmantes (por iniciales) y aplica a "todas las Operaciones realizadas en la empresa". Puede tratarse como procedimiento corporativo aprobado (rev. 02). Salvedad: no es específico del equipo 10 (ver 1.3) y las aprobaciones son solo iniciales.
 
 ### 1.2 Objetivo, alcance, documentos, definiciones (pág. 2)
 
 - Objetivo: "Establecer lineamientos y parámetros seguros para la Prevención de Caída de Objetos desde Altura teniendo en cuenta la planeación y ejecución de las Operaciones adoptando medidas de prevención y de protección aplicables a la Industria."
-- Alcance: "Este documento es aplicable a todas las Operaciones realizadas en TACKER SRL." No menciona equipos, torres ni áreas concretas.
+- Alcance: "Este documento es aplicable a todas las Operaciones realizadas en la empresa." No menciona equipos, torres ni áreas concretas.
 - Documentos asociados: "No posee". Registro (pág. 7): "No posee." (aunque más adelante exige planillas; ver 1.7).
 - Única definición: "Programa de Protección Contra Caídas de Altura". No define "DROPS", "objeto caído" ni "altura".
 
@@ -395,7 +395,7 @@ Recomendaciones o redacción blanda: prácticamente no hay. El procedimiento es 
 - **Frecuencia diaria formal**: se menciona "diarias" solo en el rol del Personal Operativo, sin planilla.
 - **Frecuencia para la torre** más allá de eventos ("tijera o martilleo", antes de bajar/levantar la torre).
 - **Definiciones**: DROPS, objeto caído, "tijera", "martilleo", "Pirosalva", "ámelas", "Caran block".
-- **Equipos concretos**: no menciona "Tacker 10" ni ningún equipo por nombre; el RCCO describe un equipo tipo (mástil con corona, piso de enganche/pirosalva, guinche, power swivel, aparejo de 8 líneas), pero no dice a cuál corresponde.
+- **Equipos concretos**: no menciona "Equipo 10" ni ningún equipo por nombre; el RCCO describe un equipo tipo (mástil con corona, piso de enganche/pirosalva, guinche, power swivel, aparejo de 8 líneas), pero no dice a cuál corresponde.
 - **Zona de exclusión (barricada) bajo cargas o punto de reunión**: solo el rótulo "Punto de Reunión" en el layout, sin requisito.
 - **A4 Calculadora**, **POSGI011-A1**, **POSGI015-A1-0**, **POWSG019/SDC**: referenciados pero no están en este juego de archivos (no verificados).
 

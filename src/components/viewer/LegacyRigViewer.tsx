@@ -14,7 +14,7 @@ export type { LegacySetModeMessage }
  * Ruta del visor V2 autocontenido, servido desde `public/legacy/`.
  * `?embedded` oculta su barra de modos propia: la app controla el modo por postMessage.
  */
-export const LEGACY_VIEWER_SRC = `${import.meta.env.BASE_URL}legacy/TACKER10_Digital_Rig_V2.html?embedded`
+export const LEGACY_VIEWER_SRC = `${import.meta.env.BASE_URL}legacy/Digital_Rig_V2.html?embedded`
 
 /** Si el visor no avisa `ready` (p. ej. una copia en caché sin el puente), se retira el cartel igual. */
 const READY_FALLBACK_MS = 45_000
@@ -57,32 +57,35 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
       if (!msg) return
       const store = useViewerStore.getState()
       switch (msg.type) {
-        case 'tacker:ready': {
+        case 'rig:ready': {
           const first = !store.legacyReady
           store.setLegacyReady(true)
           // Estado inicial: primero el modo (aplica su preset de capas) y luego lo explícito de la URL.
           const m = useModeStore.getState().mode
           sentMode.current = m
-          postRef.current({ type: 'tacker:setMode', mode: m })
+          postRef.current({ type: 'rig:setMode', mode: m })
           if (first) {
             const init = getInitialUrlState()
-            if (init.view) postRef.current({ type: 'tacker:setView', view: init.view })
-            if (init.layers) postRef.current({ type: 'tacker:setLayers', layers: init.layers })
+            if (init.view) postRef.current({ type: 'rig:setView', view: init.view })
+            if (init.layers) postRef.current({ type: 'rig:setLayers', layers: init.layers })
           }
           break
         }
-        case 'tacker:state':
+        case 'rig:state':
           // El modo NO se lee del visor: `modeStore` manda (evita pisar el modo de la URL con el estado inicial).
           store.setLegacyState({ view: msg.view, layers: msg.layers })
           break
-        case 'tacker:select':
+        case 'rig:select':
           store.setSelection(msg.selection)
+          break
+        case 'rig:visitas':
+          store.setVisitas(msg.value)
           break
       }
     }
     window.addEventListener('message', onMessage)
     // Por si el visor ya había arrancado antes de que este componente escuchara (recarga en caliente).
-    postRef.current({ type: 'tacker:ping' })
+    postRef.current({ type: 'rig:ping' })
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
@@ -90,7 +93,7 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
   useEffect(() => {
     if (!ready || sentMode.current === mode) return
     sentMode.current = mode
-    postRef.current({ type: 'tacker:setMode', mode })
+    postRef.current({ type: 'rig:setMode', mode })
   }, [mode, ready])
 
   useEffect(() => {
@@ -105,7 +108,7 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
     <div className={active ? 'absolute inset-0' : 'hidden'} aria-hidden={!active}>
       <iframe
         ref={frameRef}
-        title="Visor TACKER 10 V2 (modo compatibilidad)"
+        title="Visor Digital Rig V2 (modo compatibilidad)"
         src={LEGACY_VIEWER_SRC}
         sandbox="allow-scripts allow-downloads"
         tabIndex={active ? 0 : -1}
@@ -136,7 +139,7 @@ function LoadingOverlay() {
         <p className="text-muted-foreground text-xs">
           {slow
             ? 'Sigue cargando: el visor pesa ≈7 MB (incluye el modelo SK-575). Puede tardar unos segundos más.'
-            : 'Preparando el modelo TACKER 10'}
+            : 'Preparando el modelo del equipo'}
         </p>
       </div>
     </div>

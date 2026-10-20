@@ -31,20 +31,20 @@ test('the real-equipment reference drives a physical color palette', async () =>
   assert.equal(EQUIPMENT_PALETTE.mastil.main, '#C8C2AE');
 });
 
-test('documented Tacker 10 dimensions are encoded as the model source of truth', async () => {
-  const { TACKER_10 } = await import('../reference/v2-previo/src/technical-spec.js');
-  assert.equal(TACKER_10.mast.heightM, 31.6992);
-  assert.equal(TACKER_10.mast.model, 'Service King SK104-330');
-  assert.equal(TACKER_10.carrier.axles, 5);
-  assert.equal(TACKER_10.carrier.model, 'Service King SK-575');
-  assert.equal(TACKER_10.carrier.operatingLengthM, 18);
-  assert.deepEqual(TACKER_10.workFloor.sizeM, [2.6, 3.3]);
-  assert.equal(TACKER_10.hoisting.lines, 6);
-  assert.equal(TACKER_10.hoisting.linksCapacityT, 150);
-  assert.equal(TACKER_10.hoisting.elevatorCapacityT, 100);
-  assert.deepEqual(TACKER_10.hoisting.blockTravelM, [7, 25]);
-  assert.equal(TACKER_10.bop.accumulatorBottles, 5);
-  assert.equal(TACKER_10.layout.anchorOffsetM, 25);
+test('documented Equipo 10 dimensions are encoded as the model source of truth', async () => {
+  const { RIG_10 } = await import('../reference/v2-previo/src/technical-spec.js');
+  assert.equal(RIG_10.mast.heightM, 31.6992);
+  assert.equal(RIG_10.mast.model, 'Service King SK104-330');
+  assert.equal(RIG_10.carrier.axles, 5);
+  assert.equal(RIG_10.carrier.model, 'Service King SK-575');
+  assert.equal(RIG_10.carrier.operatingLengthM, 18);
+  assert.deepEqual(RIG_10.workFloor.sizeM, [2.6, 3.3]);
+  assert.equal(RIG_10.hoisting.lines, 6);
+  assert.equal(RIG_10.hoisting.linksCapacityT, 150);
+  assert.equal(RIG_10.hoisting.elevatorCapacityT, 100);
+  assert.deepEqual(RIG_10.hoisting.blockTravelM, [7, 25]);
+  assert.equal(RIG_10.bop.accumulatorBottles, 5);
+  assert.equal(RIG_10.layout.anchorOffsetM, 25);
 });
 
 

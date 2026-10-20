@@ -1,5 +1,5 @@
 /*
- * 40-wellsite.js · TACKER 10 · boca de pozo y locación.
+ * 40-wellsite.js · Equipo 10 · boca de pozo y locación.
  *
  * Rediseña 5 componentes del visor V2 y agrega el entorno de locación:
  *   - aparejo      → bloque IDECO amarillo con gancho forjado (envuelve el original: conserva sus ramales y el estado interno del visor)
@@ -15,13 +15,13 @@
  * pocos draw calls. Las clases de three no están expuestas en `onPre`: se recuperan de los helpers del visor (ver bootKit).
  *
  * Convención: 1 u = 1 m · origen = boca de pozo · +X hacia el mástil · carrier hacia −X · Z lateral · Y arriba.
- * Datos documentados (FOLLETO TACKER 10 rev. 26/06/2024, LAYOUT TKR-10 11/07/2025, Libro DROPS Rev.03): BOP 7 1/16" 5000 psi anular+doble,
+ * Datos documentados (FOLLETO Equipo 10 rev. 26/06/2024, LAYOUT TKR-10 11/07/2025, Libro DROPS Rev.03): BOP 7 1/16" 5000 psi anular+doble,
  * acumulador de 5 botellones (8×2,4 m), aparejo IDECO 110 t con 6 líneas, amelas 150 t, elevador 100 t, bomba triplex 6×2,4 m,
  * pileta de ensayo 12×2,4 m (40 m³) con cubicador 3,5 m³, caballetes de 2 m (4,5 t), planchada 12×2,4 m, anclaje de pirosalva a 45 m (LAYOUT-WS10-0001; LAYOUT TKR-10 2025: 30 m, fuente en conflicto).
  * Todo lo demás (alturas, colores, detalle de forma) es ESTÉTICO y aproximado; no es as-built ni apto para fabricación.
  *
  * CONFLICTO DOCUMENTAL (aparejo): el folleto y el informe técnico dicen 6 líneas; el Libro DROPS (BP-3) dice "8 líneas de cable
- * 1 1/8"" (probablemente otro equipo Tacker). Se mantienen las 6 líneas del folleto (`vt.reevingLines`) y se registra la discrepancia.
+ * 1 1/8"" (probablemente otro equipo de la empresa). Se mantienen las 6 líneas del folleto (`vt.reevingLines`) y se registra la discrepancia.
  *
  * Etiquetas DROPS (userData.dropsId + nombre `drops_<ID>`): BP-3, BP-4, PLA-1 (fila incompleta en el Libro: "BANDEJA HCA."),
  * PLA-2, PIL-1, PIL-2, PRL-1, PRL-2, PRL-3. BP-1 (guinche) y BP-2 (power swivel, "NA") no se dibujan aquí.
@@ -31,7 +31,7 @@
 
   // ───────────────────────────── paleta (pintura real del equipo) ─────────────────────────────
   const C = {
-    RED: '#A72A32', // rojo Tacker
+    RED: '#A72A32', // rojo corporativo
     YEL: '#F2B632', // amarillo seguridad
     BLUE: '#3E7896', // azul BOP
     BLUE_L: '#92B4C5', // acento BOP
@@ -313,7 +313,7 @@
 
   /**
    * CHOKE MANIFOLD · subconjunto del componente 07 (`bop`). Tipología GENÉRICA tomada de fotos de referencia de unidades comerciales
-   * (no es el equipo del TACKER 10): entrada por la línea de choke del BOP → 2 válvulas en serie → cruz de distribución → 3 ramales
+   * (no es el equipo 10): entrada por la línea de choke del BOP → 2 válvulas en serie → cruz de distribución → 3 ramales
    * (choke ajustable, choke fijo, línea directa/purga, cada uno con válvula aguas arriba) → colector de salida hacia la pileta.
    * Confirmado: posición en locación (CHOKE.cx/cz). Aproximado: envolvente, cotas y detalle. PENDIENTE: presión de trabajo, tipo de
    * válvula de entrada (manual / HCR) y ruteo real. Mallas fusionadas: `choke_pintura` (rojo) y `choke_acero` (bulones, vástagos, manómetros).
@@ -684,13 +684,13 @@
    * Envuelve el aparejo original: éste crea `bloque_viajero` (que el visor anima vía `wh`), las amelas, el elevador y los 6 ramales (`Lh`) — estado
    * interno del visor que no está expuesto. Los ramales, el grupo animado y los grupos `amelas`/`elevador` se conservan; el rediseño (bloque con poleas
    * de garganta, gancho forjado con pestillo, amelas, elevador de tubing articulado y elevador de varillas nuevo) vive en legacy-ext/41-aparejo.js
-   * (`window.__tackerAparejo`). Sin ese módulo el visor conserva su aparejo original. Las 6 líneas del folleto se mantienen (ver conflicto en cabecera).
+   * (`window.__rigAparejo`). Sin ese módulo el visor conserva su aparejo original. Las 6 líneas del folleto se mantienen (ver conflicto en cabecera).
    */
   function wrapAparejo(api) {
     const original = api.Ot.aparejo
     api.Ot.aparejo = (g, e) => {
       original(g, e)
-      const redesign = window.__tackerAparejo
+      const redesign = window.__rigAparejo
       if (redesign) redesign.build(g, api, { K, Batch, dropsGroup })
     }
   }
@@ -698,7 +698,7 @@
   // ═════════════════════════════════════════ LLAVE HIDRÁULICA + CUÑAS + POSTE DE RETENIDA ═════════════════════════════════════════
   /**
    * Componente 08 (`llave`): llave hidráulica de tubing con llave de contrafuerza (backup), cuñas manuales, línea de suspensión y poste
-   * de retenida. Tipología GENÉRICA tomada de dos fotos de referencia de catálogo (no es el equipo del TACKER 10): llave de garganta
+   * de retenida. Tipología GENÉRICA tomada de dos fotos de referencia de catálogo (no es el equipo 10): llave de garganta
    * abierta tipo placa con estructura tubular, cilindro hidráulico, mangueras y franjas de advertencia, y llave con cabezal, manómetro
    * de torque, patas con resorte, palancas y válvulas de mando.
    * Confirmado: posición del pozo/piso, libro DROPS (PRL-1/2/3: grampas, perno del brazo, eslinga). Aproximado: forma, cotas, ruteo de
@@ -1629,8 +1629,8 @@
 
     /**
      * Tanque contenedor corrugado (fotos de campo): cuerpo de chapa lisa + nervaduras verticales cada 0,3 m en los costados y los
-     * extremos, y cubierta de 5 cm. `top` = altura de la cubierta (2,0 m). Los costados largos quedan en cz ± W/2 (la calcomanía
-     * TACKER de `addDecals` flota a ±1,222 m).
+     * extremos, y cubierta de 5 cm. `top` = altura de la cubierta (2,0 m). Los costados largos quedan en cz ± W/2 (el letrero
+     * de `addDecals` flota a ±1,222 m).
      */
     const tank = (B, cx, cz, L, W, top) => {
       const y0 = 0.25
@@ -2798,7 +2798,7 @@
           S.box('#565b63', 0.06, 2.2, 0.06, x + dx * Math.cos(ry), 1.1, z - dx * Math.sin(ry))
         }
       }
-      mkSign(-8, -30.6, 0, 1.6, 0.9, 'ACCESO A LOCACIÓN', '#1d4f6b', '#ffffff', 'TACKER 10')
+      mkSign(-8, -30.6, 0, 1.6, 0.9, 'ACCESO A LOCACIÓN', '#1d4f6b', '#ffffff', 'Equipo 10')
       mkSign(-27, 14.5, PI / 2, 1.3, 0.8, 'PUNTO DE REUNIÓN', '#1f6f43', '#ffffff')
       mkSign(-14.6, -27.3, PI / 2, 1.3, 0.8, 'ESTACIONAMIENTO', '#1d4f6b', '#ffffff', 'VEHÍCULOS')
       mkSign(33.4, 7, -PI / 2, 1.3, 0.8, 'EQUIPO EN OPERACIÓN', '#f2b632', '#1b1b1b')
@@ -2823,14 +2823,14 @@
       if (R.materials[compId]) R.materials[compId].push(mat) // hover/selección (emissive)
       return mesh
     }
-    // pileta: "TACKER" rojo sobre el costado blanco (Libro p.21)
+    // pileta: "EQUIPO" rojo sobre el costado blanco (Libro p.21)
     const tack = textTexture(1024, 256, (ctx, w, h) => {
       ctx.clearRect(0, 0, w, h)
       ctx.fillStyle = C.RED
       ctx.font = 'italic 900 190px Arial Black, Arial'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('TACKER', w / 2, h * 0.5)
+      ctx.fillText('EQUIPO', w / 2, h * 0.5)
     })
     const circ = R.groups.circulacion
     if (circ) {
@@ -2877,15 +2877,15 @@
   })
 
   /**
-   * Ficha de confiabilidad (`__TACKER_META`, tabla del módulo de producto que se crea DESPUÉS del bundle) del componente 07:
-   * BOP + acumulador + choke manifold. Grado C (geometría SK-575) / Fuente en conflicto (C2). Se aplica cuando el módulo de producto arranca (`tacker:boot`).
+   * Ficha de confiabilidad (`__RIG_META`, tabla del módulo de producto que se crea DESPUÉS del bundle) del componente 07:
+   * BOP + acumulador + choke manifold. Grado C (geometría SK-575) / Fuente en conflicto (C2). Se aplica cuando el módulo de producto arranca (`rig:boot`).
    */
   const META_BOP = {
-    // CONF. = confianza de la GEOMETRÍA que se ve; la de cada dato va en el texto (src/data/rigs/tacker10.ts, sk575_bop / sk575_manifold).
+    // CONF. = confianza de la GEOMETRÍA que se ve; la de cada dato va en el texto (src/data/rigs/rig10.ts, sk575_bop / sk575_manifold).
     grade: 'B',
     status: 'Fuente en conflicto',
     basis:
-      'Stack: plano TACKER 8127-1110-004 rev 4 (src-plano-bop-8127; alturas A, anchos y líneas medidos C) · Datos: folleto (src-folleto) · ' +
+      'Stack: plano 8127-1110-004 rev 4 (src-plano-bop-8127; alturas A, anchos y líneas medidos C) · Datos: folleto (src-folleto) · ' +
       'manifold: esquema M1–M12 (src-esquema-ahogo) con escala B20-9908 (src-choke-b20)',
     note:
       'Stack estándar WS 7-1/16": ram simple, cruz, doble ram + shear (10.000 psi) y anular (5.000 psi), 3,731 m. ' +
@@ -2895,9 +2895,9 @@
       'Pendientes: placa del BOP instalado, cota real del cabezal / sótano, identidad del manifold y color del BOP/acumulador.',
   }
   const applyMeta = () => {
-    const meta = window.__TACKER_META
+    const meta = window.__RIG_META
     if (meta && meta.bop) Object.assign(meta.bop, META_BOP)
   }
-  if (window.__tackerBooted) applyMeta()
-  else document.addEventListener('tacker:boot', applyMeta, { once: true })
+  if (window.__rigBooted) applyMeta()
+  else document.addEventListener('rig:boot', applyMeta, { once: true })
 })()

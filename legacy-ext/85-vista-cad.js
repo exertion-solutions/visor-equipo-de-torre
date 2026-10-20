@@ -1,10 +1,10 @@
 /*
- * 85-vista-cad.js — preset "Vista CAD": deja el V2 como el visor CAD de referencia (~/cad/tacker10/tacker10.html, skill
+ * 85-vista-cad.js — preset "Vista CAD": deja el V2 como el visor CAD de referencia (~/cad/rig10/rig10.html, skill
  * `equipo-3d`): solo el modelo SK-575, sin entorno de locación ni grilla, cámara en perspectiva y vista nocturna, desde la
  * vista "General" de ese HTML. Es un preset de PRESENTACIÓN: no cambia datos ni geometría.
  *
  * Reusa los botones existentes (#c-ortho, #c-night, capas de 10-layers.js) y el modelo de 84-modelo-sk575.js. Apagarlo
- * restaura lo que había antes (entorno, grilla, proyección, noche). Botón en el menú Vista. API: `window.__tackerVistaCad`.
+ * restaura lo que había antes (entorno, grilla, proyección, noche). Botón en el menú Vista. API: `window.__rigVistaCad`.
  * Si se cambia de modo con la Vista CAD encendida, al apagarla quedan las capas del modo NUEVO (no las previas al encendido).
  */
 window.__rigExt.onPost((R) => {
@@ -13,7 +13,7 @@ window.__rigExt.onPost((R) => {
   const isOn = (b) =>
     !!b && (b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true')
   const invalidate = () => typeof R.invalidate === 'function' && R.invalidate()
-  // Vista "General" de tacker10.html, pasada al marco del V2 (origen en la boca de pozo: x − 1,80 m).
+  // Vista "General" de rig10.html, pasada al marco del V2 (origen en la boca de pozo: x − 1,80 m).
   const CAM = [28.2, 14, 45]
   const TARGET = [-5.8, 10, 6]
 
@@ -28,10 +28,10 @@ window.__rigExt.onPost((R) => {
       previo = {
         ortho: isOn($('c-ortho')),
         night: isOn($('c-night')),
-        layers: window.__tackerLayers?.get() ?? [],
+        layers: window.__rigLayers?.get() ?? [],
         vis: ocultables().map((o) => [o, o.visible]),
       }
-      window.__tackerLayers?.apply([])
+      window.__rigLayers?.apply([])
       if (previo.ortho) $('c-ortho')?.click()
       if (!previo.night) $('c-night')?.click()
       for (const o of ocultables()) o.visible = false
@@ -47,7 +47,7 @@ window.__rigExt.onPost((R) => {
       for (const [o, v] of p.vis) o.visible = v
       if (isOn($('c-ortho')) !== p.ortho) $('c-ortho')?.click()
       if (isOn($('c-night')) !== p.night) $('c-night')?.click()
-      window.__tackerLayers?.apply(p.layers)
+      window.__rigLayers?.apply(p.layers)
     }
     previo = on ? previo : null
     btn.setAttribute('aria-pressed', String(on))
@@ -69,9 +69,9 @@ window.__rigExt.onPost((R) => {
   else document.querySelector('header')?.appendChild(btn)
 
   // El preset del modo (75-mode-presets.js) ya aplicó sus capas: este listener se registra después, así que las lee aplicadas.
-  document.addEventListener('tacker:mode', () => {
-    if (previo) previo.layers = window.__tackerLayers?.get() ?? []
+  document.addEventListener('rig:mode', () => {
+    if (previo) previo.layers = window.__rigLayers?.get() ?? []
   })
 
-  window.__tackerVistaCad = { on: () => set(true), off: () => set(false), isOn: () => !!previo }
+  window.__rigVistaCad = { on: () => set(true), off: () => set(false), isOn: () => !!previo }
 })

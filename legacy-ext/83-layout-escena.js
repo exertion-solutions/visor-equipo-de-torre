@@ -11,7 +11,7 @@
  *     La leyenda de zonas ilustrativas (`#legend`, "SIN VALIDAR") NO se oculta: es obligatoria mientras las zonas estén encendidas.
  *  4. En modo embebido se oculta la barra de estado propia del V2 (la app ya muestra la suya con "no as-built").
  *
- * API para pruebas: `window.__tackerLayout = { focus(), paneles(mostrar) }`.
+ * API para pruebas: `window.__rigLayout = { focus(), paneles(mostrar) }`.
  */
 window.__rigExt.onPost(() => {
   const $ = (id) => document.getElementById(id)
@@ -107,7 +107,7 @@ window.__rigExt.onPost(() => {
       String(on ? body.classList.contains('paneles-show') : !colapsadas()),
     )
   }
-  document.addEventListener('tacker:seq-step', (e) => {
+  document.addEventListener('rig:seq-step', (e) => {
     seqActivo = e.detail > 0
     actualizar()
   })
@@ -133,7 +133,7 @@ window.__rigExt.onPost(() => {
   for (const t of [treeToggle, cardToggle])
     t?.addEventListener('click', () => setTimeout(actualizar, 350))
 
-  window.__tackerLayout = {
+  window.__rigLayout = {
     focus: () => body.classList.contains('focus-scene'),
     paneles: (mostrar) => {
       if (body.classList.contains('focus-scene')) body.classList.toggle('paneles-show', !!mostrar)

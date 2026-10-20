@@ -6,14 +6,14 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
-const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const erect = fs.readFileSync(path.join(root, 'legacy-ext', '81-izamiento-mastil.js'), 'utf8')
 const cab = fs.readFileSync(path.join(root, 'legacy-ext', '79-cabina-desmontable.js'), 'utf8')
 const mast = fs.readFileSync(path.join(root, 'legacy-ext', '20-mast.js'), 'utf8')
 
 test('módulos en el HTML generado y API expuesta', () => {
   for (const m of ['79-cabina-desmontable.js', '81-izamiento-mastil.js']) assert.ok(html.includes(`/* ${m} */`), m)
-  assert.ok(html.includes('__tackerErect') && html.includes('__tackerCabina'))
+  assert.ok(html.includes('__rigErect') && html.includes('__rigCabina'))
 })
 
 test('la secuencia del izamiento respeta lo indicado: 3 fases en orden', () => {
@@ -43,7 +43,7 @@ test('no hay cargas, presiones ni tiempos reales en los textos de la UI', () => 
 
 test('cinemática del izamiento (cad/izamiento.py): datos inyectados y coherentes', () => {
   const d = JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'cad', 'izamiento.json'), 'utf8'))
-  assert.ok(html.includes('window.__TACKER_IZAMIENTO='))
+  assert.ok(html.includes('window.__RIG_IZAMIENTO='))
   assert.equal(d.estado, 'pendingValidation')
   assert.ok(d.elevacion_transporte > 0 && d.elevacion_transporte < 45, 'el mástil no puede acostarse a 0° sobre el equipo del V2')
   assert.ok(d.margen_libre >= 0.14, 'margen mínimo entre el mástil y el equipo')
@@ -64,10 +64,10 @@ test('el izamiento vive en el menú Montaje (sin panel flotante) y oculta la not
 
 test('gatos de nivelación del carrier (82): 3 por lado, hijos de camion, se bajan antes de izar', () => {
   const gatos = fs.readFileSync(path.join(root, 'legacy-ext', '82-gatos-carrier.js'), 'utf8')
-  assert.ok(html.includes('/* 82-gatos-carrier.js */') && html.includes('__tackerGatos'))
+  assert.ok(html.includes('/* 82-gatos-carrier.js */') && html.includes('__rigGatos'))
   assert.match(gatos, /const XS = \[-15\.2, -9\.8, -1\.9\]/)
   assert.match(gatos, /camion\.add\(raiz\)/)
   assert.match(gatos, /pendingValidation/)
   assert.match(erect, /Fase 0 · se bajan los gatos de nivelación del carrier/)
-  assert.match(erect, /__tackerGatos\.set\(/)
+  assert.match(erect, /__rigGatos\.set\(/)
 })

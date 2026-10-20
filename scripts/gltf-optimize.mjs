@@ -1,5 +1,5 @@
 // Uso: npm run gltf:optimize -- <nombre.glb> [flags de gltf-transform optimize]
-// Lee de assets/source/<nombre> y escribe en public/models/tacker10/<nombre>.
+// Lee de assets/source/<nombre> y escribe en public/models/rig10/<nombre>.
 // NUNCA modifica ni sobrescribe el original.
 //
 // Defaults pensados para un gemelo digital (selección/jerarquía/aislamiento por componente):

@@ -6,13 +6,13 @@ import { test } from 'node:test'
 
 const root = path.resolve(import.meta.dirname, '..')
 const read = (f) => fs.readFileSync(path.join(root, ...f.split('/')), 'utf8')
-const html = read('public/legacy/TACKER10_Digital_Rig_V2.html')
+const html = read('public/legacy/Digital_Rig_V2.html')
 const layout = read('legacy-ext/83-layout-escena.js')
 const menus = read('legacy-ext/65-toolbar-menus.js')
 const seq = read('legacy-ext/76-secuencia-montaje.js')
 
 test('módulo en el HTML y API expuesta', () => {
-  assert.ok(html.includes('/* 83-layout-escena.js */') && html.includes('__tackerLayout'))
+  assert.ok(html.includes('/* 83-layout-escena.js */') && html.includes('__rigLayout'))
 })
 
 test('modo enfoque: oculta todas las cartas salvo la leyenda obligatoria de zonas', () => {
@@ -22,7 +22,7 @@ test('modo enfoque: oculta todas las cartas salvo la leyenda obligatoria de zona
   for (const id of ['c-measure', 'c-cut', 'c-dims', 'c-wire', 't-explode', 't-labels', 'c-isolate'])
     assert.ok(layout.includes(`'${id}'`), id)
   assert.match(layout, /erect-playing/)
-  assert.match(layout, /tacker:seq-step/)
+  assert.match(layout, /rig:seq-step/)
 })
 
 test('no hay bucle con el observador: nunca se escribe la clase si no cambia', () => {

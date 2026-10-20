@@ -1,15 +1,15 @@
-# cad/sk575 — modelo de referencia Service King SK-575 (TACKER 10)
+# cad/sk575 — modelo de referencia Service King SK-575 (Equipo 10)
 
-Modelo CAD (build123d) del TACKER 10 completo en locación: mástil, carrier, cuadro de maniobras, izaje, aparejo,
+Modelo CAD (build123d) del equipo 10 completo en locación: mástil, carrier, cuadro de maniobras, izaje, aparejo,
 BOP, piso, planchada, vientos, piletas, manifold, bomba y acumulador. **No es as-built**: confianza por componente
 B/C; cotas, fuentes y conflictos en [`docs/pdf-review/informe-sk575-2026-10-09.md`](../../docs/pdf-review/informe-sk575-2026-10-09.md).
 
-| Archivo            | Qué hace                                                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `modelo.py`        | Geometría. `comp(id)` etiqueta las piezas que siguen con el `Component.id` del visor; `add(material, …)`.               |
-| `exportar.py`      | Verifica 16 cotas (incl. cilindro HYCO) contra `technical-spec.js` → `TACKER_10.sk575` y exporta un GLB por componente. |
-| `publicar.mjs`     | `gltf:optimize` con simplify declarado + `public/models/tacker10/<id>.meta.json` con tris origen/publicados.            |
-| `requirements.txt` | Dependencias del entorno propio (abajo).                                                                                |
+| Archivo            | Qué hace                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `modelo.py`        | Geometría. `comp(id)` etiqueta las piezas que siguen con el `Component.id` del visor; `add(material, …)`.            |
+| `exportar.py`      | Verifica 16 cotas (incl. cilindro HYCO) contra `technical-spec.js` → `RIG_10.sk575` y exporta un GLB por componente. |
+| `publicar.mjs`     | `gltf:optimize` con simplify declarado + `public/models/rig10/<id>.meta.json` con tris origen/publicados.            |
+| `requirements.txt` | Dependencias del entorno propio (abajo).                                                                             |
 
 ## Entorno (aparte del `cad-env`)
 
@@ -30,16 +30,16 @@ python -m venv $env:USERPROFILE\.cad-venv
 C:\Users\jcastro\.cad-venv\Scripts\python.exe cad/sk575/exportar.py
 # uno solo
 C:\Users\jcastro\.cad-venv\Scripts\python.exe cad/sk575/exportar.py sk575_bop
-# revisar y publicar (gltf:optimize con simplify declarado + meta.json publicado) → public/models/tacker10/
+# revisar y publicar (gltf:optimize con simplify declarado + meta.json publicado) → public/models/rig10/
 npm run gltf:inspect -- assets/source/sk575_mastil.glb
 node cad/sk575/publicar.mjs                 # todos; o: node cad/sk575/publicar.mjs sk575_mastil
-node cad/sk575/publicar.mjs --contar public/models/tacker10/sk575_*.glb   # solo contar tris/aristas
+node cad/sk575/publicar.mjs --contar public/models/rig10/sk575_*.glb   # solo contar tris/aristas
 ```
 
 Salida en `assets/source/` (ignorada por git): `<id>.glb` + `<id>.meta.json` (confianza, alcance, triángulos,
 materiales, `as_built: false`, enlace al informe, sub-nodos, aristas). `publicar.mjs` corre
 `npm run gltf:optimize -- <id>.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0` (el default del CLI 4.5,
-ahora **declarado**) y copia el meta a `public/models/tacker10/<id>.meta.json` (versionado) con
+ahora **declarado**) y copia el meta a `public/models/rig10/<id>.meta.json` (versionado) con
 `publicado.triangulos_origen` / `triangulos_publicados` / `segmentos_aristas`.
 
 ## Contrato del GLB
@@ -92,6 +92,6 @@ malla: los sub-nodos simplifican menos).
 
 ## Reglas
 
-- Una cota documentada nueva se agrega primero a `technical-spec.js` (`TACKER_10.sk575`) y a `verificar()`; nunca solo en `modelo.py`.
+- Una cota documentada nueva se agrega primero a `technical-spec.js` (`RIG_10.sk575`) y a `verificar()`; nunca solo en `modelo.py`.
 - Conflictos de fuente (líneas 6/8, BOP 7-1/16"/11", anclajes) se rotulan en el informe y en el `alcance`, no se eligen en silencio.
-- Los documentos fuente no se versionan (repo público): índice en [`docs/fuentes/tacker10/README-sk575.md`](../../docs/fuentes/tacker10/README-sk575.md).
+- Los documentos fuente no se versionan (repo público): índice en [`docs/fuentes/rig10/README-sk575.md`](../../docs/fuentes/rig10/README-sk575.md).

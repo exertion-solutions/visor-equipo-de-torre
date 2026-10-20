@@ -1,7 +1,7 @@
 """Layout TKR-10 (locación): HUELLAS en planta de acumulador, bomba triplex, pileta de circulación y planchada.
 Marco: origen = boca de pozo, +X hacia el mástil (carrier hacia −X), Y lateral, Z arriba.
 
-Fuente: docs/fuentes/tacker10/LAYOUT - TKR-10.pdf, coordenadas VECTORIALES del PDF (pt), no de una imagen.
+Fuente: docs/fuentes/rig10/LAYOUT - TKR-10.pdf, coordenadas VECTORIALES del PDF (pt), no de una imagen.
 Escala calibrada con la cota de anclajes 25 m (215,5 pt) y comprobada con los trailers de 12 m (103,5 pt).
 Cotas rotuladas en el plano (confirmadas): tamaños, 5 m bomba-pileta, 3 m acumulador-eje, 1,3 m equipo-boca.
 Posiciones no rotuladas: medidas del vector (confianza C).

@@ -9,8 +9,8 @@ description: Use when receiving, inspecting, optimizing or integrating GLB/glTF 
 
 1. Original en `assets/source/<nombre>.glb` (ignorado por git, **nunca se edita**).
 2. `npm run gltf:inspect -- assets/source/<nombre>.glb` → revisar unidades (m), nombres de nodo estables, materiales PBR, texturas, triángulos.
-3. `npm run gltf:optimize -- <nombre>.glb` → escribe `public/models/tacker10/<nombre>.glb`.
-4. Registrar la ruta en `Component.model` (`/models/tacker10/<nombre>.glb`) y validar en el visor.
+3. `npm run gltf:optimize -- <nombre>.glb` → escribe `public/models/rig10/<nombre>.glb`.
+4. Registrar la ruta en `Component.model` (`/models/rig10/<nombre>.glb`) y validar en el visor.
 
 ## Contrato del modelo (heredado del visor legacy)
 
@@ -34,7 +34,7 @@ El legacy tiene ~900 draw calls porque cada barra de reticulado, cable y caño e
 - **Verificar cotas antes de exportar**: el script compara las constantes del modelo con `technical-spec.js` (leído con `node`) y sale con exit 1 si una no cierra. Nunca exportar un modelo cuyas cotas documentadas no se verificaron.
 - **Presupuesto de triángulos por componente**: imprimir tris por componente y total (nativo < 1,5 M tris, < 300 draw calls). Teselar más grueso lo fino (`cable`, `goma`: tolerancia propia).
 - **Cables de tambores**: no modelar cada vuelta del cable enrollado; usar un cilindro/envolvente por capa y tramos rectos a la corona (el enrollado helicoidal multiplica los triángulos sin aportar dato).
-- **Modelo canónico: `cad/sk575/modelo.py`** (reemplaza a `~/cad/tacker10/tacker10.py`: misma geometría + cotas exactas 48", 15.2992, 20.629, 72", tambor de cable más liviano y etiquetas `comp()`). Editar ahí, no en `~/cad`.
+- **Modelo canónico: `cad/sk575/modelo.py`** (reemplaza a `~/cad/rig10/rig10.py`: misma geometría + cotas exactas 48", 15.2992, 20.629, 72", tambor de cable más liviano y etiquetas `comp()`). Editar ahí, no en `~/cad`.
 - **Trampa: el paso `palette` de `gltf-transform optimize`** convierte los materiales PBR por material en `PaletteMaterial` con texturas → rompe el contrato `<id>_<mat>` (y los factores metalness/roughness). Por eso `gltf:optimize` lo desactiva. Verificar tras optimizar: materiales nombrados `<id>_<mat>` con `baseColorFactor`/`metallicFactor`/`roughnessFactor` y **sin texturas** (`gltf:inspect`).
 - Meshopt sobre el lote SK-575: ~23 MB → **1,6 MB**, sin perder nombres (wrapper con `--flatten false --join false`).
 - **Sub-nodos animables / seleccionables** dentro del GLB de un componente: `comp("raiz/sub", origen)` en `modelo.py`
@@ -42,7 +42,7 @@ El legacy tiene ~900 draw calls porque cada barra de reticulado, cable y caño e
 - **Aristas horneadas**: `<nodo>_aristas` (LINES) por nodo, umbral 28° (= `aristas()` del V2), sin `_luz`/`_vidrio`.
   simplify no toca LINES (avisa "Unsupported draw mode": esperado).
 - **simplify declarado**: publicar con `node cad/sk575/publicar.mjs` (pasa `--simplify true --simplify-error 0.0001`,
-  el default del CLI) y registra `triangulos_origen`/`triangulos_publicados` en `public/models/tacker10/<id>.meta.json`.
+  el default del CLI) y registra `triangulos_origen`/`triangulos_publicados` en `public/models/rig10/<id>.meta.json`.
   El error es relativo a la extensión de cada malla: partir un componente en sub-nodos **sube** los tris publicados.
 - OpenCascade reutiliza la triangulación de un sólido: el `TOL` por material vale solo para la primera teselación.
 
@@ -50,7 +50,7 @@ El legacy tiene ~900 draw calls porque cada barra de reticulado, cable y caño e
 
 - Meshopt: el decoder viene en el loader. Draco: `--compress draco` (decoders en `public/decoders/draco`). KTX2: `--texture-compress ktx2` requiere el binario `toktx` (no instalado); hasta entonces, webp.
 - `--instance` puede romper componentes que deban seleccionarse por separado: verificar tras optimizar.
-- Exportaciones desde el visor: nombrar por confianza, p. ej. `TACKER10_Modelo_Aproximado.glb`.
+- Exportaciones desde el visor: nombrar por confianza, p. ej. `RIG10_Modelo_Aproximado.glb`.
 - **Inspeccionar antes de optimizar** (`gltf:inspect`): revisar unidades, nombres, materiales y triángulos del original; no optimizar a ciegas.
 - **Registrar todo cambio de material o escala que afecte la interpretación** (reescalado, cambio de metalness/color, texturas recomprimidas, fusión de nodos) en una nota en `docs/` junto al modelo; un cambio así puede alterar cómo se lee el componente (p. ej. un color que parezca un estado de seguridad).
 - Preferir dedup/prune/meshopt y compresión de texturas solo cuando la equivalencia visual esté verificada; nunca sobrescribir CAD/GLB originales.
