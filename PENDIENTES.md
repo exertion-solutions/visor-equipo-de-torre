@@ -10,7 +10,7 @@ levantar workers de `App.test.tsx` y `LegacyBridge.test.tsx`; máquina lenta, no
 
 1. [x] **Datos y fuentes**: `src/data/rigs/rig10.ts` (sources nuevas con `verified` honesto, specs nuevas, conflictos
        rotulados), `reference/v2-previo/src/technical-spec.js` (cotas nuevas que usa `cad/`), informe
-       `docs/pdf-review/informe-sk575-2026-10-09.md`. Los PDF NO se suben (repo público, planos con reproducción prohibida).
+       informe técnico interno (no publicado). Los PDF NO se suben (repo público, planos con reproducción prohibida).
 2. [x] **CAD**: `cad/components/sk575.py` (build123d, origen en la boca de pozo, partes por material, contrato
        `<id>_<rol>`), en `build.py` con verificaciones de cotas → `assets/source/` → `npm run gltf:optimize` → `public/models/rig10/`.
 3. [x] **Nativo R3F**: componentes `sk575_equipo` / `sk575_locacion` en `RIG10_SCENE` (mástil ya ubicable: base documentada).

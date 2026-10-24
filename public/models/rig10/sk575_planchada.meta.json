@@ -12,7 +12,7 @@
     "rojo"
   ],
   "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
-  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
     "segmentos": 5592,

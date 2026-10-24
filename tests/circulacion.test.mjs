@@ -61,7 +61,7 @@ test('subconjuntos con nombre propio y mallas fusionadas por material (presupues
       'pileta_ensayo_acero',
       'pileta_ensayo_pintura',
     ].sort(),
-    'un mesh por material y subconjunto (línea base: 6 meshes → 8; +2 por la bomba desplazada a 5 m de la pileta según LAYOUT TKR-10)',
+    'un mesh por material y subconjunto (línea base: 6 meshes → 8; +2 por la bomba desplazada a 5 m de la pileta según layout de locación)',
   );
 });
 

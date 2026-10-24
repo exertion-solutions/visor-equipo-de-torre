@@ -16,7 +16,7 @@ Campos que salieron del visor legacy: `Component.scope` (qué NO representa la g
 1. Todo `Component` y `Specification` cita un `sourceId` existente (`rig.sources`). Sin fuente no hay dato: dejar el campo fuera o marcarlo pendiente; nunca estimar en silencio.
 2. La confianza de la geometría (`Component.confidence`) es independiente de la del dato (`Specification.confidence`).
 3. La UI muestra el nivel (A/B/C) **y el `scope`** junto a cualquier cota; **C nunca se rotula as-built**. Lo aproximado se rotula "aproximado" también en mediciones y archivos exportados.
-4. **Fuentes en conflicto**: si dos fuentes difieren (p. ej. anclajes de vientos: layout TKR-10 25 ± 3 m vs folleto anterior 20 m) se registran ambas (`value` + `conflicts`), la UI muestra "Fuente en conflicto" y no se elige una en silencio. Precedencia solo por decisión documentada en `docs/`.
+4. **Fuentes en conflicto**: si dos fuentes difieren (p. ej. anclajes de vientos: layout de locación 25 ± 3 m vs folleto anterior 20 m) se registran ambas (`value` + `conflicts`), la UI muestra "Fuente en conflicto" y no se elige una en silencio. Precedencia solo por decisión documentada en `docs/`.
 5. Un rig nuevo = un archivo en `src/data/rigs/<id>.ts` que pasa `rigSchema`. Sin ramas `if (rig === 'RIG-10')` en componentes.
 6. Cambiar una cota documentada exige actualizar la fuente y dejar nota en `docs/`. Equipo 11 no aporta geometría a equipo 10 sin comprobar equivalencia.
 7. Modos: `src/stores/modeStore.ts` es el único punto de verdad. Los modos son **estado derivado** (qué se muestra/resalta), no mutación de materiales ni de datos; cambiar de modo debe ser reversible.
@@ -30,7 +30,7 @@ Campos que salieron del visor legacy: `Component.scope` (qué NO representa la g
 
 Ver `docs/legacy-audit-2026-09-25.md` (patrones a conservar, inconsistencias, línea base de rendimiento).
 
-- Cotas del equipo 10: `reference/v2-previo/src/technical-spec.js` → `src/data/rigs/rig-10.ts` (aún no creado), cada valor con su `Source` (folleto rev. 26/06/2024, layout TKR-10) y página.
+- Cotas del equipo 10: `reference/v2-previo/src/technical-spec.js` → `src/data/rigs/rig-10.ts` (aún no creado), cada valor con su `Source` (folleto rev. 26/06/2024, layout de locación) y página.
 - Grados A/B/C del legacy (`META`): punto de partida, revalidar contra el folleto.
 - Textos de riesgos/controles del legacy: importar como `pendingValidation` (sin fuente). Ver skill `qhse-visualization`.
 - No copiar coordenadas o textos que contradigan los documentos (anclajes 13–18 m, "mástil ~30 m"): registrar como conflicto o corregir.

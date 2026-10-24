@@ -13,7 +13,7 @@
     "rojo"
   ],
   "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
-  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
     "segmentos": 11193,
@@ -33,7 +33,7 @@
         0
       ],
       "triangulos": 9478,
-      "alcance": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; origen = bisagra del borde interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º tramo del mástil (geometría C)"
+      "alcance": "Piso de enganche a 68' (20,629 m, plano del mástil) con peines, baranda y cartel; origen = bisagra del borde interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º tramo del mástil (geometría C)"
     }
   ],
   "publicado": {

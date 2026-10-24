@@ -25,7 +25,7 @@ verificar: **no están versionadas en git** (copia local en `.tmp/refs-png/pilet
 
 | Dato                                                                             | Estado                          | Fuente / nota                                                                                 |
 | -------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| Pileta de ensayo 12 × 2,4 m en planta, 40 m³                                     | confirmado                      | Folleto Equipo 10 rev. 26/06/2024; LAYOUT TKR-10. Sin cambios                                 |
+| Pileta de ensayo 12 × 2,4 m en planta, 40 m³                                     | confirmado                      | Folleto Equipo 10 rev. 26/06/2024; layout de locación. Sin cambios                                 |
 | Cubicador 3,5 m³ (Ø 1,3 × 2,4 m)                                                 | confirmado (capacidad) / aproximado (forma) | Folleto / LAYOUT                                                                  |
 | Barandas y rodapié (PIL-2), luminarias (PIL-1)                                   | confirmado                      | Libro DROPS p.21. Se conservan `drops_PIL-1` / `drops_PIL-2` (baranda abierta 0,8 m en la escalera) |
 | La pileta de ensayo es la pileta con golpeador                                   | confirmado                      | Jorge                                                                                         |

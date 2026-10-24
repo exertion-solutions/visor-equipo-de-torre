@@ -2,7 +2,7 @@
 import json
 import pathlib
 
-from lib.tk10 import load_spec
+from lib.equipo import load_spec
 
 _RUTA = pathlib.Path(__file__).parent / "catalogo.json"
 

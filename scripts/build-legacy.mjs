@@ -1,4 +1,4 @@
-// Genera el visor V2 de trabajo a partir del ORIGINAL inmutable (reference/legacy/) + parches + módulos legacy-ext/.
+// Genera el visor V2 de trabajo a partir de la BASE (reference/legacy/Digital_Rig_V2.base.html) + parches + módulos legacy-ext/.
 //
 //   node scripts/build-legacy.mjs                       → escribe public/legacy/Digital_Rig_V2.html
 //   node scripts/build-legacy.mjs --out .tmp/x/index.html [--only 10-a.js,20-b.js]
@@ -12,15 +12,13 @@
 // sandbox contra un servidor sin CORS): `sk575-glb.js` junto al HTML, con los mismos GLB en base64. Un <script> clásico
 // carga también por file://, así ABRIR_DIGITAL_RIG.cmd sigue funcionando sin servidor.
 //
-// Cada parche exige EXACTAMENTE 1 coincidencia: si el original cambia, el build falla en vez de corromper.
-// Además deduplica la foto de referencia embebida dos veces (ver dedupeRefImage).
+// Cada parche exige EXACTAMENTE 1 coincidencia: si la base cambia, el build falla en vez de corromper.
 import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { genericizarHtml } from './lib/genericizar.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
-const original = path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html')
+const original = path.join(root, 'reference', 'legacy', 'Digital_Rig_V2.base.html')
 const extDir = path.join(root, 'legacy-ext')
 
 const args = process.argv.slice(2)
@@ -148,29 +146,6 @@ if (fs.existsSync(patchesDir)) {
   }
 }
 
-/**
- * La foto de referencia (~309 KB en base64) viene embebida DOS veces en el original: `img#ref-thumb` (card) y el <img>
- * del diálogo `#ref-dialog`. Se conserva la primera y la segunda queda sin `src` con `id="ref-full"`;
- * `legacy-ext/60-ui-controls.js` le copia el `src` de la miniatura al abrir el diálogo por primera vez.
- * Exige EXACTAMENTE 2 data-URI JPEG y que sean idénticas byte a byte; si no, el build falla.
- */
-function dedupeRefImage(html) {
-  const uris = [...html.matchAll(/ src="(data:image\/jpeg;base64,[A-Za-z0-9+/=]+)"/g)]
-  if (uris.length !== 2)
-    throw new Error(`Dedupe foto de referencia: se esperaban 2 data-URI JPEG y hay ${uris.length}`)
-  const [first, second] = uris
-  if (first[1] !== second[1])
-    throw new Error('Dedupe foto de referencia: las dos imágenes embebidas no son idénticas')
-  if (!html.slice(Math.max(0, first.index - 80), first.index).includes('id="ref-thumb"'))
-    throw new Error('Dedupe foto de referencia: la primera imagen no es #ref-thumb')
-  const dialogAt = html.lastIndexOf('<dialog id="ref-dialog"', second.index)
-  if (dialogAt < 0 || html.indexOf('</dialog>', dialogAt) < second.index)
-    throw new Error('Dedupe foto de referencia: la segunda imagen no está dentro de #ref-dialog')
-  return (
-    html.slice(0, second.index) + ' id="ref-full"' + html.slice(second.index + second[0].length)
-  )
-}
-
 const BUNDLE_ANCHOR = '<script>\n(()=>{/**\n * @license\n * Copyright 2010-2026 Three.js Authors'
 
 function readExtModules() {
@@ -196,16 +171,14 @@ function safeJsonForScript(obj) {
 let glbB64 = null
 
 function build() {
-  // El original (evidencia inmutable) conserva su nombre y su texto; el visor generado sale con nombres genéricos: se le aplica el
-  // mismo renombrado que al resto del repo (scripts/lib/genericizar.mjs) ANTES de los parches, que ya están escritos en términos genéricos.
-  let html = genericizarHtml(fs.readFileSync(original, 'utf8'))
+  // La base ya es genérica (sin marca, sin documentos internos ni foto del equipo real).
+  let html = fs.readFileSync(original, 'utf8')
 
   for (const p of patches) {
     const n = html.split(p.find).length - 1
     if (n !== 1) throw new Error(`Parche "${p.name}": se esperaba 1 coincidencia y hay ${n}`)
     html = html.replace(p.find, () => p.replace)
   }
-  html = dedupeRefImage(html)
 
   const blocks = []
   const runtimeFile = '00-runtime.js'

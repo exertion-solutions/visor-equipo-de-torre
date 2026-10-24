@@ -20,7 +20,7 @@ test('4 ítems con procedencia y estado; el mástil es ILUSTRATIVO', () => {
   // los sk575_* (modelo de referencia) se prueban en capa-cad-sk575.test.mjs
   assert.deepEqual(
     data.items.filter((i) => i.grupo !== 'sk575').map((i) => i.id),
-    ['carrier_huella', 'layout_tkr10', 'piso_trabajo', 'mastil'],
+    ['carrier_huella', 'layout_locacion', 'piso_trabajo', 'mastil'],
   )
   for (const i of data.items) {
     assert.ok(i.fuente && i.estado && i.nombre, i.id)

@@ -116,14 +116,14 @@ describe('rig10-drops.json', () => {
       'piso-trabajo': null,
       'poste-llave': null,
     })
-    for (const z of ds.zones) expect(z.sourceId).toBe('powsg020-a2')
+    for (const z of ds.zones) expect(z.sourceId).toBe('proc-drops-a2')
   })
 
   it('piso-trabajo y poste-llave no figuran en el A2: zona null', () => {
     for (const id of ['piso-trabajo', 'poste-llave'] as const) {
       const section = ds.sections.find((s) => s.id === id)
       expect(section?.zone).toBeNull()
-      expect(section?.zoneBasis).toBe('No clasificada en POWSG020-A2')
+      expect(section?.zoneBasis).toBe('No clasificada en layout A2')
       for (const p of pointsBySection(id)) expect(p.zone).toBeNull()
     }
   })
@@ -155,12 +155,11 @@ describe('rig10-drops.json', () => {
         'alerta-ypf-inc18068',
         'libro-drops-2024',
         'manual-drops-rev04',
-        'powsg020-a1',
-        'powsg020-a2',
-        'powsg020-a3',
-        'powsg020-rev02',
+        'proc-drops-a1',
+        'proc-drops-a2',
+        'proc-drops-a3',
+        'proc-drops',
         'taller-ypf-drops',
-        'tk10-drops-2023',
       ].sort(),
     )
     expect(ds.sources.every((s) => s.verified)).toBe(true)
@@ -231,39 +230,11 @@ describe('rig10-drops.json', () => {
     expect(text).toMatch(/boca de pozo/i)
     expect(text).toMatch(/6\.3\.5/)
     expect(text).toMatch(/SIN radio ni cota/)
-    expect(text).toMatch(/declara el usuario/)
+    expect(text).toMatch(/decisión interna/)
   })
 })
 
-describe('TK10 (05/10/2023)', () => {
-  it('36 fotos, 26 correctas y 10 hallazgos', () => {
-    const tk = ds.tk10Inspection
-    expect(tk.date).toBe('2023-10-05')
-    expect(tk.total).toBe(36)
-    expect(tk.correct).toBe(26)
-    expect(tk.findings).toHaveLength(10)
-    expect(tk.findings.map((f) => f.photo)).toEqual([4, 8, 19, 21, 22, 30, 32, 33, 34, 35])
-    for (const f of tk.findings) {
-      expect(f.inferred).toBe(true)
-      expect(f.relatedPointIds.length).toBeGreaterThan(0)
-    }
-  })
-
-  it('el estado por punto es coherente con los hallazgos y siempre inferido', () => {
-    for (const p of ds.points) {
-      expect(p.tk10.inferred).toBe(true)
-      expect(p.tk10.status === 'sin-dato', p.id).toBe(p.tk10.photos.length === 0)
-    }
-    for (const f of ds.tk10Inspection.findings) {
-      for (const pid of f.relatedPointIds) {
-        const p = pointOf(ds, pid)
-        expect(p.tk10.status, pid).toBe('hallazgo')
-        expect(p.tk10.photos, pid).toContain(f.photo)
-      }
-    }
-    expect(ds.points.filter((p) => p.tk10.status === 'sin-dato').length).toBeGreaterThan(0)
-  })
-
+describe('referencias', () => {
   it('las referencias incluyen el incidente YPF del giratorio ligado a BP-1', () => {
     const ref = ds.references.find((r) => r.id === 'ref-ypf-giratorio-winche')
     expect(ref?.relatedPointIds).toEqual(['BP-1'])
@@ -326,24 +297,7 @@ describe('schema: reglas de integridad', () => {
     expect(dropsDatasetSchema.safeParse(unverified).success).toBe(false)
   })
 
-  it('rechaza conteos TK10 distintos y hallazgos que los puntos no reflejan', () => {
-    const badTotal = clone()
-    Object.assign(badTotal.tk10Inspection, { total: 35 })
-    expect(dropsDatasetSchema.safeParse(badTotal).success).toBe(false)
-
-    const missingFinding = clone()
-    missingFinding.tk10Inspection.findings.pop()
-    expect(dropsDatasetSchema.safeParse(missingFinding).success).toBe(false)
-
-    const desync = clone()
-    pointOf(desync, 'COR-1').tk10.status = 'correcto'
-    expect(dropsDatasetSchema.safeParse(desync).success).toBe(false)
-  })
-
-  it('rechaza inferred:false y basis distinto de procedure', () => {
-    const notInferred = clone()
-    Object.assign(at(notInferred.points, 0).tk10, { inferred: false })
-    expect(dropsDatasetSchema.safeParse(notInferred).success).toBe(false)
+  it('rechaza basis distinto de procedure', () => {
     const basis = clone()
     Object.assign(at(basis.points, 0).basis, { status: 'confirmed' })
     expect(dropsDatasetSchema.safeParse(basis).success).toBe(false)

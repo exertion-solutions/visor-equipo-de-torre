@@ -21,9 +21,9 @@
     mastil: {
       grade: 'C',
       status: 'Fuente en conflicto',
-      basis: `${GEO} · Datos: placa API (src-placa-api), plano 8123-1002-2611 (src-plano-8123), plano HYCO (src-plano-hyco), folleto (src-folleto)`,
+      basis: `${GEO} · Datos: placa API (src-placa-api), plano del mástil (src-plano-mastil), plano HYCO (src-plano-hyco), folleto (src-folleto)`,
       note:
-        'SK DKA104-330-08, S/N DK-3033 (placa, A). Altura 104 ft = 31,71 m (plano 8123, A); piso de enganche 68 ft = 20,629 m (plano 8123; en conflicto con 18,5 m del V2 procedural previo); inclinación de trabajo 3,5° (placa, A). ' +
+        'SK DKA104-330-08, (placa, A). Altura 104 ft = 31,71 m (plano del mástil, A); piso de enganche 68 ft = 20,629 m (plano del mástil; en conflicto con 18,5 m del V2 procedural previo); inclinación de trabajo 3,5° (placa, A). ' +
         'Capacidad: Fuente en conflicto: placa 325.725 lb, carga estática máx. con vientos a 3,5° (A) · folleto 330.000 lb (designación del modelo, 330k). ' +
         'Cilindros de izaje HYCO ×2 (plano, A). Perfiles, paneles, uniones y corona estimados; no verifica la carga de placa. ' +
         NO_AS_BUILT,
@@ -31,9 +31,9 @@
     subestructura: {
       grade: 'C',
       status: 'Fuente en conflicto',
-      basis: `${GEO} · Datos: plano 8123 (src-plano-8123), planos piso TKR10 (src-planos-piso), plano escalera (src-plano-escalera), folleto (src-folleto)`,
+      basis: `${GEO} · Datos: plano del mástil (src-plano-mastil), planos del piso (src-planos-piso), plano escalera (src-plano-escalera), folleto (src-folleto)`,
       note:
-        'Altura del piso: Fuente en conflicto: plano 8123 3,606 m (12 ft, B, es lo dibujado) · folleto regulable 1–4 m (modelo 3 m) · V2 procedural previo 2,30 m (estimación src-legacy-v2, retirado). ' +
+        'Altura del piso: Fuente en conflicto: plano del mástil 3,606 m (12 ft, B, es lo dibujado) · folleto regulable 1–4 m (modelo 3 m) · V2 procedural previo 2,30 m (estimación src-legacy-v2, retirado). ' +
         'Piso 2.600 × 3.304 mm, abertura de pozo 730 × 700 mm, 1.400 kg (planos del piso, A); escalera a 45° (plano, A). Subestructura y uniones estimadas. ' +
         NO_AS_BUILT,
     },
@@ -58,7 +58,7 @@
     camion: {
       grade: 'C',
       status: 'Fuente en conflicto',
-      basis: `${GEO} · Datos: spec sheet SK-575 (src-sk575-spec), Parts Manual (src-parts-sk575, medido, sin contrastar), layout WS10 (src-layout-ws10)`,
+      basis: `${GEO} · Datos: spec sheet SK-575 (src-sk575-spec), Parts Manual (src-parts-sk575, medido, sin contrastar), layout de locación 2019 (src-layout-2019)`,
       note:
         'Service King SK-575, 5 ejes; en ruta 14 ft 1" × 9 ft 6" × 68 ft, 97.000 lb (spec, A). Distancia entre ejes: Fuente en conflicto: spec 43 ft · Parts Manual ≈ 30 ft entre primer y último eje. ' +
         'Bastidor, cabina, motor, tanques y gatos medidos sobre la vista CAD del Parts Manual (C). ' +
@@ -76,19 +76,19 @@
     caballetes: {
       grade: 'C',
       status: 'Fuente en conflicto',
-      basis: `${GEO} · Datos: layout WS10 (src-layout-ws10), layout TKR-10 (src-layout)`,
+      basis: `${GEO} · Datos: layout de locación 2019 (src-layout-2019), layout de locación (src-layout)`,
       note:
-        'Planchada: Fuente en conflicto: layout WS10 12 × 2 m · layout TKR-10 12 × 2,4 m. Rampa, caballetes, línea HP y tiros de tubing ilustrativos (cantidad y disposición no documentadas). ' +
+        'Planchada: Fuente en conflicto: layout de locación 2019 12 × 2 m · layout de locación 12 × 2,4 m. Rampa, caballetes, línea HP y tiros de tubing ilustrativos (cantidad y disposición no documentadas). ' +
         NO_AS_BUILT,
     },
     vientos: {
       grade: 'C',
       status: 'Fuente en conflicto',
-      basis: `${GEO} · Datos: placa API (src-placa-api), layout WS10 (src-layout-ws10), layout TKR-10 (src-layout), folleto (src-folleto), manual derrick (src-manual-derrick)`,
+      basis: `${GEO} · Datos: placa API (src-placa-api), layout de locación 2019 (src-layout-2019), layout de locación (src-layout), folleto (src-folleto), manual derrick (src-manual-derrick)`,
       note:
-        'Anclajes: Fuente en conflicto: folleto 20 m · layout TKR-10 25 ± 3 m · layout WS10 27,4 ± 3 m (lado carrier) / 24,4 ± 3 m (lado V), ± 26,8 m laterales · ' +
-        'placa 94 ft (28,7 m) / 82 ft (25 m), 68 ft laterales · manual derrick E/F/G 90/80/88 ft (no acotadas). El modelo dibuja el layout WS10, sin confirmar su vigencia. ' +
-        'Diámetros de los vientos según placa (A); pirosalva a 45 m (WS10, A). No es diseño de anclaje ni distancia de exclusión. ' +
+        'Anclajes: Fuente en conflicto: folleto 20 m · layout de locación 25 ± 3 m · layout de locación 2019 27,4 ± 3 m (lado carrier) / 24,4 ± 3 m (lado V), ± 26,8 m laterales · ' +
+        'placa 94 ft (28,7 m) / 82 ft (25 m), 68 ft laterales · manual derrick E/F/G 90/80/88 ft (no acotadas). El modelo dibuja el layout de locación 2019, sin confirmar su vigencia. ' +
+        'Diámetros de los vientos según placa (A); pirosalva a 45 m (layout de locación 2019, A). No es diseño de anclaje ni distancia de exclusión. ' +
         NO_AS_BUILT,
     },
   }
@@ -112,8 +112,8 @@
     ],
   }
   const FUNCION_VIENTOS =
-    'Representación ilustrativa de cables de estabilización y anclajes. Anclajes ubicados según el layout WS10 (27,4 ± 3 m lado carrier / 24,4 ± 3 m lado V, ± 26,8 m laterales). ' +
-    'Fuente en conflicto con el layout TKR-10 (25 ± 3 m), el folleto (20 m), la placa del mástil (94/82 ft, 68 ft laterales) y el manual derrick (90/80/88 ft). ' +
+    'Representación ilustrativa de cables de estabilización y anclajes. Anclajes ubicados según el layout de locación 2019 (27,4 ± 3 m lado carrier / 24,4 ± 3 m lado V, ± 26,8 m laterales). ' +
+    'Fuente en conflicto con el layout de locación (25 ± 3 m), el folleto (20 m), la placa del mástil (94/82 ft, 68 ft laterales) y el manual derrick (90/80/88 ft). ' +
     'Alturas de toma, tensiones y capacidades no verificadas.'
 
   // Modal "Referencia, criterios y alcance": [fragmento del original, reemplazo]. Un fragmento ausente se ignora.
@@ -121,10 +121,6 @@
     [
       'Se reproducen de forma aproximada la estructura reticulada, coronamiento rojo, barandas amarillas, plataforma lateral identificada y distribución general.',
       'La geometría visible es el modelo de referencia SK-575 (build123d), con cotas documentadas donde se indica y el resto estimado (confianza de la geometría C): no es as-built ni apta para fabricación.',
-    ],
-    [
-      'El folleto 2024 muestra 20 m por eje; se usa el layout más reciente como referencia documental, sin confirmar su vigencia operativa.',
-      '<b>Anclajes: Fuente en conflicto.</b> Folleto 2024: 20 m por eje · layout TKR-10: 25 ± 3 m · layout WS10-0001 (15/04/2019): 27,4 ± 3 m lado carrier / 24,4 ± 3 m lado V, ± 26,8 m laterales · placa API del mástil: 94 ft (28,7 m) / 82 ft (25 m), 68 ft laterales · manual derrick: E/F/G 90/80/88 ft (no acotadas). El modelo SK-575 dibuja el layout WS10; ninguna se confirma como vigente ni es distancia de exclusión.',
     ],
     [
       'Seis ramales según folleto.',
@@ -147,28 +143,10 @@
       if (C.vientos) C.vientos.funcion = FUNCION_VIENTOS
     }
     const dlg = document.getElementById('ref-dialog')
-    if (dlg) {
+    if (dlg)
       for (const el of dlg.querySelectorAll('p, li'))
         for (const [viejo, nuevo] of MODAL)
           if (el.innerHTML.includes(viejo)) el.innerHTML = el.innerHTML.replace(viejo, nuevo)
-      quitarSecciones(dlg)
-    }
-  }
-
-  // Secciones del modal que el sitio público no muestra (pedido del usuario): documentos de la empresa y trabajos de terceros.
-  // Se quita el <h3> y todo lo que sigue hasta el próximo <h3>. La trazabilidad sigue en el repo (docs/, src/data/rigs/rig10.ts).
-  const SECCIONES_OCULTAS = [/^Datos específicos/i, /^Fuentes descriptivas complementarias/i]
-  function quitarSecciones(dlg) {
-    for (const h of [...dlg.querySelectorAll('h3')]) {
-      if (!SECCIONES_OCULTAS.some((re) => re.test(h.textContent.trim()))) continue
-      let n = h.nextElementSibling
-      while (n && n.tagName !== 'H3') {
-        const sig = n.nextElementSibling
-        n.remove()
-        n = sig
-      }
-      h.remove()
-    }
   }
 
   if (window.__rigBooted) aplicar()

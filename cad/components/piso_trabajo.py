@@ -1,7 +1,7 @@
 """Piso de trabajo telescópico: PLACA dimensional a altura regulable.
 Marco: origen bajo el centro en el terreno, X = largo (2,6), Y = ancho (3,3), Z = altura."""
 import cadquery as cq
-from lib.tk10 import Arbol, dato, export_glb, bbox
+from lib.equipo import Arbol, dato, export_glb, bbox
 
 ID = "piso_trabajo"
 

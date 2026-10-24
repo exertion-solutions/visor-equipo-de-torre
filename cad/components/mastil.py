@@ -6,7 +6,7 @@ cantidad de paneles y diámetros. Marco local: base centrada en el origen, eje =
 Unidades: metros (convención del proyecto)."""
 import cadquery as cq
 
-from lib.tk10 import Arbol, bbox_malla, dato, export_glb
+from lib.equipo import Arbol, bbox_malla, dato, export_glb
 
 ID = "mastil"
 MIN_BARRA = 0.1  # m: barra más corta admitida (verificación de la skill: > 100 mm)

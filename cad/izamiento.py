@@ -16,7 +16,7 @@ import math
 
 import cadquery as cq
 
-from lib.tk10 import ROOT
+from lib.equipo import ROOT
 
 PERFIL = ROOT / "cad" / "data" / "v2_corredor_mastil.json"
 DEST = ROOT / "src" / "data" / "cad" / "izamiento.json"

@@ -197,7 +197,7 @@ window.__rigExt.onPost((R) => {
 
   // ───────── ocultar lo que aún no está montado ─────────
   // ───────── vientos dinámicos (fase 3): del tendido flojo (con catenaria) al cable tenso ─────────
-  // Extremos de sk575_vientos.meta.json: en tensión 1 el cable coincide con el viento SK (anclajes WS10, C4 Fuente en conflicto).
+  // Extremos de sk575_vientos.meta.json: en tensión 1 el cable coincide con el viento SK (anclajes layout de locación 2019, C4 Fuente en conflicto).
   const FloatAttr = new T.BoxGeometry(1, 1, 1).attributes.position.constructor
   const NSEG = 18
   const cables = []
@@ -398,7 +398,7 @@ window.__rigExt.onPost((R) => {
       <input type="range" id="er-range" min="0" max="100" step="1" value="100" aria-label="Avance del izamiento (100 = montado)">
     </div>
     <div id="er-fase" aria-live="polite"></div>
-    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia indicada por el usuario (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Piso de enganche: viaja rebatido contra el mástil y baja a horizontal cuando el 2.º tramo lo saca por encima del 1.º (bisagra y movimiento ilustrativos, no documentados). Ilustrativo: la animación no es cálculo ni simulación dinámica; sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
+    <details class="er-info"><summary>Nota</summary>    <div class="er-note">Secuencia típica de referencia (pendingValidation): pistón de izaje del 1.er tramo de 0 a 90°, luego el 2.º pistón extiende el tramo embutido, y se tensan los vientos. Cilindros SK-575 HYCO de 3 etapas: largo cerrado 1,524 m y extendido 4,864 m (plano HYCO, A); pivotes y orejas de montaje estimados (C). El ángulo de transporte y el soporte de traslado salen del V2 procedural previo (cad/izamiento.py, no recalculado sobre el SK-575; sus largos de pistón 2,64–6,00 m quedan en conflicto con el HYCO). Piso de enganche: viaja rebatido contra el mástil y baja a horizontal cuando el 2.º tramo lo saca por encima del 1.º (bisagra y movimiento ilustrativos, no documentados). Ilustrativo: la animación no es cálculo ni simulación dinámica; sin cargas, presiones ni tiempos; pistón interno del 2.º tramo aproximado.</div></details>`
   // Vive dentro del menú "Montaje" de la barra, debajo de la secuencia (sin paneles flotantes).
   if (window.__rigToolbar) window.__rigToolbar.add('montaje', box)
   else document.body.appendChild(box)

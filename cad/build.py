@@ -6,8 +6,8 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import catalogo  # noqa: E402
 import params  # noqa: E402
-from lib.tk10 import OUT, load_spec  # noqa: E402
-from components import carrier_huella, layout_tkr10, mastil, piso_trabajo  # noqa: E402
+from lib.equipo import OUT, load_spec  # noqa: E402
+from components import carrier_huella, layout_locacion, mastil, piso_trabajo  # noqa: E402
 
 TOL = 1e-6
 spec = load_spec()
@@ -84,8 +84,8 @@ check("ancho", bb["y"], spec["carrier"]["widthM"])
 check("carrier termina a 1,3 m de la boca", bb["xmin"] + bb["x"], -1.3)
 
 # ───────── layout ─────────
-path, bb, m = layout_tkr10.main(spec)  # las ecuaciones asertan tamaños y cotas rotuladas (5 m, 3 m, 1,3 m)
-print("layout_tkr10 ->", path.name, {k: [round(v, 2) for v in vals] for k, vals in m.items()})
+path, bb, m = layout_locacion.main(spec)  # las ecuaciones asertan tamaños y cotas rotuladas (5 m, 3 m, 1,3 m)
+print("layout_locacion ->", path.name, {k: [round(v, 2) for v in vals] for k, vals in m.items()})
 
 import capa  # noqa: E402
 import izamiento  # noqa: E402
@@ -111,7 +111,7 @@ else:
 
 import trimesh  # noqa: E402
 
-for cid in ("mastil", "piso_trabajo", "carrier_huella", "layout_tkr10"):
+for cid in ("mastil", "piso_trabajo", "carrier_huella", "layout_locacion"):
     sc = trimesh.load(OUT / (cid + ".glb"))
     nombres = [n for n in sc.graph.nodes if n.startswith(cid)]
     ok = cid in nombres and len(nombres) > 1

@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import params  # noqa: E402
-from lib.tk10 import load_spec  # noqa: E402
+from lib.equipo import load_spec  # noqa: E402
 from components import carrier_huella, mastil, piso_trabajo  # noqa: E402
 
 EQUIPOS = {"mastil": mastil, "piso_trabajo": piso_trabajo, "carrier_huella": carrier_huella}

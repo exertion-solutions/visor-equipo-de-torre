@@ -2,7 +2,7 @@
 
 Modelo CAD (build123d) del equipo 10 completo en locación: mástil, carrier, cuadro de maniobras, izaje, aparejo,
 BOP, piso, planchada, vientos, piletas, manifold, bomba y acumulador. **No es as-built**: confianza por componente
-B/C; cotas, fuentes y conflictos en [`docs/pdf-review/informe-sk575-2026-10-09.md`](../../docs/pdf-review/informe-sk575-2026-10-09.md).
+B/C; cotas, fuentes y conflictos en el informe técnico interno (no publicado).
 
 | Archivo            | Qué hace                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
@@ -56,7 +56,7 @@ ahora **declarado**) y copia el meta a `public/models/rig10/<id>.meta.json` (ver
 - **Aristas de rasgo** horneadas: cada nodo con mallas tiene un hijo `<nodo>_aristas` con una primitiva `LINES`
   (mode 1): ángulo entre caras > 28° (mismo criterio que `aristas()` de `legacy-ext/84-modelo-sk575.js`) + bordes libres,
   sin `_luz` ni `_vidrio`. simplify de gltf-transform no toca LINES. El V2 actual las ignora (lee solo mode 4).
-- `sk575_vientos.meta.json` → `cables`: extremo en el mástil (armado) y ancla en tierra de cada cable (anclajes WS10,
+- `sk575_vientos.meta.json` → `cables`: extremo en el mástil (armado) y ancla en tierra de cada cable (anclajes layout de locación 2019,
   **fuente en conflicto C4**).
 - Metros, glTF Y arriba, **origen = boca de pozo a nivel de terreno**, carrier hacia −X (igual que el repo).
   CAD (x, y, z) → glTF (x − WXP, z, −y).
@@ -94,4 +94,4 @@ malla: los sub-nodos simplifican menos).
 
 - Una cota documentada nueva se agrega primero a `technical-spec.js` (`RIG_10.sk575`) y a `verificar()`; nunca solo en `modelo.py`.
 - Conflictos de fuente (líneas 6/8, BOP 7-1/16"/11", anclajes) se rotulan en el informe y en el `alcance`, no se eligen en silencio.
-- Los documentos fuente no se versionan (repo público): índice en [`docs/fuentes/rig10/README-sk575.md`](../../docs/fuentes/rig10/README-sk575.md).
+- Los documentos fuente no se versionan (repo público): índice en un índice interno (no publicado).

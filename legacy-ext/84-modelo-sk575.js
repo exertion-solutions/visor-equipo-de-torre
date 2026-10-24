@@ -10,7 +10,7 @@
  * umbral 28°, exportar.py): el navegador ya no las calcula.
  *
  * Marco = el del V2: origen en la boca de pozo a nivel de terreno, carrier hacia −X, Y arriba, metros. NO es as-built
- * (confianza B/C por componente, docs/pdf-review/informe-sk575-2026-10-09.md). Desgaste y entorno son EFECTOS VISUALES.
+ * (confianza B/C por componente, informe técnico interno (no publicado)). Desgaste y entorno son EFECTOS VISUALES.
  *
  * Es EL equipo del V2: cada componente SK-575 se integra en su grupo procedural (despiece, selección, aislado, corte, malla, modos,
  * secuencia de montaje, izamiento y aparejo animado) y TODA la geometría procedural pasa a una capa invisible (también la casilla

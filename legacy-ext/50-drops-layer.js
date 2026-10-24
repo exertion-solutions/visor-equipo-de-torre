@@ -10,11 +10,10 @@
  *      proyectado cada 2 frames con la cámara activa. Anclaje: geometría etiquetada con
  *      `userData.dropsId`; si no hay, posición cualitativa APROXIMADA del modelo (borde punteado).
  *   4. Panel lateral con los puntos de la sección / del componente seleccionado.
- *   5. Leyenda propia (plegable) en el panel QHSE único de 45-panel-qhse.js (#qp-drops), con el resumen de la
- *      inspección TK10. El aviso "El A2 no define radios ni distancias…" va fuera de lo plegable (#qp-avisos): siempre visible.
+ *   5. Leyenda propia (plegable) en el panel QHSE único de 45-panel-qhse.js (#qp-drops). El aviso "El A2 no define radios ni distancias…" va fuera de lo plegable (#qp-avisos): siempre visible.
  *   6. Al desactivar se restauran colores y se elimina todo el DOM, listeners y el rAF.
  *
- * Contrato de datos: ver docs/drops y src/data/qhse/rig10-drops.json (schemaVersion 1).
+ * Contrato de datos: src/data/qhse/rig10-drops.json (schemaVersion 1).
  * Expone `R.drops = { isActive, setActive, openSection, openComponent, anclajes }` (útil para pruebas).
  */
 ;(() => {
@@ -56,7 +55,6 @@
         pointsByComponent.get(p.componentId).push(p)
       }
     }
-    const inspection = DATA.tk10Inspection || null
 
     /** Zona de un punto: la suya si la declara; si no, la de su sección. */
     const pointZone = (p) => ('zone' in p ? p.zone : sectionById.get(p.sectionId)?.zone) || null
@@ -95,10 +93,6 @@
       return m ? `${m[3]}/${m[2]}/${full ? m[1] : m[1].slice(2)}` : String(iso || '')
     }
     const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
-    const tk10Tag = () => {
-      const d = fmtDate(inspection?.date)
-      return d ? `TK10 (${d})` : 'TK10'
-    }
     const componentName = (id) => R.COMPONENTS?.[id]?.name || id
     /** Pide un frame al visor (render bajo demanda): él escucha `pointermove` sobre #stage. */
     const invalidate = () => stage.dispatchEvent(new Event('pointermove'))
@@ -132,7 +126,7 @@
     btn.id = 'c-drops'
     btn.type = 'button'
     btn.textContent = 'Zonas DROPS'
-    btn.title = 'Clasificación cualitativa por zona (POWSG020-A2) y puntos DROPS'
+    btn.title = 'Clasificación cualitativa por zona (layout A2) y puntos DROPS'
     btn.setAttribute('aria-pressed', 'false')
     cadGroupAnchor.insertAdjacentElement('afterend', btn)
     btn.addEventListener('click', () => {
@@ -175,7 +169,7 @@
         case 'debajo-corona':
           return onMast(24.5)
         case 'piso-enganche':
-          // 20,629 m: piso de enganche a 68 ft (plano 8123-1002-2611, A, src-plano-8123). El 18,5 m previo era el boardHeight
+          // 20,629 m: piso de enganche a 68 ft (plano del mástil, A, src-plano-mastil). El 18,5 m previo era el boardHeight
           // del V2 procedural (src-legacy-v2): fuente en conflicto registrada en src/data/rigs/rig10.ts.
           return onMast(20.629)
         case 'debajo-piso-enganche':
@@ -452,8 +446,6 @@
         ),
       )
       badges.appendChild(zoneBadge(pointZone(p)))
-      if (p.tk10?.status === 'hallazgo')
-        badges.appendChild(badge(`HALLAZGO ${tk10Tag()}`, 'dp-b-find'))
       const flags = Array.isArray(p.flags) ? p.flags : []
       for (const f of flags) badges.appendChild(badge(String(f).replace(/-/g, ' '), 'dp-b-flag'))
       li.appendChild(badges)
@@ -476,15 +468,6 @@
       if (p.basis?.note) row('Nota de la fuente', p.basis.note)
       li.appendChild(kv)
 
-      const tk = p.tk10
-      if (tk && (tk.status === 'hallazgo' || tk.status === 'correcto')) {
-        const photos =
-          Array.isArray(tk.photos) && tk.photos.length
-            ? ` · ${tk.photos.length === 1 ? 'foto' : 'fotos'} ${tk.photos.join(', ')}`
-            : ''
-        const line = `Inspección ${tk10Tag()}: ${tk.status === 'hallazgo' ? 'hallazgo' : 'correcto'}${photos}${tk.note ? ' — ' + tk.note : ''}${tk.inferred && !/correspondencia/i.test(tk.note || '') ? ' (correspondencia inferida)' : ''}`
-        li.appendChild(h('p', 'dp-tk' + (tk.status === 'hallazgo' ? ' find' : ''), line))
-      }
       for (const ref of DATA.references || []) {
         if (Array.isArray(ref.relatedPointIds) && ref.relatedPointIds.includes(p.id)) {
           const d = ref.date ? ` (${fmtDate(ref.date, true)})` : ''
@@ -500,16 +483,10 @@
       return li
     }
 
-    /** Cuenta hallazgos TK10 por punto (para el resumen de encabezado). */
-    const findingCount = (list) => list.filter((p) => p.tk10?.status === 'hallazgo').length
-
     function sectionSummary(sec, list, approx) {
       const box = h('div', 'dp-sum')
       const line = h('div', 'dp-badges')
       line.append(zoneBadge(sec.zone), badge(plural(list.length, 'punto', 'puntos'), 'dp-b-soft'))
-      const f = findingCount(list)
-      if (f)
-        line.appendChild(badge(`${plural(f, 'hallazgo', 'hallazgos')} ${tk10Tag()}`, 'dp-b-find'))
       box.appendChild(line)
       if (sec.zoneBasis) box.appendChild(h('p', '', `Base de la zona: ${sec.zoneBasis}`))
       if (sec.pageRange) box.appendChild(h('p', '', `Páginas del Libro: ${sec.pageRange}`))
@@ -550,9 +527,6 @@
           zoneBadge(componentZone.get(cid) || null),
           badge(plural(list.length, 'punto', 'puntos'), 'dp-b-soft'),
         )
-        const f = findingCount(list)
-        if (f)
-          line.appendChild(badge(`${plural(f, 'hallazgo', 'hallazgos')} ${tk10Tag()}`, 'dp-b-find'))
         if (list.length) sum.appendChild(line)
         sum.appendChild(
           h(
@@ -638,7 +612,7 @@
       legend = h('details', 'glass')
       legend.id = 'drops-legend'
       legend.open = stage.clientWidth >= 1200
-      const sum = h('summary', '', 'ZONAS DROPS · POWSG020-A2 · clasificación cualitativa')
+      const sum = h('summary', '', 'ZONAS DROPS · layout A2 · clasificación cualitativa')
       legend.appendChild(sum)
       for (const id of ['alto', 'medio', 'bajo']) {
         const z = zonesById.get(id)
@@ -675,16 +649,6 @@
           'Marcador punteado: posición aproximada del modelo. Teñido del modelo: zona más alta de cada componente.',
         ),
       )
-      if (inspection && inspection.total != null) {
-        const nf = Array.isArray(inspection.findings) ? inspection.findings.length : 0
-        legend.appendChild(
-          h(
-            'p',
-            'dl-tk',
-            `Inspección ${tk10Tag()}: ${inspection.correct}/${inspection.total} correctos · ${plural(nf, 'hallazgo', 'hallazgos')}`,
-          ),
-        )
-      }
       // Panel QHSE único (45-panel-qhse.js); sin él (build con --only) queda suelto en el escenario.
       ;($('qp-drops') || stage).appendChild(legend)
       const avisos = $('qp-avisos')
@@ -726,13 +690,11 @@
 .dp-b-req{border-color:#5f7c9c;color:#cfe3f7;background:#16283a}
 .dp-b-soft{border-style:dashed;color:#b8c4d2}
 .dp-b-zone{border-color:var(--dl-c);color:var(--dl-c);background:rgba(13,18,26,.7)}
-.dp-b-find{border-color:#F59E0B;color:#1a1305;background:#F59E0B}
 .dp-b-flag{border-color:#c0a25a;color:#f0dca4;background:#3a2f12}
 .dp-kv{display:grid;grid-template-columns:96px 1fr;gap:4px 8px;margin:6px 0 0;font-size:11px}
 .dp-kv dt{color:#78899d;text-transform:uppercase;letter-spacing:.04em;font-size:9.5px;padding-top:1px}
 .dp-kv dd{margin:0;color:#dfe6ee;overflow-wrap:anywhere}
-.dp-tk,.dp-ref{margin:7px 0 0;font-size:10.5px;color:#a9b6c6}
-.dp-tk.find{color:#f3c774}
+.dp-ref{margin:7px 0 0;font-size:10.5px;color:#a9b6c6}
 .dp-ref{color:#c7b58b}
 .dp-assump{margin-top:14px;font-size:10.5px;color:#a9b6c6}
 .dp-assump summary{cursor:pointer;color:#e8c978}
@@ -747,7 +709,6 @@
 .dl-row-t b{color:#fff}
 .dl-warn{margin:8px 0 0;color:#e8c978;font-size:12px}
 .dl-note{margin:6px 0 0;color:#9fb0c3;font-size:10px}
-.dl-tk{margin:8px 0 0;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-weight:700;color:#F59E0B}
 @media(max-width:1200px){#drops-panel{right:8px}}
 @media(max-width:1050px){#drops-panel{bottom:105px}}
 @media(max-width:700px){.dp-foot{max-height:64px}#drops-panel{left:8px;right:8px;width:auto;top:auto;bottom:105px;max-height:62%}}

@@ -29,10 +29,9 @@ test('RIG10 HTML keeps its core controls and modes', () => {
   }
 });
 
-test('RIG10 HTML embeds the reference photo once (ref-full gets its src lazily)', () => {
-  assert.equal((html.match(/data:image\/jpeg;base64,/g) ?? []).length, 1);
-  assert.match(html, /id=["']ref-full["']/);
-  assert.match(html, /id=["']ref-thumb["']/);
+test('RIG10 HTML does not embed the photo of the real rig (ref-thumb kept empty for the bundle)', () => {
+  assert.equal((html.match(/data:image\/jpeg;base64,/g) ?? []).length, 0);
+  assert.match(html, /<img id="ref-thumb" class="cad-ref" alt="" hidden>/);
 });
 
 test('RIG10 HTML does not use the deprecated PCFSoftShadowMap', () => {

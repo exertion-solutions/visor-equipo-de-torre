@@ -3,7 +3,7 @@
  *
  * `window.__RIG_META` (tabla del módulo de producto) se crea DESPUÉS del bundle: se aplica cuando el visor
  * arranca (`window.__rigBooted` o evento `rig:boot`), igual que la ficha del componente 07 en 40-wellsite.js.
- * Grado C = geometría del modelo SK-575 (el piso de enganche va dentro del mástil SK). Cota del piso: plano 8123 (B en rig10.ts solo por el conflicto);
+ * Grado C = geometría del modelo SK-575 (el piso de enganche va dentro del mástil SK). Cota del piso: plano del mástil (B en rig10.ts solo por el conflicto);
  * el 18,5 m del V2 procedural queda como fuente en conflicto (src-legacy-v2, estimación).
  */
 ;(() => {
@@ -12,9 +12,9 @@
     grade: 'C',
     status: 'Aproximado',
     basis:
-      'Geometría: modelo de referencia SK-575 (C, src-modelo-sk575) · Cota: plano 8123-1002-2611 (src-plano-8123)',
+      'Geometría: modelo de referencia SK-575 (C, src-modelo-sk575) · Cota: plano del mástil (src-plano-mastil)',
     note:
-      'Piso de enganche a 20,629 m (68 ft, cota del plano 8123-1002-2611). Fuente en conflicto: el V2 procedural previo usaba 18,5 m ' +
+      'Piso de enganche a 20,629 m (68 ft, cota del plano del mástil). Fuente en conflicto: el V2 procedural previo usaba 18,5 m ' +
       '(boardHeight del visor, estimación src-legacy-v2, retirado). Geometría del piso y de la escalera del modelo SK-575: aproximada, no as-built. ' +
       'Pendientes: cotas reales del piso y del peine (paso y ancho de dedos), espesor y tipo de chapa, capacidad de carga y validación de peligros de referencia.',
   }

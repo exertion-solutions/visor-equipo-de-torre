@@ -14,8 +14,7 @@
  *     y las acciones Enfocar/Volver: así las dos cards de la derecha nunca se superponen, a ningún tamaño.
  *  7. Despiece: la perilla y la etiqueta coinciden mientras está apagado (0 / "0 %"); al activarlo despieza al valor
  *     recordado (60 % por defecto), como antes.
- *  8. La foto de referencia del diálogo (#ref-full) no se embebe dos veces: el build deja el <img> sin src y acá se
- *     copia el de la miniatura (#ref-thumb) la primera vez que se abre el diálogo.
+ *  8. (sin uso: la base ya no trae foto de referencia)
  *  9. Accesibilidad y legibilidad: un único anillo de foco dorado (--focus) para todo el visor, piso de 12 px en la barra de
  *     estado y de 11 px en metadatos, y `prefers-reduced-motion` anula transiciones y animaciones CSS.
  * 10. Métricas de desarrollo (triángulos, llamadas de dibujo) solo con `?debug`: sin él, la barra de estado dice "13 conjuntos".
@@ -150,18 +149,6 @@ window.__rigExt.onPost(() => {
     )
     // Reset también apaga el despiece (sin tocar la perilla): se vuelve a 0.
     $('b-reset')?.addEventListener('click', () => setKnob(0), true)
-  }
-
-  // ───────── foto de referencia: una sola copia embebida ─────────
-  const refThumb = $('ref-thumb')
-  const refFull = $('ref-full')
-  const refDialog = $('ref-dialog')
-  if (refThumb && refFull && refDialog) {
-    const showModal = refDialog.showModal.bind(refDialog)
-    refDialog.showModal = () => {
-      if (!refFull.getAttribute('src')) refFull.src = refThumb.currentSrc || refThumb.src
-      showModal()
-    }
   }
 
   // ───────── aviso de controles (#hint): nunca tapado por los paneles ─────────

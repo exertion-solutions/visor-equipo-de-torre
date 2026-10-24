@@ -79,7 +79,7 @@
         "valor": "@spec:workFloor.sizeM.0",
         "unidad": "m",
         "estado": "REF_OEM",
-        "nota": "2,6 m (ancho 3,3 m); el layout TKR-10 dibuja 3 × 3 (conflicto)"
+        "nota": "2,6 m (ancho 3,3 m); el layout de locación dibuja 3 × 3 (conflicto)"
       },
       "h_min": {
         "valor": "@spec:workFloor.minHeightM",
@@ -118,7 +118,7 @@
         "valor": -1.3,
         "unidad": "m",
         "estado": "REF_OEM",
-        "nota": "cota 1,3 m a la boca de pozo, rotulada en LAYOUT - TKR-10"
+        "nota": "cota 1,3 m a la boca de pozo, rotulada en Layout de locación"
       },
       "y_centro": {
         "valor": -0.5,

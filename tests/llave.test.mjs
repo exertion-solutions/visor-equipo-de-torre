@@ -7,7 +7,7 @@ import patches from '../scripts/patches/08-llave.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
-const original = fs.readFileSync(path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const original = fs.readFileSync(path.join(root, 'reference', 'legacy', 'Digital_Rig_V2.base.html'), 'utf8')
 const wellsite = fs.readFileSync(path.join(root, 'legacy-ext', '40-wellsite.js'), 'utf8')
 const meta = fs.readFileSync(path.join(root, 'legacy-ext', '42-meta-llave.js'), 'utf8')
 const start = wellsite.indexOf('function buildLlave(')

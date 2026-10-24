@@ -25,7 +25,7 @@ Resultado funcional: carga sin errores, 43 botones sin fallas, PNG y GLB se gene
 
 ## Inconsistencias encontradas (corregir al migrar, no copiar)
 
-1. **Anclajes de vientos**: el código coloca anclajes en (−18, ±13) y (15, ±14) m; el layout TKR-10 documenta 25 ± 3 m por eje (diagonal 35,4 m). El propio visor los marca "Fuente en conflicto". Migrar como especificación con `conflicts`, no elegir uno.
+1. **Anclajes de vientos**: el código coloca anclajes en (−18, ±13) y (15, ±14) m; el layout de locación documenta 25 ± 3 m por eje (diagonal 35,4 m). El propio visor los marca "Fuente en conflicto". Migrar como especificación con `conflicts`, no elegir uno.
 2. **Texto "mástil ~30 m"** en la ficha vs. 31,6992 m (104 ft) usado por la geometría.
 3. **Zona ilustrativa de caída de mástil**: radio = 1,1 × largo del mástil (~32,8 m). Es una envolvente gráfica inventada: migrar solo como `illustrative`, sin mostrar la cifra.
 4. **Riesgos y controles por componente** (`riesgos`, `epp`): 13 textos sin fuente, varios redactados como requisito ("Prueba de presión del BOP antes de iniciar", "Respetar la capacidad nominal…", "Suspender la operación con viento fuerte…"). Migrar como `pendingValidation` hasta adjuntar fuente; nunca como `confirmed`.

@@ -14,7 +14,7 @@ verificar: el PNG no se versiona (ver `.gitignore`); queda solo en la copia loca
 | `modelado_piso_enganchador-encuellador.png`  | Render CAD de un piso de enganchador: piso de chapa, peines de tubulares en un lado, paneles laterales con barandas de caños, arco tubular trasero, patines de apoyo | Chapa antideslizante, peine de dedos individuales, barandas horizontales, arco de contención, patines |
 
 Ubicación y altura **no** salen de esa imagen: se conservan las del visor (piso a 18,5 m sobre el eje local del mástil, `boardHeight` del
-visor; huella x 0,35–2,90 · z ±1,05 en el marco local del mástil) y la foto real de `equipo-real-01.md` ("plataforma del enganchador
+visor; huella x 0,35–2,90 · z ±1,05 en el marco local del mástil) y una foto real del equipo (no publicada) ("plataforma del enganchador
 lateral y elevada").
 
 ## Qué cambió
@@ -41,7 +41,7 @@ anima); el despiece solo desplaza el grupo `enganche` completo (+5, +3, 0), de m
 
 | Dato                                                                | Estado     | Fuente / nota                                                                                                  |
 | ------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
-| Existencia del piso de enganche y de los puntos DROPS PE-1 … PE-13  | confirmado | Libro DROPS 2024 (RCCO Rev.03), págs. 7–11; `docs/drops/extracto-libro-drops-rig-y-tk10.md`         |
+| Existencia del piso de enganche y de los puntos DROPS PE-1 … PE-13  | confirmado | Libro DROPS 2024 (RCCO Rev.03), págs. 7–11; extracto interno (no publicado)         |
 | Piso a 18,5 m (`boardHeight`) y anclaje al mástil                   | aproximado | Heredado del visor; el piso real no tiene cotas en los documentos                                              |
 | Huella 2,55 × 2,10 m, altura de paneles y del aro superior          | aproximado | Heredado del visor (envolvente sin cambios)                                                                    |
 | Chapa antideslizante (existencia y patrón)                          | aproximado | Tipología de la referencia CAD; espesor y tipo de chapa pendientes                                             |

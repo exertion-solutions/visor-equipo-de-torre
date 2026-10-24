@@ -8,9 +8,9 @@ import data from './rig10-drops.json'
  *
  * - Cualitativo: sin radios, alturas, pesos ni distancias (el schema rechaza esas claves).
  * - Cada punto cita fuente y página (Libro DROPS 2024, RCCO Rev.03) con estatus `procedure`
- *   por decisión del usuario; el Libro no nombra el equipo y su aplicabilidad al TK10 la declara
+ *   por decisión del usuario; el Libro no nombra el equipo y su aplicabilidad al equipo 10 la declara
  *   el usuario (ver `meta.assumptions`).
- * - `componentId` y la relación foto TK10 <-> punto son INFERIDOS (`inferred: true`).
+ * - `componentId` y la relación foto equipo 10 <-> punto son INFERIDOS (`inferred: true`).
  * - Las guías genéricas (Manual DROPS, Taller YPF) no son puntos: solo `references`.
  */
 
@@ -46,10 +46,6 @@ export const DROPS_SECTION_IDS = [
   'piso-trabajo',
   'poste-llave',
 ] as const
-
-const TK10_TOTAL_PHOTOS = 36
-const TK10_CORRECT_PHOTOS = 26
-const TK10_FINDINGS = 10
 
 /** Claves de medida prohibidas: los documentos no dan radios, alturas, pesos ni distancias. */
 const FORBIDDEN_KEYS: ReadonlySet<string> = new Set(['radiusM', 'heightM', 'weightKg', 'distanceM'])
@@ -119,14 +115,6 @@ const sectionSchema = z.strictObject({
   sourceId: nonEmpty,
 })
 
-const tk10PointSchema = z.strictObject({
-  status: z.enum(['correcto', 'hallazgo', 'sin-dato']),
-  photos: z.array(z.number().int().min(1).max(TK10_TOTAL_PHOTOS)),
-  note: nullableText,
-  /** Siempre `true`: el TK10 no rotula ubicaciones, la relación foto <-> punto es tentativa. */
-  inferred: z.literal(true),
-})
-
 const pointSchema = z.strictObject({
   id: nonEmpty,
   sectionId: dropsSectionIdSchema,
@@ -150,24 +138,6 @@ const pointSchema = z.strictObject({
     page: z.number().int().positive(),
     note: nullableText,
   }),
-  tk10: tk10PointSchema,
-})
-
-const tk10InspectionSchema = z.strictObject({
-  date: z.literal('2023-10-05'),
-  sourceId: nonEmpty,
-  total: z.literal(TK10_TOTAL_PHOTOS),
-  correct: z.literal(TK10_CORRECT_PHOTOS),
-  findings: z
-    .array(
-      z.strictObject({
-        photo: z.number().int().min(1).max(TK10_TOTAL_PHOTOS),
-        summary: nonEmpty,
-        relatedPointIds: z.array(nonEmpty),
-        inferred: z.literal(true),
-      }),
-    )
-    .length(TK10_FINDINGS),
 })
 
 const referenceSchema = z.strictObject({
@@ -197,7 +167,6 @@ const datasetObjectSchema = z
     zones: z.array(zoneSchema).length(DROPS_ZONE_IDS.length),
     sections: z.array(sectionSchema).length(DROPS_SECTION_IDS.length),
     points: z.array(pointSchema).min(1),
-    tk10Inspection: tk10InspectionSchema,
     references: z.array(referenceSchema),
   })
   .superRefine((ds, ctx) => {
@@ -231,8 +200,8 @@ const datasetObjectSchema = z
     ds.zones.forEach((z, i) => requireSource(z.sourceId, ['zones', i, 'sourceId']))
     ds.sections.forEach((s, i) => {
       requireSource(s.sourceId, ['sections', i, 'sourceId'])
-      if (s.zone === null && s.zoneBasis !== 'No clasificada en POWSG020-A2') {
-        issue("una sección sin zona debe declarar zoneBasis 'No clasificada en POWSG020-A2'", [
+      if (s.zone === null && s.zoneBasis !== 'No clasificada en layout A2') {
+        issue("una sección sin zona debe declarar zoneBasis 'No clasificada en layout A2'", [
           'sections',
           i,
           'zoneBasis',
@@ -280,65 +249,12 @@ const datasetObjectSchema = z
           'observation',
         ])
       }
-      const { status, photos } = p.tk10
-      if ((status === 'sin-dato') !== (photos.length === 0)) {
-        issue("tk10: 'sin-dato' si y solo si no hay fotos asociadas", [
-          'points',
-          i,
-          'tk10',
-          'status',
-        ])
-      }
-      if (new Set(photos).size !== photos.length) {
-        issue('tk10: fotos repetidas', ['points', i, 'tk10', 'photos'])
-      }
     })
     for (const section of ds.sections) {
       if (!pointsPerSection.has(section.id)) {
         issue(`la sección ${section.id} no tiene puntos`, ['sections'])
       }
     }
-
-    const tk = ds.tk10Inspection
-    requireSource(tk.sourceId, ['tk10Inspection', 'sourceId'])
-    if (sourceById.get(tk.sourceId)?.kind !== 'photo') {
-      issue("tk10Inspection.sourceId debe ser una fuente 'photo'", ['tk10Inspection', 'sourceId'])
-    }
-    if (tk.correct + tk.findings.length !== tk.total) {
-      issue('correct + findings != total', ['tk10Inspection'])
-    }
-    for (const dup of duplicates(tk.findings.map((f) => String(f.photo)))) {
-      issue(`hallazgo repetido para la foto ${dup}`, ['tk10Inspection', 'findings'])
-    }
-    const pointsWithFinding = new Set<string>()
-    tk.findings.forEach((f, i) => {
-      for (const pid of f.relatedPointIds) {
-        const p = pointById.get(pid)
-        if (p === undefined) {
-          issue(`punto inexistente: ${pid}`, ['tk10Inspection', 'findings', i, 'relatedPointIds'])
-          continue
-        }
-        pointsWithFinding.add(pid)
-        if (p.tk10.status !== 'hallazgo' || !p.tk10.photos.includes(f.photo)) {
-          issue(`el punto ${pid} no refleja el hallazgo de la foto ${f.photo}`, [
-            'tk10Inspection',
-            'findings',
-            i,
-            'relatedPointIds',
-          ])
-        }
-      }
-    })
-    ds.points.forEach((p, i) => {
-      if (p.tk10.status === 'hallazgo' && !pointsWithFinding.has(p.id)) {
-        issue(`el punto ${p.id} es 'hallazgo' pero ningún hallazgo TK10 lo relaciona`, [
-          'points',
-          i,
-          'tk10',
-          'status',
-        ])
-      }
-    })
 
     ds.references.forEach((r, i) => {
       requireSource(r.sourceId, ['references', i, 'sourceId'])
@@ -372,7 +288,6 @@ export type DropsSource = DropsDataset['sources'][number]
 export type DropsZone = DropsDataset['zones'][number]
 export type DropsSection = DropsDataset['sections'][number]
 export type DropsPoint = DropsDataset['points'][number]
-export type DropsTk10Inspection = DropsDataset['tk10Inspection']
 export type DropsReference = DropsDataset['references'][number]
 export type DropsComponentId = z.infer<typeof dropsComponentIdSchema>
 export type DropsZoneId = z.infer<typeof dropsZoneIdSchema>
@@ -435,7 +350,7 @@ const uniqueInOrder = <T>(items: readonly T[]): T[] => [...new Set(items)]
  *   barrera sea más fuerte que su riesgo, así que la barrera queda `pendingValidation` (conserva
  *   `sourceId` y página) aunque el punto figure como `procedure` en el dataset DROPS. Para
  *   presentarlas como requisito habría que documentar `event`/`consequence` desde el procedimiento
- *   (PO-WSG-020 §6.2 y §6.4) y subir el riesgo a `procedure`: decisión del usuario, no se hace aquí.
+ *   (procedimiento DROPS §6.2 y §6.4) y subir el riesgo a `procedure`: decisión del usuario, no se hace aquí.
  * - Sin zonas de exclusión: no hay geometría documentada (el A2 no trae radios ni cotas).
  */
 export const toQhseDataset = (dataset: DropsDataset = getDropsDataset()): QhseDataset => {
@@ -448,8 +363,8 @@ export const toQhseDataset = (dataset: DropsDataset = getDropsDataset()): QhseDa
     const riskId = `drops-${section.id}`
     const area =
       section.zone === null
-        ? 'Sin clasificación en POWSG020-A2'
-        : `Clasificación de área POWSG020-A2: ${zoneLabel.get(section.zone) ?? section.zone}`
+        ? 'Sin clasificación en layout A2'
+        : `Clasificación de área layout A2: ${zoneLabel.get(section.zone) ?? section.zone}`
     risks.push({
       id: riskId,
       rigId: dataset.meta.rigId,

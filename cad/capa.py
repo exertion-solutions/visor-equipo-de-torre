@@ -5,8 +5,8 @@ Marco: CAD (x mástil, y lateral, z arriba) -> V2 (x, y arriba, z) = (x, z, −y
 """
 import json
 
-from lib.tk10 import ROOT
-from components import carrier_huella, layout_tkr10, mastil, piso_trabajo
+from lib.equipo import ROOT
+from components import carrier_huella, layout_locacion, mastil, piso_trabajo
 
 DEST = ROOT / "src" / "data" / "cad" / "capa-cad.json"
 
@@ -35,24 +35,24 @@ def generar(spec, P_mastil, P_piso, P_carrier):
     pos, idx = _malla(huella)
     items.append(dict(
         id="carrier_huella", nombre="Carrier SK-575 (huella 18 × 4 m)", ancla="mundo", color="#e0504f",
-        fuente="folleto + LAYOUT TKR-10 (1,3 m a la boca)", estado="REF_OEM",
+        fuente="folleto + layout de locación (1,3 m a la boca)", estado="REF_OEM",
         tris=[dict(p=pos, i=idx)],
     ))
 
-    partes = layout_tkr10.build(spec)[0]
+    partes = layout_locacion.build(spec)[0]
     colores = {"acumulador": "#3e7896", "bomba": "#d36b6b", "pileta": "#9aa1a8", "planchada": "#f2b632"}
     tris = []
     for nombre, wp in partes.items():
         pos, idx = _malla(wp)
         tris.append(dict(p=pos, i=idx, color=colores[nombre], nombre=nombre))
     items.append(dict(
-        id="layout_tkr10", nombre="Layout TKR-10 (acumulador, bomba, pileta, planchada)", ancla="mundo", color="#9aa1a8",
-        fuente="LAYOUT TKR-10: tamaños y 5 m / 3 m / 1,3 m rotulados; posiciones medidas del vector (C)", estado="REF_OEM",
+        id="layout_locacion", nombre="Layout de locación (acumulador, bomba, pileta, planchada)", ancla="mundo", color="#9aa1a8",
+        fuente="layout de locación: tamaños y 5 m / 3 m / 1,3 m rotulados; posiciones medidas del vector (C)", estado="REF_OEM",
         tris=tris,
     ))
 
     placa, _, q = piso_trabajo.build(spec, P_piso)
-    cx, cy = layout_tkr10.centro_piso()
+    cx, cy = layout_locacion.centro_piso()
     pos, idx = _malla(placa, cx, cy)
     items.append(dict(
         id="piso_trabajo", nombre="Piso de trabajo (2,6 × 3,3 m a %.1f m)" % q["h"], ancla="mundo", color="#f2b632",
@@ -74,7 +74,7 @@ def generar(spec, P_mastil, P_piso, P_carrier):
 
     data = dict(
         version=1, unidades="m", marco="V2: +X hacia el mástil, Z lateral, Y arriba", confianza="C",
-        aviso="Referencia dimensional verificada contra technical-spec.js y LAYOUT TKR-10. No es as-built ni apta para fabricación.",
+        aviso="Referencia dimensional verificada contra technical-spec.js y layout de locación. No es as-built ni apta para fabricación.",
         items=items,
     )
     DEST.parent.mkdir(parents=True, exist_ok=True)

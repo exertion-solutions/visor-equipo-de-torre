@@ -51,7 +51,7 @@ INFO = {
     "sk575_piletas": ("C", "Piletas de circulación, preparación y ensayo + trip tank"),
     "sk575_manifold": ("C", "Manifold de ahogo M1–M12 y líneas de choke/ahogo"),
     "sk575_bomba": ("C", "Bomba triplex sobre patín: power end, fluid end de 3 cilindros, múltiples, amortiguador y válvula de seguridad (referencia fotográfica genérica; modelo, camisas, carrera y presión del equipo PENDIENTES)"),
-    "sk575_acumulador": ("C", "Acumulador del BOP: huella 8 × 2,4 m (layout WS10), 5 botellones 3.000 psi (folleto); botellones, "
+    "sk575_acumulador": ("C", "Acumulador del BOP: huella 8 × 2,4 m (layout de locación 2019), 5 botellones 3.000 psi (folleto); botellones, "
                              "válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 "
                              "(src-ref-rigmfg-4650, genérica: no es el equipo instalado)"),
 }
@@ -219,7 +219,7 @@ def exportar(solo=None):
         (OUT / (cid + ".glb")).write_bytes(scene.export(file_type="glb", include_normals=True))
         meta = dict(id=cid, confianza=conf, alcance=alcance, triangulos=tris_total, materiales=sorted(mats_comp),
                     marco="glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
-                    fuentes="docs/pdf-review/informe-sk575-2026-10-09.md", as_built=False,
+                    fuentes="informe técnico interno (no publicado)", as_built=False,
                     aristas=dict(segmentos=segs_total, nodo="<nodo>_aristas (primitiva LINES, mode 1)",
                                  umbral_grados=28, excluye=sorted(SIN_ARISTAS)))
         if meta_nodos:
@@ -238,7 +238,7 @@ def exportar(solo=None):
 SUBNODOS = {
     "sk575_cabina": "Cabina de manejo (one-man cab), vidrios, espejo, escalones y luces de techo (geometría C)",
     "sk575_motor": "Motor Detroit S60 bajo capot, radiador, filtro de aire, escape, transmisión Allison y cardán (C)",
-    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano 8123-1002-2611) con peines, baranda y cartel; origen = bisagra del borde "
+    "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano del mástil) con peines, baranda y cartel; origen = bisagra del borde "
                       "interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º "
                       "tramo del mástil (geometría C)",
     "sk575_izaje_orejas_carrier": "Pedestales de los cilindros en el carrier (fijos)",
@@ -327,15 +327,15 @@ def meta_vientos(g, wxp):
         ids="<viento>_<lado>_<signo de z glTF>: lado carrier = −X, lado v = +X (planchada); marco glTF del GLB",
         cables=lista,
         anclajes=dict(
-            fuente="src-layout-ws10 (LAYOUT-WS10-0001: 27,4 m lado carrier / 24,4 m lado V desde el pozo, ± 26,8 m laterales)",
+            fuente="src-layout-2019 (layout de locación 2019: 27,4 m lado carrier / 24,4 m lado V desde el pozo, ± 26,8 m laterales)",
             confianza="B",
-            conflicto="C4 · Fuente en conflicto: folleto 20 m · spec 25 ± 3 m · layout WS10 27,4 / 24,4 ± 3 m (± 26,8 lat.) · "
-                      "placa 94' (28,7 m) / 82' (25 m), 68' lat. El modelo dibuja WS10; no es diseño de anclaje ni distancia "
+            conflicto="C4 · Fuente en conflicto: folleto 20 m · spec 25 ± 3 m · layout de locación 2019 27,4 / 24,4 ± 3 m (± 26,8 lat.) · "
+                      "placa 94' (28,7 m) / 82' (25 m), 68' lat. El modelo dibuja layout de locación 2019; no es diseño de anclaje ni distancia "
                       "de exclusión.",
         ),
         extremos_mastil="Con el mástil armado (inclinado 3,5°). Alturas de amarre (A 29,5 m, B 19,0 m), plataforma, corona y "
                         "pirosalva: C (no documentadas, informe §5). Diámetros A 3/4\" y B 5/8\": src-placa-api; plataforma "
-                        "9/16\" e internos 1\": Rig Up p3; pirosalva: anclaje en el eje a 45 m del pozo (src-layout-ws10; fuente en conflicto: LAYOUT TKR-10 2025 = 30 m, YPF ~35°), amarre C.",
+                        "9/16\" e internos 1\": Rig Up p3; pirosalva: anclaje en el eje a 45 m del pozo (src-layout-2019; fuente en conflicto: layout de locación 2025 = 30 m, YPF ~35°), amarre C.",
     )
 
 

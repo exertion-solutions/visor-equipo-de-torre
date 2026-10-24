@@ -1,17 +1,17 @@
-"""Layout TKR-10 (locación): HUELLAS en planta de acumulador, bomba triplex, pileta de circulación y planchada.
+"""Layout de locación (locación): HUELLAS en planta de acumulador, bomba triplex, pileta de circulación y planchada.
 Marco: origen = boca de pozo, +X hacia el mástil (carrier hacia −X), Y lateral, Z arriba.
 
-Fuente: docs/fuentes/rig10/LAYOUT - TKR-10.pdf, coordenadas VECTORIALES del PDF (pt), no de una imagen.
+Fuente: docs/fuentes/rig10/Layout de locación.pdf, coordenadas VECTORIALES del PDF (pt), no de una imagen.
 Escala calibrada con la cota de anclajes 25 m (215,5 pt) y comprobada con los trailers de 12 m (103,5 pt).
 Cotas rotuladas en el plano (confirmadas): tamaños, 5 m bomba-pileta, 3 m acumulador-eje, 1,3 m equipo-boca.
 Posiciones no rotuladas: medidas del vector (confianza C).
 Asunción de signo lateral (PENDIENTE): este del plano = +Y (CAD). Solo espeja el lado; el largo (X) no depende de ella."""
 import json
 import cadquery as cq
-from lib.tk10 import ROOT
-from lib.tk10 import Arbol, dato, export_glb, bbox
+from lib.equipo import ROOT
+from lib.equipo import Arbol, dato, export_glb, bbox
 
-ID = "layout_tkr10"
+ID = "layout_locacion"
 ESPESOR = 0.05  # m — solo visual (no es una altura)
 
 # Coordenadas del PDF (pt): (x0, x1, y0, y1). Boca de pozo = cruce de ejes.
@@ -83,7 +83,7 @@ def main(spec):
         frame="origen = boca de pozo (cruce de ejes del layout); +X hacia el mástil; signo lateral PENDIENTE",
         scope="Solo huellas en planta de la locación. Sin altura, contenido ni ejes de anclaje. No es as-built.",
         data=[
-            dato("accumulatorM", [8, 2.4], "m", "confirmed", note="rotulado en LAYOUT - TKR-10"),
+            dato("accumulatorM", [8, 2.4], "m", "confirmed", note="rotulado en Layout de locación"),
             dato("triplexPumpM", [6, 2.4], "m", "confirmed", note="rotulado"),
             dato("circulationPitM", [12, 2.4], "m", "confirmed", note="rotulado"),
             dato("catwalkM", [12, 2.4], "m", "confirmed", note="rotulado"),
@@ -99,7 +99,7 @@ def main(spec):
         conflicts=[
             dict(key="piso_trabajo_tamano", layout="3 × 3 m nominal (dibujado 2,76 m)", brochure="2,6 × 3,3 m",
                  note="Fuente en conflicto: el modelo usa el folleto (technical-spec.js)."),
-            dict(key="anclajes", layout="25 ± 3 m (TKR-10)", brochure="20 m / 25 m (folleto)",
+            dict(key="anclajes", layout="25 ± 3 m (equipo 10)", brochure="20 m / 25 m (folleto)",
                  note="Ya registrado en el proyecto; no se modelan anclajes."),
         ],
         tree=A.filas,
@@ -107,7 +107,7 @@ def main(spec):
     # datos para scripts/audit-dimensional.mjs (versionado: la auditoría corre sin Python)
     dest = ROOT / "cad" / "data"
     dest.mkdir(exist_ok=True)
-    (dest / "layout_tkr10.json").write_text(
+    (dest / "layout_locacion.json").write_text(
         json.dumps({k: [round(v, 2) for v in vals] for k, vals in m.items()}, indent=2), encoding="utf-8"
     )
     colores = {"acumulador": "#3E7896", "bomba": "#A72A32", "pileta": "#6F767C", "planchada": "#F2B632"}

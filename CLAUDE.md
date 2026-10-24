@@ -42,7 +42,7 @@ Plataforma digital para equipos **Pulling/Workover** de servicios petroleros. Pr
 ## Política de migración
 
 - **El visor V2 HTML se mantiene hasta paridad verificada** de cada función con el motor nativo R3F.
-- `reference/legacy/` = evidencia **inmutable** (nunca se edita; hashes en `SHA256SUMS.txt`).
+- `reference/legacy/Digital_Rig_V2.base.html` = base del visor V2 (no se edita salvo decisión documentada; hash en `SHA256SUMS.txt`).
   `public/legacy/` = copia runtime que la app embebe en un iframe (motor `legacy`, por defecto).
 - La UI alterna "V2 compatible" / "R3F nativo" (`src/stores/viewerStore.ts`: `engine`,
   `selectedComponentId`); los modos viven en `src/stores/modeStore.ts` (EXPLORE / OPERATION / QHSE /
@@ -91,19 +91,20 @@ docs/{fuentes/{rig10,drops},drops,pdf-review,references,preview} · reference/{l
 
 - El repo y el visor no llevan la marca de la empresa: texto visible, identificadores (`rig10`, `__rig*`, mensajes `rig:*`), archivos y
   documentación usan nombres genéricos ("DIGITAL RIG", "Equipo 10", "la empresa"). No reintroducirla.
-- **Excepción única: `reference/legacy/`** (evidencia inmutable) conserva sus nombres y su texto originales. `scripts/build-legacy.mjs` le aplica en
-  memoria el renombrado de `scripts/lib/genericizar.mjs` (tabla de reglas, único archivo donde la marca puede aparecer) antes de parchearlo; por
-  eso los parches y los módulos `legacy-ext/` están escritos en términos genéricos.
+- Tampoco se publican códigos ni contenidos de documentos internos de la empresa (layouts, planos, procedimientos, inspecciones,
+  rutas de red, números de serie) ni fotos del equipo real: se citan en forma genérica ("layout de locación", "plano del mástil",
+  "procedimiento DROPS", "documento interno (no publicado)"). `tests/ui-publico.test.mjs` lo verifica sobre el visor y la base.
+- `reference/legacy/Digital_Rig_V2.base.html` es la base ya saneada (sin marca, sin foto, sin secciones de fuentes internas).
 
 ## Visor legacy (NO tocar sin pedido explícito)
 
 - `public/legacy/Digital_Rig_V2.html` es un **archivo GENERADO**: no se edita a mano.
-  `npm run build:legacy` (`scripts/build-legacy.mjs`) parte del original inmutable de `reference/legacy/`, le
+  `npm run build:legacy` (`scripts/build-legacy.mjs`) parte de la base `reference/legacy/Digital_Rig_V2.base.html`, le
   aplica parches (PCFShadowMap, favicon, puente de modo `?embedded`, hooks) y le inyecta los módulos
   `legacy-ext/NN-*.js` (`20-mast`, `30-carrier`, `40-wellsite`, `50-drops-layer`, `60-ui-controls`) y los datos
   `src/data/qhse/rig10-drops.json`. Un test falla si la copia de trabajo no coincide con el build.
   La abre `ABRIR_DIGITAL_RIG.cmd`. Capturas headless: `npm run snap -- --file … --out …`.
-- **DROPS**: `docs/drops/README.md` (síntesis de los documentos de `docs/fuentes/drops/`), dataset canónico
+- **DROPS**: documentos de origen internos (no publicados), dataset canónico
   `src/data/qhse/rig10-drops.json` (66 puntos, zonas A2 Alto/Medio/Bajo **cualitativas**, sin radios).
 - `reference/v2-previo/src/`: datos del visor V2 anterior que siguen vigentes (`technical-spec.js` = cotas
   documentadas del equipo 10, fuente de datos a migrar; `asset-manifest.js` = paleta física y manifiesto GLB).
@@ -111,13 +112,13 @@ docs/{fuentes/{rig10,drops},drops,pdf-review,references,preview} · reference/{l
 
 ## Fuentes documentales
 
-Ver `docs/pdf-review/informe-tecnico-rig.md` y los PDF de `docs/fuentes/rig10/` (folleto Equipo 10 rev. 26/06/2024,
-layout TKR-10). Los documentos Equipo 11 son referencia de layout/seguridad: **no** alteran la
+Ver informe técnico interno (no publicado) y los PDF de `docs/fuentes/rig10/` (folleto Equipo 10 rev. 26/06/2024,
+layout de locación). Los documentos Equipo 11 son referencia de layout/seguridad: **no** alteran la
 geometría del equipo 10 sin comprobar equivalencia. Anotaciones manuscritas no son cotas técnicas.
 
 Equipo 10 = **Service King SK-575** (mástil DKA104-330-08). Relevamiento 2026-10-09 (placa API, spec sheet, planos de la empresa,
-manuales SK, layout WS10): `docs/pdf-review/informe-sk575-2026-10-09.md` (cotas A/B/C y conflictos). Esos documentos
-**no se versionan** (propiedad de la empresa / repo público): índice en `docs/fuentes/rig10/README-sk575.md`.
+manuales SK, layout de locación 2019): informe técnico interno (no publicado) (cotas A/B/C y conflictos). Esos documentos
+**no se versionan** (propiedad de la empresa / repo público): índice en índice interno (no publicado).
 
 ## Skills de proyecto (`.claude/skills/`)
 

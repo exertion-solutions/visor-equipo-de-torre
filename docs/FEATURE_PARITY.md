@@ -55,7 +55,7 @@ Funciones agregadas al V2 mediante `legacy-ext/` que el motor nativo deberá igu
 
 | Función | V2 (legacy-ext) | Nativo R3F | Gate |
 | ------- | --------------- | ---------- | ---- |
-| Capa DROPS (66 puntos, zonas A2, panel, hallazgos TK10) | operativa (`50-drops-layer.js`, botón `#c-drops`, auto en QHSE) | datos y schema hechos (`src/data/qhse/rig10-drops.*`); visualización pendiente | test del schema (existente) + manual: marcadores, panel y leyenda |
+| Capa DROPS (66 puntos, zonas A2, panel) | operativa (`50-drops-layer.js`, botón `#c-drops`, auto en QHSE) | datos y schema hechos (`src/data/qhse/rig10-drops.*`); visualización pendiente | test del schema (existente) + manual: marcadores, panel y leyenda |
 | Detalle de puntos DROPS en la geometría (`userData.dropsId`, 65/66) | geometría procedural oculta (capa 31, 2026-10-11); `dropsId` sin portar al SK-575: los marcadores usan el anclaje cualitativo y se rotulan siempre aproximados (`50-drops-layer.js`) | pendiente | inventario de ids de escena = ids del JSON (excepto BP-2 "NA") |
 | Rediseño visual (mástil, enganche, carrier, BOP, locación) | geometría procedural oculta (capa 31) desde 2026-10-11, reemplazada por el SK-575; la medición de 366 draw calls ya no aplica | pendiente | comparar capturas y `renderer.info` |
 | Interfaz: sin cartel de modo inferior y botón "Ocultar/Mostrar opciones" | operativo (`60-ui-controls.js`) | pendiente | manual: barras ocultas y escena a pantalla completa |

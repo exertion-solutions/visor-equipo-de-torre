@@ -48,10 +48,10 @@ describe('RIG10_RIG', () => {
   })
 
   it('los conflictos de fuente quedan declarados', () => {
-    // piso_trabajo sigue con 2 specs en conflicto: el plano 8123 (3,606 m) se suma a modelHeightM.
+    // piso_trabajo sigue con 2 specs en conflicto: el plano del mástil (3,606 m) se suma a modelHeightM.
     const piso = RIG10_RIG.components.find((c) => c.id === 'piso_trabajo')
     expect(piso?.specifications.filter((s) => s.conflicts?.length)).toHaveLength(2)
-    expect(conflictsOf('piso_trabajo', 'modelHeightM')).toContain('src-plano-8123')
+    expect(conflictsOf('piso_trabajo', 'modelHeightM')).toContain('src-plano-mastil')
     expect(conflictsOf('sk575_piso', 'floorHeightM')).toEqual(['src-folleto', 'src-legacy-v2'])
     expect(conflictsOf('sk575_aparejo', 'lines')).toEqual(['src-folleto'])
     expect(conflictsOf('sk575_bop', 'nominalBore')).toEqual(['src-folleto', 'src-manual-bop-11'])

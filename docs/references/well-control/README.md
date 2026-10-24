@@ -22,9 +22,9 @@ Origen y licencia sin verificar (fotos de catálogo de terceros): no se embeben 
 
 | Dato                                                        | Estado        | Fuente / nota                                                                                               |
 | ----------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| BOP Cameron anular + doble ariete, 7 1/16", 5M              | confirmado    | Folleto Equipo 10 rev. 26/06/2024; acta de prueba del acumulador TK-10 (06/10/2023)                         |
-| HCR de 2 1/16" (lado choke/kill)                            | confirmado    | Acta de prueba del acumulador TK-10 (06/10/2023). No se modela un tercer ariete ni drilling spool             |
-| Acumulador 8 × 2,4 m, 5 botellones, 3.000 psi               | confirmado    | Folleto / LAYOUT TKR-10. El acta TK-10 dice "abiertos 4 líneas": no contradice, se mantienen los 5 botellones |
+| BOP Cameron anular + doble ariete, 7 1/16", 5M              | confirmado    | Folleto Equipo 10 rev. 26/06/2024; acta de prueba del acumulador equipo 10 (06/10/2023)                         |
+| HCR de 2 1/16" (lado choke/kill)                            | confirmado    | Acta de prueba del acumulador equipo 10 (06/10/2023). No se modela un tercer ariete ni drilling spool             |
+| Acumulador 8 × 2,4 m, 5 botellones, 3.000 psi               | confirmado    | Folleto / layout de locación. El acta equipo 10 dice "abiertos 4 líneas": no contradice, se mantienen los 5 botellones |
 | Posición del choke manifold (x≈3,4 · z≈−4,3)                | confirmado    | Jorge (posición en locación)                                                                                |
 | Envolvente del choke 2,30 × 2,10 × 1,45 m                   | aproximado    | Estampada en la foto de una unidad genérica (DIM 210×230×145 cm)                                            |
 | Volantes Ø≈0,40 m, cotas internas del choke                 | aproximado    | Tipología de las fotos                                                                                      |
@@ -66,7 +66,7 @@ Distribución (triángulos): BOP 8.244 (pintura 1.672 · acero 5.036 · manguera
 
 ## Fuentes que no se pudieron leer
 
-`CHOKE MANIFOLD TKR05 2376-2111.PDF` y `P&DI Diagram Workover Rig TKR10.pdf` (carpeta `diagramas equipos`): la lectura
+`CHOKE MANIFOLD equipo 05 2376-2111.PDF` y `P&DI Diagram Workover equipo 10.pdf` (carpeta `diagramas equipos`): la lectura
 fue denegada. Con ellos se podría cerrar el ruteo y afinar la tipología del choke con un equipo de la empresa real.
 
 ## Otros componentes

@@ -41,18 +41,18 @@ export const RIG_10 = Object.freeze({
     circulationPitM: Object.freeze([12, 2.4]),
     accumulatorM: Object.freeze([8, 2.4]),
   }),
-  // Relevamiento 2026-10-09 (ver docs/pdf-review/informe-sk575-2026-10-09.md). No reemplaza las cotas de arriba:
+  // Relevamiento 2026-10-09 (ver informe técnico interno (no publicado)). No reemplaza las cotas de arriba:
   // donde difieren, src/data/rigs/rig10.ts registra el conflicto. `src` = sourceId de cada cota.
   sk575: Object.freeze({
     mast: Object.freeze({
-      model: 'SK DKA104-330-08', serial: 'DK-3033', src: 'src-placa-api',
+      model: 'SK DKA104-330-08', serial: 'No publicado', src: 'src-placa-api',
       lines: 8, ratedHookLoadLb: 325725, leanDeg: 3.5, baseHeightM: 1.2192,
-      rackingBoardM: 20.629, heightPlanoM: 31.71, srcPlano: 'src-plano-8123',
+      rackingBoardM: 20.629, heightPlanoM: 31.71, srcPlano: 'src-plano-mastil',
       wellFromFrontLegM: 1.9304, srcWell: 'src-manual-derrick',
       crownSheavesIn: Object.freeze([24, 24, 24, 24, 30]), srcSheaves: 'src-sk575-spec',
     }),
     workFloor: Object.freeze({
-      heightM: 3.606, src: 'src-plano-8123',
+      heightM: 3.606, src: 'src-plano-mastil',
       sizeM: Object.freeze([2.6, 3.304]), wellOpeningM: Object.freeze([0.73, 0.7]), srcSize: 'src-planos-piso',
       stairDeg: 45, stairRiseM: 0.18, srcStair: 'src-plano-escalera',
     }),

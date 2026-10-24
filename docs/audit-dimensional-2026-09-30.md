@@ -1,7 +1,7 @@
 # Auditoría dimensional del visor V2
 
 Generada por `scripts/audit-dimensional.mjs` (2026-09-30). Compara cajas envolventes del V2 (metros) con
-las cotas documentadas y con el LAYOUT TKR-10 (`cad/data/layout_tkr10.json`, medido del vector del PDF). "documentado" = rotulado en el plano;
+las cotas documentadas y con el layout de locación (`cad/data/layout_locacion.json`, medido del vector del PDF). "documentado" = rotulado en el plano;
 "medido (C)" = tomado de la geometría del PDF, confianza C.
 
 | Elemento | Medida | V2 | Referencia | Tol. | Estado | Fuente | Nota |
@@ -22,6 +22,6 @@ las cotas documentadas y con el LAYOUT TKR-10 (`cad/data/layout_tkr10.json`, med
 | Acumulador | distancia al eje del pozo (Z mín) | 2.97 | 3.00 | ±0.3 | OK | documentado |  |
 | Carrier | extremo hacia la boca de pozo (X máx) | -1.63 | -1.30 | ±0.5 | OK | documentado (1,3 m) |  |
 | Carrier | largo del cuerpo | 16.04 | 18.00 | ±2.5 | OK | documentado | folleto: cuerpo 15,5 m; layout: envolvente 18 m (fuentes en conflicto, el V2 dibuja ~16 m) |
-| Vientos | anclaje a ±X | 25.33 | 25.00 | ±3 | OK | documentado | 25 ± 3 m (TKR-10) vs 20 m (folleto): fuente en conflicto |
+| Vientos | anclaje a ±X | 25.33 | 25.00 | ±3 | OK | documentado | 25 ± 3 m (equipo 10) vs 20 m (folleto): fuente en conflicto |
 
 Resultado: 17/17 dentro de tolerancia.

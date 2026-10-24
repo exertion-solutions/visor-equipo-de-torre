@@ -70,11 +70,11 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_mastil',
     'Mástil SK DKA104-330-08 (modelo SK-575)',
     'mast',
-    ['src-placa-api', 'src-plano-8123', 'src-manual-derrick', 'src-sk575-spec'],
+    ['src-placa-api', 'src-plano-mastil', 'src-manual-derrick', 'src-sk575-spec'],
     'Cotas generales documentadas (altura, piso de enganche, inclinación 3,5°, base a 4 ft, pozo a 76" del pie del mástil); perfiles, paneles, uniones y corona estimados. Los 76" se leen desde el pie/bisagra del mástil (no desde la cara delantera del reticulado): así la corona queda centrada sobre el reticulado y a plomo del pozo (interpretación, informe C6). No verifica la carga de placa.',
     [
       spec('model', 'Modelo', 'SK DKA104-330-08', 'A', 'src-placa-api'),
-      spec('serial', 'N.º de serie', 'DK-3033', 'A', 'src-placa-api'),
+      spec('serial', 'N.º de serie', 'No publicado', 'A', 'src-placa-api'),
       spec('designLines', 'Líneas de diseño (placa)', 8, 'A', 'src-placa-api'),
       spec(
         'staticHookLoadLb',
@@ -86,10 +86,10 @@ const SK575_COMPONENTS: Component[] = [
       ),
       spec('leanDeg', 'Inclinación de trabajo', 3.5, 'A', 'src-placa-api', '°'),
       spec('baseHeightM', 'Base montada sobre el suelo (4 ft)', 1.2192, 'A', 'src-placa-api', 'm'),
-      spec('heightM', 'Altura (104 ft)', 31.71, 'A', 'src-plano-8123', 'm'),
+      spec('heightM', 'Altura (104 ft)', 31.71, 'A', 'src-plano-mastil', 'm'),
       {
         // B (no A) solo porque el schema no admite A con conflicto; el valor del plano es el documentado.
-        ...spec('rackingBoardM', 'Piso de enganche (68 ft)', 20.629, 'B', 'src-plano-8123', 'm'),
+        ...spec('rackingBoardM', 'Piso de enganche (68 ft)', 20.629, 'B', 'src-plano-mastil', 'm'),
         conflicts: [
           {
             sourceId: 'src-legacy-v2',
@@ -103,7 +103,7 @@ const SK575_COMPONENTS: Component[] = [
         'Cota 18.401 mm (60 ft, significado no confirmado)',
         18.401,
         'C',
-        'src-plano-8123',
+        'src-plano-mastil',
         'm',
       ),
       // Interpretación (informe SK-575, C6, 2026-10-11): 76" desde el pie/bisagra del mástil, no desde la cara delantera.
@@ -128,7 +128,7 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_carrier',
     'Carrier Service King SK-575',
     'carrier',
-    ['src-sk575-spec', 'src-parts-sk575', 'src-manual-rigup', 'src-layout-ws10'],
+    ['src-sk575-spec', 'src-parts-sk575', 'src-manual-rigup', 'src-layout-2019'],
     'Bastidor, 5 ejes, cabina, motor, tanques, gatos y T-sill a partir de cotas medidas sobre la vista CAD del Parts Manual (sin contrastar); detalles estimados.',
     [
       spec('model', 'Modelo', 'Service King SK-575', 'A', 'src-sk575-spec'),
@@ -168,7 +168,7 @@ const SK575_COMPONENTS: Component[] = [
         'src-manual-rigup',
         'm',
       ),
-      spec('equipoABocaM', 'Equipo a la boca de pozo', 1.3, 'A', 'src-layout-ws10', 'm'),
+      spec('equipoABocaM', 'Equipo a la boca de pozo', 1.3, 'A', 'src-layout-2019', 'm'),
     ],
   ),
   sk575(
@@ -320,7 +320,7 @@ const SK575_COMPONENTS: Component[] = [
     'Llave hidráulica Gill Model 500 con backup, llave manual y grampa de seguridad',
     'workfloor',
     ['src-manual-gill-500'],
-    'Cotas de envolvente del manual Gill 500 (misma especificación que la Westco 58-93R); forma medida sobre la ilustración del manual y detalle según fotos de catálogo (C). Llave manual tipo B con colgador y grampa AOT A-MP-S (7 eslabones, 2-7/8"–4-1/8") como referencia de catálogo, no relevadas en el TKR-10. Color real pendiente.',
+    'Cotas de envolvente del manual Gill 500 (misma especificación que la Westco 58-93R); forma medida sobre la ilustración del manual y detalle según fotos de catálogo (C). Llave manual tipo B con colgador y grampa AOT A-MP-S (7 eslabones, 2-7/8"–4-1/8") como referencia de catálogo, no relevadas en el equipo 10. Color real pendiente.',
     [
       spec('tongLengthIn', 'Largo de la llave', 51, 'A', 'src-manual-gill-500', 'in'),
       spec(
@@ -347,11 +347,11 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_piso',
     'Piso de pulling, subestructura y escaleras',
     'workfloor',
-    ['src-plano-8123', 'src-planos-piso', 'src-plano-escalera', 'src-folleto', 'src-legacy-v2'],
+    ['src-plano-mastil', 'src-planos-piso', 'src-plano-escalera', 'src-folleto', 'src-legacy-v2'],
     'Piso y escalera con cotas de los planos de la empresa; subestructura y uniones estimadas.',
     [
       {
-        ...spec('floorHeightM', 'Altura del piso (12 ft)', 3.606, 'B', 'src-plano-8123', 'm'),
+        ...spec('floorHeightM', 'Altura del piso (12 ft)', 3.606, 'B', 'src-plano-mastil', 'm'),
         conflicts: [
           {
             sourceId: 'src-folleto',
@@ -395,11 +395,11 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_planchada',
     'Planchada, rampa y caballetes',
     'auxiliary',
-    ['src-layout-ws10', 'src-layout'],
-    'Huella del layout WS10; rampa, caballetes y línea HP ilustrativos.',
+    ['src-layout-2019', 'src-layout'],
+    'Huella del layout de locación 2019; rampa, caballetes y línea HP ilustrativos.',
     [
       {
-        ...spec('catwalkM', 'Planchada', '12 × 2 m', 'B', 'src-layout-ws10'),
+        ...spec('catwalkM', 'Planchada', '12 × 2 m', 'B', 'src-layout-2019'),
         conflicts: [{ sourceId: 'src-layout', value: '12 × 2,4 m' }],
       },
     ],
@@ -416,8 +416,8 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_vientos',
     'Vientos, anclajes y pirosalva',
     'anchoring',
-    ['src-placa-api', 'src-layout-ws10', 'src-layout', 'src-folleto'],
-    'Anclajes ubicados según el layout WS10; la distancia está en conflicto entre fuentes. No es un diseño de anclaje ni distancia de exclusión.',
+    ['src-placa-api', 'src-layout-2019', 'src-layout', 'src-folleto'],
+    'Anclajes ubicados según el layout de locación 2019; la distancia está en conflicto entre fuentes. No es un diseño de anclaje ni distancia de exclusión.',
     [
       spec(
         'guyLines',
@@ -432,7 +432,7 @@ const SK575_COMPONENTS: Component[] = [
           'Anclajes desde el pozo',
           '27,4 ± 3 m (lado carrier) / 24,4 ± 3 m (lado V)',
           'B',
-          'src-layout-ws10',
+          'src-layout-2019',
         ),
         conflicts: [
           { sourceId: 'src-layout', value: '25 ± 3 m' },
@@ -440,15 +440,15 @@ const SK575_COMPONENTS: Component[] = [
           { sourceId: 'src-placa-api', value: '94 ft (28,7 m) / 82 ft (25 m); 68 ft laterales' },
         ],
       },
-      spec('anchorLateralM', 'Anclajes laterales', '± 26,8 m', 'A', 'src-layout-ws10'),
-      spec('flareM', 'Pirosalva desde el pozo', 45, 'A', 'src-layout-ws10', 'm'),
+      spec('anchorLateralM', 'Anclajes laterales', '± 26,8 m', 'A', 'src-layout-2019'),
+      spec('flareM', 'Pirosalva desde el pozo', 45, 'A', 'src-layout-2019', 'm'),
     ],
   ),
   sk575(
     'sk575_pozo_vecino',
     'Pozo vecino (árbol de navidad, ilustrativo)',
     'well-control',
-    ['src-layout-ws10'],
+    ['src-layout-2019'],
     'Ilustrativo: ubicación y equipo del pozo vecino no documentados.',
     [],
   ),
@@ -456,7 +456,7 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_piletas',
     'Piletas (preparación, circulación, ensayo) y trip tank',
     'circulation',
-    ['src-plano-piletas', 'src-layout-ws10'],
+    ['src-plano-piletas', 'src-layout-2019'],
     'Piletas con las cotas del plano; accesorios internos y trip tank ilustrativos.',
     [
       spec(
@@ -464,7 +464,7 @@ const SK575_COMPONENTS: Component[] = [
         'Piletas',
         '3 (preparación, circulación, ensayo) + trip tank',
         'A',
-        'src-layout-ws10',
+        'src-layout-2019',
       ),
       spec('skidMm', 'Patín', '12.000 × 2.400 mm', 'A', 'src-plano-piletas'),
       spec('tankMm', 'Cuba', '11.000 × 2.300 mm', 'A', 'src-plano-piletas'),
@@ -482,41 +482,41 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_manifold',
     'Manifold de ahogo M1–M12 y líneas',
     'well-control',
-    ['src-esquema-ahogo', 'src-choke-b20', 'src-layout-ws10'],
-    'Disposición según esquema sin identificar; escala tomada de un manifold de otro equipo (TKR-08). No es el manifold del TKR-10.',
+    ['src-esquema-ahogo', 'src-choke-b20', 'src-layout-2019'],
+    'Disposición según esquema sin identificar; escala tomada de un manifold de otro equipo (equipo 08). No es el manifold del equipo 10.',
     [
       spec('valves', 'Válvulas', 'M1–M12', 'C', 'src-esquema-ahogo'),
       spec(
         'scaleRef',
-        'Referencia de escala (NO es el del TKR-10)',
+        'Referencia de escala (NO es el del equipo 10)',
         'Thrubore B20-9908 3-1/16" 15M',
         'C',
         'src-choke-b20',
       ),
-      spec('ventM', 'Venteo desde el pozo', 70, 'A', 'src-layout-ws10', 'm'),
+      spec('ventM', 'Venteo desde el pozo', 70, 'A', 'src-layout-2019', 'm'),
     ],
   ),
   sk575(
     'sk575_bomba',
     'Bomba triplex',
     'circulation',
-    ['src-layout-ws10'],
+    ['src-layout-2019'],
     'Huella del layout; bomba y motor ilustrativos.',
-    [spec('footprintM', 'Huella', '6 × 2,4 m', 'A', 'src-layout-ws10')],
+    [spec('footprintM', 'Huella', '6 × 2,4 m', 'A', 'src-layout-2019')],
   ),
   sk575(
     'sk575_acumulador',
     'Acumulador BOP',
     'well-control',
-    ['src-layout-ws10', 'src-folleto', 'src-ref-rigmfg-4650'],
+    ['src-layout-2019', 'src-folleto', 'src-ref-rigmfg-4650'],
     'Huella del layout y 5 botellones a 3.000 psi del folleto. Botellones, selectoras de 4 vías, reguladoras, manómetros, bombas y depósito dibujados según una unidad de cierre API 16D de referencia (CPC S/N 4650): modelo genérico, no el equipo instalado.',
     [
-      spec('footprintM', 'Huella', '8 × 2,4 m', 'A', 'src-layout-ws10'),
+      spec('footprintM', 'Huella', '8 × 2,4 m', 'A', 'src-layout-2019'),
       spec('bottles', 'Botellas', 5, 'A', 'src-folleto'),
       spec('workingPressurePsi', 'Presión de trabajo', 3000, 'A', 'src-folleto', 'psi'),
       spec(
         'refBottle',
-        'Botellón de referencia (NO es el del TKR-10)',
+        'Botellón de referencia (NO es el del equipo 10)',
         '11 gal, vejiga, carga superior, 3.000 psi, precarga 1.000 psi',
         'C',
         'src-ref-rigmfg-4650',
@@ -562,15 +562,15 @@ export const RIG10_RIG: Rig = {
       id: 'src-folleto',
       kind: 'brochure',
       title: 'Folleto Equipo 10 Pulling',
-      ref: 'docs/fuentes/rig10/FOLLETO EQUIPO 10 PULLING REVDJL26062024.pdf, p. 2-3',
+      ref: 'docs/fuentes/rig10/FOLLETO EQUIPO 10 PULLING rev. 26/06/2024.pdf, p. 2-3',
       revision: '26/06/2024',
       verified: true,
     },
     {
       id: 'src-layout',
       kind: 'layout',
-      title: 'Layout TKR-10',
-      ref: 'docs/fuentes/rig10/LAYOUT - TKR-10.pdf (cotas rotuladas y geometría vectorial)',
+      title: 'Layout de locación',
+      ref: 'docs/fuentes/rig10/Layout de locación.pdf (cotas rotuladas y geometría vectorial)',
       verified: true,
     },
     {
@@ -586,60 +586,59 @@ export const RIG10_RIG: Rig = {
     {
       id: 'src-placa-api',
       kind: 'manufacturer',
-      title: 'Placa de certificación del mástil SK DKA104-330-08 S/N DK-3033 (API 4F)',
-      ref: "X:\\Mantenimiento WS\\Inspecciones No Destructivas\\…\\COC's - Trazabilidad\\Equipos\\Rig TKR-10\\COC\\Placa identificadora Rig TKR-10.pdf + Engineering Report p19 (foto de la placa)",
+      title: 'Placa de certificación del mástil SK DKA104-330-08 (API 4F)',
+      ref: 'documentación interna de la empresa (no publicada).pdf + Engineering Report p19 (foto de la placa)',
       verified: true,
     },
     {
       id: 'src-sk575-spec',
       kind: 'manufacturer',
       title: 'Service King SK-575 Specification Sheet (Dec-14) + folleto SK 575',
-      ref: "X:\\Mantenimiento WS\\Inspecciones No Destructivas\\…\\COC's - Trazabilidad\\Equipos\\Rig TKR-10\\COC\\SK-575-SpecificationSheet_Dec-14.pdf; Service King Manufacturing - SK 575.pdf",
+      ref: 'documentación interna de la empresa (no publicada).pdf; Service King Manufacturing - SK 575.pdf',
       revision: 'Dec-14',
       verified: true,
     },
     {
-      id: 'src-plano-8123',
+      id: 'src-plano-mastil',
       kind: 'layout',
-      title: 'Plano 8123-1002-2611 "Equipo TKR10" (en SK Engineering Report 9-ago-2021 p4)',
-      ref: "X:\\Mantenimiento WS\\Inspecciones No Destructivas\\…\\COC's - Trazabilidad\\Equipos\\Rig TKR-10\\COC\\SK_Rig-10_EngineeringReport.pdf p4",
+      title: 'Plano del mástil "Equipo 10" (en SK Engineering Report 9-ago-2021 p4)',
+      ref: 'documentación interna de la empresa (no publicada).pdf p4',
       revision: 'rev 1, 26/11/2020',
       verified: true,
     },
     {
       id: 'src-planos-piso',
       kind: 'layout',
-      title:
-        'Planos piso pulling TKR10 8114-1006-0200 (conjunto), -0201 (central), -0210 (lateral ×2), -0212 (panel RVB)',
-      ref: 'X:\\Mantenimiento WS\\Planos Tecnicos\\TKR-10\\',
+      title: 'Planos del piso de pulling (conjunto, central, laterales y panel)',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: true,
     },
     {
       id: 'src-plano-escalera',
       kind: 'layout',
-      title: 'Plano Escalera Pulling (TKR11, mismo diseño)',
-      ref: 'X:\\Mantenimiento WS\\Planos Tecnicos\\TKR-10\\EscaleraPisoPulling.pdf',
+      title: 'Plano Escalera Pulling (equipo 11, mismo diseño)',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: true,
     },
     {
       id: 'src-plano-hyco',
       kind: 'manufacturer',
       title: 'Plano HYCO 50162-813 "CYL, SATEL W/LAST STAGE DA" (Service King DK50162)',
-      ref: 'X:\\Mantenimiento WS\\Manuales\\CD ServiceKingManufacturing\\Operations Manual SK 575\\06 - HYDRAULICS INFORMATION\\PISTON TKR 10 - IZAJE.pdf',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: true,
     },
     {
       id: 'src-manual-derrick',
       kind: 'manufacturer',
       title: 'Operations Manual SK 575 — 08 Derrick Information 3 (hoja de cargas DKA104-330-08)',
-      ref: 'X:\\Mantenimiento WS\\Manuales\\CD ServiceKingManufacturing\\Operations Manual SK 575\\08 - DERRICKS INFORMATION\\DERRICK INFORMATION 3.pdf p5-6, p59-61',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: false,
     },
     {
       id: 'src-manual-rigup',
       kind: 'manufacturer',
       title: 'Operations Manual SK 575 — 02 Rig Up Information',
-      ref: 'X:\\Mantenimiento WS\\Manuales\\CD ServiceKingManufacturing\\Operations Manual SK 575\\02 - RIG UP PROCEDURES\\RIG UP INFORMATION - WARNING, CAUTIONS, AND NOTES.pdf p2-6',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: false,
     },
     {
@@ -647,7 +646,7 @@ export const RIG10_RIG: Rig = {
       kind: 'manufacturer',
       title:
         'SK575 Parts & Service Manual — vista lateral dwg 03.06.01.01 (p23) y bastidor 03.02.01.01 (p19); cotas MEDIDAS sobre la vista CAD (±2" largos, ±4" alturas)',
-      ref: 'X:\\Mantenimiento WS\\Manuales\\CD ServiceKingManufacturing\\SK575 PARTS & SERVICE MANUAL.pdf (escala calibrada con ancho 102", baranda 42", brida 42")',
+      ref: 'documentación interna de la empresa (no publicada).pdf (escala calibrada con ancho 102", baranda 42", brida 42")',
       verified: false,
     },
     {
@@ -676,10 +675,10 @@ export const RIG10_RIG: Rig = {
       verified: true,
     },
     {
-      id: 'src-layout-ws10',
+      id: 'src-layout-2019',
       kind: 'layout',
-      title: 'LAYOUT-WS10-0001 "Layout Equipo TKR 10 RN119"',
-      ref: 'C:\\Users\\jcastro\\cad\\Layout Equipo TKR 10  RN119.pdf',
+      title: 'layout de locación 2019 "Layout Equipo equipo 10 RN119"',
+      ref: 'C:\\Users\\jcastro\\cad\\Layout Equipo equipo 10  RN119.pdf',
       revision: 'rev 1, 15/04/2019',
       verified: true,
     },
@@ -687,15 +686,15 @@ export const RIG10_RIG: Rig = {
       id: 'src-plano-piletas',
       kind: 'layout',
       title: 'Plano "Pileta 1-2-3" (golpeador / zaranda / preparadora)',
-      ref: 'X:\\Mantenimiento WS\\Planos Tecnicos\\Piletas\\Pileta 1-2-3.dwg.pdf',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: true,
     },
     {
       id: 'src-choke-b20',
       kind: 'manufacturer',
       title:
-        'Thrubore B20-9908 choke manifold 3-1/16" 15M (equipo TKR-08) — SOLO escala, no es el manifold del TKR-10',
-      ref: 'X:\\…\\EQUIPOS NUBE (desafectado)\\Equipo TKR-08\\IMPORTACIONES TKR 08\\CHOKE MANIFOLD\\PLANO-Ck-Manifold_15-Valve_Dwg_B20-9908.PDF',
+        'Thrubore B20-9908 choke manifold 3-1/16" 15M (equipo equipo 08) — SOLO escala, no es el manifold del equipo 10',
+      ref: 'documento interno de la empresa (no publicado)',
       verified: true,
     },
     {
@@ -710,7 +709,7 @@ export const RIG10_RIG: Rig = {
       id: 'src-manual-bop-11',
       kind: 'manufacturer',
       title:
-        'Manuales BOP RAM y ANNULAR 11" 5000 PSI (Xinde 2FZ28-35II / FH28-35I) — aplicabilidad al TKR-10 NO confirmada',
+        'Manuales BOP RAM y ANNULAR 11" 5000 PSI (Xinde 2FZ28-35II / FH28-35I) — aplicabilidad al equipo 10 NO confirmada',
       ref: "C:\\Users\\jcastro\\cad\\BOP RAM  Operation Manual 11''5000PSI.pdf / BOP ANNULAR Operational Manual 11''5000PSI.pdf",
       verified: true,
     },
@@ -718,7 +717,7 @@ export const RIG10_RIG: Rig = {
       id: 'src-ref-rigmfg-4650',
       kind: 'manufacturer',
       title:
-        'Manual O&M unidad de cierre CPC S/N 4650, 6 estaciones, API 16D (07/2011) — REFERENCIA GENÉRICA, no es el acumulador del TKR-10',
+        'Manual O&M unidad de cierre CPC S/N 4650, 6 estaciones, API 16D (07/2011) — REFERENCIA GENÉRICA, no es el acumulador del equipo 10',
       ref: 'http://rigmanufacturing.com/drillog/Closing%20Unit/Closing%20Unit%204650%20O&M%20Manual%20Part1.pdf, p7, p10, p17, p23, p33-35, p94-95, p98',
       revision: 'Design Book Rev 1 - 010211',
       verified: false,
@@ -741,8 +740,8 @@ export const RIG10_RIG: Rig = {
     {
       id: 'rig10-locacion',
       rigId: 'RIG-10',
-      name: 'Locación (layout TKR-10)',
-      componentIds: ['layout_tkr10'],
+      name: 'Locación (layout de locación)',
+      componentIds: ['layout_locacion'],
     },
     {
       id: 'rig10-sk575-equipo',
@@ -850,9 +849,9 @@ export const RIG10_RIG: Rig = {
               note: 'Valor del V2 procedural previo (retirado 2026-10-11)',
             },
             {
-              sourceId: 'src-plano-8123',
+              sourceId: 'src-plano-mastil',
               value: 3.606,
-              note: 'Plano 8123-1002-2611: piso a 12 ft (3.606 mm)',
+              note: 'Plano del mástil: piso a 12 ft (3.606 mm)',
             },
           ],
         },
@@ -897,15 +896,15 @@ export const RIG10_RIG: Rig = {
       ],
     },
     {
-      id: 'layout_tkr10',
+      id: 'layout_locacion',
       rigId: 'RIG-10',
       name: 'Huellas de locación (acumulador, bomba, pileta, planchada)',
       family: 'auxiliary',
       confidence: 'C',
       sourceIds: ['src-layout'],
       scope:
-        'Solo huellas en planta. Tamaños y tres separaciones rotuladas; el resto de las posiciones se midió del vector del PDF. No incluye anclajes (25 ± 3 m en TKR-10 vs 20 m en el folleto: fuente en conflicto).',
-      model: '/models/rig10/layout_tkr10.glb',
+        'Solo huellas en planta. Tamaños y tres separaciones rotuladas; el resto de las posiciones se midió del vector del PDF. No incluye anclajes (25 ± 3 m en equipo 10 vs 20 m en el folleto: fuente en conflicto).',
+      model: '/models/rig10/layout_locacion.glb',
       specifications: [
         {
           key: 'accumulatorM',
@@ -965,7 +964,7 @@ export interface SceneModel {
 }
 
 /**
- * Componentes que se dibujan. `carrier_huella` y `layout_tkr10` ya vienen en el marco de la boca de pozo.
+ * Componentes que se dibujan. `carrier_huella` y `layout_locacion` ya vienen en el marco de la boca de pozo.
  * `piso_trabajo` se centra en el origen del GLB: se ubica con la posición medida del layout (C).
  * `mastil` (envolvente vieja) NO se dibuja: su base no está documentada y no se inventa (ver cad/README.md).
  * Los `sk575_*` (modelo de referencia, C) ya vienen en el marco de la boca de pozo, sin `position`.
@@ -974,7 +973,7 @@ export interface SceneModel {
  */
 export const RIG10_SCENE: readonly SceneModel[] = [
   { componentId: 'carrier_huella', url: '/models/rig10/carrier_huella.glb' },
-  { componentId: 'layout_tkr10', url: '/models/rig10/layout_tkr10.glb' },
+  { componentId: 'layout_locacion', url: '/models/rig10/layout_locacion.glb' },
   // CAD (x, y) = (1,95; −1,95) → glTF (x, z, −y): posición medida del layout, confianza C.
   {
     componentId: 'piso_trabajo',

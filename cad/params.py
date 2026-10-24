@@ -10,7 +10,7 @@ import argparse
 import json
 import pathlib
 
-from lib.tk10 import load_spec
+from lib.equipo import load_spec
 
 DIR = pathlib.Path(__file__).parent / "parametros"
 

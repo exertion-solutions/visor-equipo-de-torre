@@ -13,9 +13,9 @@ Migración por etapas desde el visor HTML V2 hacia una app React + React Three F
   validación zod (incluye QHSE bow-tie) y el estado de modos (EXPLORE / OPERATION / QHSE / TRAINING).
   Los modos ya gobiernan el V2 embebido (puente `postMessage`); el motor nativo aún no los consume.
 - El V2 embebido incluye la **capa DROPS** (botón "Zonas DROPS", se activa sola en modo QHSE): 66 puntos de
-  control de caída de objetos del Libro DROPS 2024 clasificados por zona del layout POWSG020-A2, con
-  panel por punto (sujeción primaria, retención secundaria, fuente y página) y hallazgos de la inspección TK10.
-  Ver `docs/drops/README.md`.
+  control de caída de objetos del Libro DROPS 2024 clasificados por zona del layout A2, con
+  panel por punto (sujeción primaria, retención secundaria, fuente y página).
+  Ver extracto interno (no publicado).
 - Pendiente: el resto de las funciones del V2. Estado por función en `docs/FEATURE_PARITY.md`.
 - Sin modelos GLB reales todavía (`assets/source/` y `public/models/rig10/` vacíos).
 
@@ -50,7 +50,7 @@ scripts/        build-legacy · snap · gltf-inspect/optimize · copy-decoders
 tests/          node --test (build del visor legacy, HTML autocontenido, datos del visor previo)
 assets/source/  GLB originales (solo lectura, ignorados por git)
 docs/           arquitectura, paridad, auditoría legacy, setup
-  fuentes/      documentos originales (rig10/: folleto y layouts · drops/: Libro DROPS, POWSG020, TK10…)
+  fuentes/      documentos originales (rig10/: folleto y layouts · drops/: Libro DROPS, procedimiento DROPS, equipo 10…)
   drops/        análisis y síntesis de los documentos DROPS
   pdf-review/ · references/ · preview/   informe técnico, imágenes de referencia, capturas
 .claude/skills/ skills del proyecto (threejs-expert, digital-twin-architecture, gltf-pipeline,

@@ -7,7 +7,7 @@ import { test } from 'node:test'
 const root = path.resolve(import.meta.dirname, '..')
 const read = (f) => fs.readFileSync(path.join(root, 'legacy-ext', f), 'utf8')
 const src = read('86-textos-sk575.js')
-const original = fs.readFileSync(path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html'), 'utf8')
+const original = fs.readFileSync(path.join(root, 'reference', 'legacy', 'Digital_Rig_V2.base.html'), 'utf8')
 
 test('86: fichas con la confianza de la geometría SK-575 (C), nunca A/B', () => {
   assert.doesNotMatch(src, /grade: '[AB]'/)
@@ -16,9 +16,9 @@ test('86: fichas con la confianza de la geometría SK-575 (C), nunca A/B', () =>
   assert.ok(src.includes('325.725 lb') && src.includes('330.000 lb'), 'capacidad: placa vs designación')
 })
 
-test('86: los fragmentos del modal que reemplaza existen en el original inmutable', () => {
+test('86: los fragmentos del modal que reemplaza existen en la base', () => {
   const frag = [...src.matchAll(/\[\s*'([^']+)',\s*'/g)].map((m) => m[1])
-  assert.equal(frag.length, 4)
+  assert.equal(frag.length, 3)
   for (const f of frag) assert.ok(original.includes(f), f)
 })
 

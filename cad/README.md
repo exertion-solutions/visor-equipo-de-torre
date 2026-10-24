@@ -37,12 +37,12 @@ PENDIENTE. `build.py` comprueba que los presets con `null`, los parámetros desc
 
 ## Componentes actuales (confianza C — envolventes, no as-built)
 
-| Componente       | Qué es                                          | Dato documentado                                              | Pendiente                                                                        |
-| ---------------- | ----------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `mastil`         | 2 tramos macizos                                | 31,6992 m = 16,4 + 15,2992                                    | secciones transversales (placeholder), reticulado                                |
-| `piso_trabajo`   | placa a altura regulable                        | 2,6 × 3,3 m, rango 1–4 m                                      | espesor (placeholder); **conflicto**: 3,606 m (plano 8123) / 3 m / legacy 2,30 m |
-| `carrier_huella` | huella en planta                                | 18 × 4 m, 5 ejes (dato)                                       | altura, ejes, posición vs boca de pozo (layout TKR-10)                           |
-| `layout_tkr10`   | huellas de acumulador, bomba, pileta, planchada | tamaños y cotas rotuladas del layout TKR-10 (5 m, 3 m, 1,3 m) | posiciones no acotadas (medidas del vector del PDF, C); signo lateral            |
+| Componente        | Qué es                                          | Dato documentado                                                   | Pendiente                                                                              |
+| ----------------- | ----------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `mastil`          | 2 tramos macizos                                | 31,6992 m = 16,4 + 15,2992                                         | secciones transversales (placeholder), reticulado                                      |
+| `piso_trabajo`    | placa a altura regulable                        | 2,6 × 3,3 m, rango 1–4 m                                           | espesor (placeholder); **conflicto**: 3,606 m (plano del mástil) / 3 m / legacy 2,30 m |
+| `carrier_huella`  | huella en planta                                | 18 × 4 m, 5 ejes (dato)                                            | altura, ejes, posición vs boca de pozo (layout de locación)                            |
+| `layout_locacion` | huellas de acumulador, bomba, pileta, planchada | tamaños y cotas rotuladas del layout de locación (5 m, 3 m, 1,3 m) | posiciones no acotadas (medidas del vector del PDF, C); signo lateral                  |
 
 Estos GLB **no reemplazan** al visor legacy (más detallado): sirven de envolvente dimensional verificable
 y de base para auditar las cotas del legacy. No se registran en `Component.model` hasta validarlos.
@@ -52,7 +52,7 @@ y de base para auditar las cotas del legacy. No se registran en `Component.model
 Modelo de referencia del equipo 10 entero (Service King SK-575 en locación, 16 componentes `sk575_*`, ≈ 1,09 M tris,
 1,6 MB optimizado). Entorno **aparte** (build123d 0.13 / OCP 8, incompatible con este `cad-env`), verificación de 13
 cotas contra `technical-spec.js` → `RIG_10.sk575` y un GLB por componente. Ver [`sk575/README.md`](sk575/README.md)
-y el informe [`docs/pdf-review/informe-sk575-2026-10-09.md`](../docs/pdf-review/informe-sk575-2026-10-09.md).
+y el informe el informe técnico interno (no publicado).
 Confianza de geometría B (izaje, piso) o C (resto); **no es as-built**.
 
 ## Ejemplos
@@ -63,5 +63,5 @@ Confianza de geometría B (izaje, piso) o C (resto); **no es as-built**.
 ## Próximos candidatos (necesitan dato fuente)
 
 Cubiertos en forma ilustrativa (C) por `cad/sk575/`: BOP, acumulador, piletas, bomba, manifold. Siguen faltando datos fuente:
-diámetro nominal del BOP instalado (conflicto 7-1/16" vs 11"), choke manifold real del equipo 10 (el B20-9908 es del TKR-08,
+diámetro nominal del BOP instalado (conflicto 7-1/16" vs 11"), choke manifold real del equipo 10 (el B20-9908 es del equipo 08,
 solo escala), secciones y reticulado del mástil (el manual SK no trae planos de arreglo general).

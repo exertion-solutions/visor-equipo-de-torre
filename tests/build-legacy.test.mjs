@@ -10,7 +10,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const read = (...p) => readFileSync(path.join(root, ...p));
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 
-const ORIGINAL_SHA256 = '5a40ef06dc12afc4a6c6aef6419188fd13e6c0a8f228336cc4bed4ab18d4b44b';
+const BASE_SHA256 = '7fadfd036c2da0046bf387bbb5722f1b6e00ff3ed32ba90eafc1bcf82f75f4d9';
 
 function build(...extra) {
   const out = path.join(mkdtempSync(path.join(tmpdir(), 'rig-legacy-')), 'index.html');
@@ -22,8 +22,9 @@ function build(...extra) {
   return readFileSync(out);
 }
 
-test('el original en reference/legacy/ sigue inmutable', () => {
-  assert.equal(sha256(read('reference', 'legacy', 'TACKER10_Digital_Rig_V2.html')), ORIGINAL_SHA256);
+test('la base en reference/legacy/ no cambió (hash en SHA256SUMS.txt)', () => {
+  assert.equal(sha256(read('reference', 'legacy', 'Digital_Rig_V2.base.html')), BASE_SHA256);
+  assert.match(read('reference', 'legacy', 'SHA256SUMS.txt').toString('utf8'), new RegExp(BASE_SHA256));
 });
 
 test('public/legacy es exactamente el build actual (sin edición manual)', () => {
@@ -93,20 +94,11 @@ test('60-ui-controls: sin cartel de modo y con botón para ocultar las barras de
   assert.match(html, /inspector-toggle/);
 });
 
-test('foto de referencia: el original la embebe 2 veces idénticas y el build deja una sola copia', () => {
-  const uris = [...read('reference', 'legacy', 'TACKER10_Digital_Rig_V2.html').toString('utf8').matchAll(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/g)];
-  assert.equal(uris.length, 2);
-  assert.equal(uris[0][1], uris[1][1], 'las dos data-URI del original deben ser idénticas');
-
+test('sin foto del equipo real: ni la base ni el build embeben imágenes JPEG', () => {
+  assert.doesNotMatch(read('reference', 'legacy', 'Digital_Rig_V2.base.html').toString('utf8'), /data:image\/jpeg;base64,/);
   const html = build().toString('utf8');
-  const built = [...html.matchAll(/data:image\/jpeg;base64,([A-Za-z0-9+/=]+)/g)];
-  assert.equal(built.length, 1, 'debe quedar una sola data-URI JPEG');
-  assert.equal(built[0][1], uris[0][1]);
-  assert.match(html, /<img id="ref-thumb"[^>]* src="data:image\/jpeg;base64,/);
-  assert.match(html, /<img id="ref-full" alt="Torre Equipo 10 de referencia">/);
-  // el src se restituye al abrir el diálogo (60-ui-controls)
-  assert.match(html, /refDialog\.showModal = \(\) =>/);
-  assert.match(html, /refFull\.src = refThumb/);
+  assert.doesNotMatch(html, /data:image\/jpeg;base64,/);
+  assert.doesNotMatch(html, /id="ref-full"/);
 });
 
 test('modo embebido: se oculta el título propio del visor y standalone lo conserva', () => {

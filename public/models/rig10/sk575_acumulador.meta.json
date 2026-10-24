@@ -1,7 +1,7 @@
 {
   "id": "sk575_acumulador",
   "confianza": "C",
-  "alcance": "Acumulador del BOP: huella 8 × 2,4 m (layout WS10), 5 botellones 3.000 psi (folleto); botellones, válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 (src-ref-rigmfg-4650, genérica: no es el equipo instalado)",
+  "alcance": "Acumulador del BOP: huella 8 × 2,4 m (layout de locación 2019), 5 botellones 3.000 psi (folleto); botellones, válvulas, reguladoras, bombas y depósito según la unidad de referencia CPC S/N 4650 (src-ref-rigmfg-4650, genérica: no es el equipo instalado)",
   "triangulos": 103838,
   "materiales": [
     "acero",
@@ -15,7 +15,7 @@
     "vidrio"
   ],
   "marco": "glTF Y arriba; origen = boca de pozo a nivel de terreno; carrier hacia −X (CLAUDE.md)",
-  "fuentes": "docs/pdf-review/informe-sk575-2026-10-09.md",
+  "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
     "segmentos": 42147,

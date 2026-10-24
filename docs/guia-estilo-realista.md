@@ -158,7 +158,7 @@ alcanzan; implica UVs y un pipeline nuevo (skill `gltf-pipeline`, KTX2).
 ### C.3 Terreno y locación
 
 - **P1** Suelo: ripio tileable + variación macro por ruido (sin tile visible), color tierra patagónica neutra; planchada
-  compactada más clara. Los límites de la locación salen del layout TKR-10 (fuente existente); no inventar cotas nuevas.
+  compactada más clara. Los límites de la locación salen del layout de locación (fuente existente); no inventar cotas nuevas.
 - **P2** Decals: huellas de rodado hacia la entrada, manchas bajo bomba y acumulador (efecto visual), AO de contacto.
 - **P2** Horizonte: anillo de terreno bajo (cilindro abierto con gradiente) a 200 m para que el fondo no corte en línea.
 - **P3** Vegetación rala instanciada (1 `InstancedMesh`, ≤ 300 matas) solo fuera del vallado. Estético, rotulado así.

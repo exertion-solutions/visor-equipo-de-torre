@@ -9,15 +9,21 @@ const root = path.resolve(import.meta.dirname, '..')
 const html = fs.readFileSync(path.join(root, 'public', 'legacy', 'Digital_Rig_V2.html'), 'utf8')
 const ext = (f) => fs.readFileSync(path.join(root, 'legacy-ext', f), 'utf8')
 const original = fs.readFileSync(
-  path.join(root, 'reference', 'legacy', 'TACKER10_Digital_Rig_V2.html'),
+  path.join(root, 'reference', 'legacy', 'Digital_Rig_V2.base.html'),
   'utf8',
 )
 
-test('86: el modal quita "Datos específicos" y "Fuentes descriptivas complementarias" (existen en el original)', () => {
-  const src = ext('86-textos-sk575.js')
-  assert.match(src, /SECCIONES_OCULTAS = \[\/\^Datos específicos\/i, \/\^Fuentes descriptivas complementarias\/i\]/)
-  assert.ok(original.includes('<h3>Datos específicos'))
-  assert.ok(original.includes('<h3>Fuentes descriptivas complementarias</h3>'))
+test('la base no trae las secciones de fuentes internas ni la foto del equipo real', () => {
+  assert.ok(!original.includes('<h3>Datos específicos'))
+  assert.ok(!original.includes('<h3>Fuentes descriptivas complementarias</h3>'))
+  assert.ok(!original.includes('Fotografía suministrada'))
+})
+
+test('sin marca ni códigos de documentos internos de la empresa en el visor publicado', () => {
+  const prohibidos = /tacker|\bTKR[- ]?\d|\bTK-?10\b|\bWS10\b|PO-?WSG|POSGI|REVDJL|8123-1002|8114-1006|DK-3033|Mantenimiento WS|X:\\/i
+  assert.doesNotMatch(html, prohibidos)
+  assert.doesNotMatch(original, prohibidos)
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'public', 'legacy', 'sk575-glb.js'), 'utf8'), /tacker/i)
 })
 
 test('textos visibles sin "aportada por el usuario" / "la declara el usuario"', () => {

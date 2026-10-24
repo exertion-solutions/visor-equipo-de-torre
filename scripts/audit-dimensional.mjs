@@ -1,6 +1,6 @@
 /* global window */
 // Auditoría dimensional del visor V2: mide objetos de la escena (caja envolvente en metros) y los compara con
-// las cotas documentadas (technical-spec.js) y con el LAYOUT TKR-10 (cad/data/layout_tkr10.json, generado por cad/build.py).
+// las cotas documentadas (technical-spec.js) y con el layout de locación (cad/data/layout_locacion.json, generado por cad/build.py).
 //
 //   node scripts/audit-dimensional.mjs [--out docs/audit-dimensional.md] [--strict]
 //
@@ -18,7 +18,7 @@ const out = args.includes('--out') ? args[args.indexOf('--out') + 1] : null
 const strict = args.includes('--strict')
 
 const layout = JSON.parse(
-  fs.readFileSync(path.join(root, 'cad', 'data', 'layout_tkr10.json'), 'utf8'),
+  fs.readFileSync(path.join(root, 'cad', 'data', 'layout_locacion.json'), 'utf8'),
 )
 const { RIG_10: spec } = await import(
   pathToFileURL(path.join(root, 'reference', 'v2-previo', 'src', 'technical-spec.js')).href
@@ -185,7 +185,7 @@ cmp(
   spec.layout.anchorOffsetM,
   spec.layout.anchorToleranceM,
   'documentado',
-  '25 ± 3 m (TKR-10) vs 20 m (folleto): fuente en conflicto',
+  '25 ± 3 m (equipo 10) vs 20 m (folleto): fuente en conflicto',
 )
 
 // ── salida
@@ -195,7 +195,7 @@ const md = [
   '# Auditoría dimensional del visor V2',
   '',
   `Generada por \`scripts/audit-dimensional.mjs\` (${new Date().toISOString().slice(0, 10)}). Compara cajas envolventes del V2 (metros) con`,
-  'las cotas documentadas y con el LAYOUT TKR-10 (`cad/data/layout_tkr10.json`, medido del vector del PDF). "documentado" = rotulado en el plano;',
+  'las cotas documentadas y con el layout de locación (`cad/data/layout_locacion.json`, medido del vector del PDF). "documentado" = rotulado en el plano;',
   '"medido (C)" = tomado de la geometría del PDF, confianza C.',
   '',
   '| Elemento | Medida | V2 | Referencia | Tol. | Estado | Fuente | Nota |',

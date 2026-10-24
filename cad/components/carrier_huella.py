@@ -1,7 +1,7 @@
 """Carrier Service King SK-575: HUELLA (footprint) en planta de la envolvente operativa 18 × 4 m.
 Marco: origen = boca de pozo, carrier hacia −X."""
 import cadquery as cq
-from lib.tk10 import Arbol, dato, export_glb, bbox
+from lib.equipo import Arbol, dato, export_glb, bbox
 
 ID = "carrier_huella"
 
@@ -21,13 +21,13 @@ def main(spec, P, sfx=""):
     huella, A, q = build(spec, P)
     meta = dict(
         id=ID, family="carrier", confidence="C", units="m", up="Y",
-        frame="origen = boca de pozo; carrier hacia −X; posición según LAYOUT - TKR-10",
+        frame="origen = boca de pozo; carrier hacia −X; posición según Layout de locación",
         scope="Solo huella en planta de la envolvente operativa. Sin ejes, cabina, tanques ni altura. No es as-built.",
         data=[
             dato("operatingLengthM", q["largo"], "m", "confirmed"),
             dato("widthM", q["ancho"], "m", "confirmed"),
             dato("axles", q["ejes"], "u", "confirmed", note="dato; no se modelan los ejes"),
-            dato("x_inicio", q["x_inicio"], "m", "confirmed", note="1,3 m a la boca de pozo, rotulado en LAYOUT - TKR-10"),
+            dato("x_inicio", q["x_inicio"], "m", "confirmed", note="1,3 m a la boca de pozo, rotulado en Layout de locación"),
             dato("y_centro", q["y_centro"], "m", "pending", note="medido del vector del PDF (C), no acotado"),
         ],
         tree=A.filas,

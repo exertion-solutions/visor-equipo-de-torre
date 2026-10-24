@@ -28,7 +28,7 @@ description: Use when building or editing QHSE features — risks, barriers, exc
   - no se muestra su medida como valor ni como requisito;
   - va acompañada del aviso "las distancias del modelo no sustituyen exclusiones aprobadas";
   - el schema rechaza una zona ilustrativa marcada `confirmed`/`procedure`.
-- Cotas documentadas de locación (anclajes 25 ± 3 m, planchada 12 × 2,4 m…) vienen del layout TKR-10; si otra fuente difiere (folleto anterior: 20 m) se muestra "Fuente en conflicto". Las distancias/zonas de API RP 505 y del equipo 11 se citan como referencia y no se trasladan al equipo 10 sin validación.
+- Cotas documentadas de locación (anclajes 25 ± 3 m, planchada 12 × 2,4 m…) vienen del layout de locación; si otra fuente difiere (folleto anterior: 20 m) se muestra "Fuente en conflicto". Las distancias/zonas de API RP 505 y del equipo 11 se citan como referencia y no se trasladan al equipo 10 sin validación.
 
 ## Migrar texto del visor legacy
 
@@ -61,9 +61,9 @@ Cargar datos QHSE con `makeQhseDatasetSchema(componentIds, indexSources(rig.sour
 
 ## Dataset DROPS del equipo 10 (`src/data/qhse/rig10-drops.json`)
 
-- Fuente única: 66 puntos de control del Libro DROPS 2024 (RCCO Rev.03), 3 zonas del layout POWSG020-A2 (Alto/Medio/Bajo), 11 secciones y los hallazgos de la inspección TK10 del 05/10/2023. Síntesis y decisiones en `docs/drops/README.md`.
-- Estatus `procedure` por decisión del usuario; la aplicabilidad del Libro al TK10 no la dice el documento (declarada por el usuario). `piso-trabajo` y `poste-llave` no figuran en el A2 → zona `null` ("sin clasificar"), no se les asigna una.
+- Fuente única: 66 puntos de control del Libro DROPS 2024 (RCCO Rev.03), 3 zonas del layout A2 (Alto/Medio/Bajo), 11 secciones. Los documentos de origen son internos y no se publican.
+- Estatus `procedure` por decisión interna; la aplicabilidad del Libro al equipo 10 no la dice el documento. `piso-trabajo` y `poste-llave` no figuran en el A2 → zona `null` ("sin clasificar"), no se les asigna una.
 - **El A2 no da radios ni cotas**: la UI clasifica por zona (color + texto ALTO/MEDIO/BAJO) y nunca dibuja ni muestra distancias, alturas o pesos. Las posiciones de los marcadores son del modelo y se rotulan "aproximadas".
-- La correspondencia foto TK10 ↔ punto es **inferida** (`tk10.inferred`); mostrar "HALLAZGO TK10" con esa salvedad.
+- No se publican hallazgos de inspecciones internas.
 - Manual Drops Rev.04 y Taller YPF son guías genéricas (`goodPractice`): no generan puntos.
 - Barreras derivadas (`toQhseDataset()`) quedan `pendingValidation`: el schema no admite una barrera más fuerte que su riesgo y los documentos no dan evento/consecuencia.

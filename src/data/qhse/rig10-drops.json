@@ -2,22 +2,21 @@
   "schemaVersion": 1,
   "meta": {
     "rigId": "RIG-10",
-    "title": "Puntos de control DROPS del equipo 10 (Libro DROPS 2024, RCCO Rev.03)",
+    "title": "Puntos de control DROPS del equipo 10 (Libro DROPS 2024)",
     "generated": "2026-09-25",
     "assumptions": [
-      "Estatus 'procedure': decisión del usuario, se aplican los ítems del Libro DROPS 2024 (RCCO Rev.03) como procedimiento de la empresa. El Libro no nombra el equipo (no dice 'TK10' ni 'Equipo 10', solo el logo de la empresa): su aplicabilidad al TK10 la declara el usuario y no está afirmada por el documento.",
-      "El Libro trae 66 puntos en 11 secciones; el anexo POWSG020-A3 trae 64 (Corona 9 en lugar de 11): el Libro (Rev.03, 04/01/24) agrega COR-10 y el soporte de banderas sin número. Los IDs son los del extracto (prefijos COR, DCO, PE, DPE, BP, SUB, CAS, PLA, PIL, PT, PRL); el Libro solo numera 'Art.' por sección.",
+      "Estatus 'procedure': se aplican los ítems del Libro DROPS 2024 como procedimiento de referencia del equipo. El Libro no nombra el equipo: su aplicabilidad al equipo 10 es una decisión interna y no está afirmada por el documento.",
+      "El Libro trae 66 puntos en 11 secciones; el anexo A3 trae 64 (Corona 9 en lugar de 11): el Libro (Rev.03, 04/01/24) agrega COR-10 y el soporte de banderas sin número. Los IDs son los del extracto (prefijos COR, DCO, PE, DPE, BP, SUB, CAS, PLA, PIL, PT, PRL); el Libro solo numera 'Art.' por sección.",
       "Filas dudosas conservadas y marcadas flags:['dudoso']: COR-10 (columnas posiblemente desplazadas), COR-11 (sin número Art. impreso; ID asignado por este dataset) y PLA-1 (fila incompleta, 'BANDEJA HCA.'). Otras lecturas ambiguas llevan 'texto-ambiguo' (COR-5 '5/8 9/16' sin unidad; PRL-1/PRL-2 '8 por bulones'); BP-2 (power swivel) dice 'NA' en las tres columnas ('no-aplica').",
       "primary/secondary/observation transcriben el Libro sin corregir errores de tipeo (salvo espacios perdidos por la maquetación). secondaryRequired:false cuando el Libro dice 'No requerida' o 'NA', o no declara retención (PLA-1). basis.page es la página donde comienza la fila; si cruza salto de página, basis.note lo indica. La pág. 25 del Libro lleva otro encabezado (Rev.01, 18/09/23).",
-      "Zona de cada sección tomada del layout POWSG020-A2: corona, debajo de corona, piso de enganche y debajo del piso de enganche = ALTO; boca de pozo, subestructura y carrier, casilla, plano inclinado = MEDIO; piletas = BAJO. El A2 es una planta con 3 anillos concéntricos SIN radio ni cota; sus acotaciones (2,4 a 20 m) son huellas de equipos en locación, no distancias de exclusión. Este dataset no contiene radios, alturas, pesos ni distancias.",
-      "Conflicto de nivel no resuelto: 'Área boca de pozo' es MEDIO en el A2 pero el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; y PO-WSG-020 6.3.5 asigna 'la torre' a Riesgo Medio y 'piletas, bombas, acumuladores, carrier' a Riesgo Bajo, lo que no coincide con el A2 (mástil = Alto; subestructura y carrier = Medio). Se usa el A2; corresponde al usuario decidir qué prevalece.",
-      "piso-trabajo y poste-llave NO figuran en el A2: zone:null con zoneBasis 'No clasificada en POWSG020-A2'. El RCCO (A3) los rotula por su cuenta ('Ligero' y 'Riesgo medio' en el piso de trabajo; Riesgo Medio en el poste), pero eso no es una clasificación de área del A2 y no se usa. Un punto sin zona no se presenta como zona Baja.",
+      "Zona de cada sección tomada del layout A2: corona, debajo de corona, piso de enganche y debajo del piso de enganche = ALTO; boca de pozo, subestructura y carrier, casilla, plano inclinado = MEDIO; piletas = BAJO. El A2 es una planta con 3 anillos concéntricos SIN radio ni cota; sus acotaciones (2,4 a 20 m) son huellas de equipos en locación, no distancias de exclusión. Este dataset no contiene radios, alturas, pesos ni distancias.",
+      "Conflicto de nivel no resuelto: 'Área boca de pozo' es MEDIO en el A2 pero el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; y procedimiento DROPS 6.3.5 asigna 'la torre' a Riesgo Medio y 'piletas, bombas, acumuladores, carrier' a Riesgo Bajo, lo que no coincide con el A2 (mástil = Alto; subestructura y carrier = Medio). Se usa el A2; queda pendiente decidir cuál prevalece.",
+      "piso-trabajo y poste-llave NO figuran en el A2: zone:null con zoneBasis 'No clasificada en layout A2'. El RCCO (A3) los rotula por su cuenta ('Ligero' y 'Riesgo medio' en el piso de trabajo; Riesgo Medio en el poste), pero eso no es una clasificación de área del A2 y no se usa. Un punto sin zona no se presenta como zona Baja.",
       "componentId es INFERIDO (componentIdBasis:'inferido'): los documentos no usan los ids del visor. Regla: corona, debajo de corona y debajo del piso de enganche = mastil salvo vientos, grilletes y riendas = vientos (DCO-4..8, DPE-4); piso de enganche = enganche salvo PE-10 y PE-13 = vientos; BP-1 = malacate; BP-2..4 = aparejo; subestructura y carrier = subestructura salvo SUB-1 (pistones y tensores) = camion; piso de trabajo = subestructura; casilla = cabina; poste = llave; plano inclinado = caballetes; piletas = circulacion.",
-      "TK10 (05/10/2023, 36 fotos, 26 'CORRECTO', 10 hallazgos en las fotos 4, 8, 19, 21, 22, 30, 32, 33, 34, 35): el TK10 no rotula la ubicación de las fotos, así que toda relación foto-punto es tentativa (inferred:true). Solo se marcó 'correcto' donde la correspondencia es razonable (COR-7, PE-11, PE-13, DPE-6, SUB-1); el resto queda 'sin-dato'. Los hallazgos no figuran en el Libro (posterior, 04/01/24); no consta si se cerraron. El bolsillo antichaída de roldanas sí figura en PO-WSG-020 6.3.4 ítem 2.",
       "Manual DROPS Rev.04 (©2017, genérico, offshore), Taller YPF y Alerta YPF INC18068 son guías o evidencia de incidente, no requisitos de la empresa: solo aparecen en 'references' y 'sources' (no son puntos). Como el enum de 'sources.kind' no tiene un tipo para guías/alertas, se los clasificó 'brochure'; ninguno respalda un punto.",
-      "Frecuencias (PO-WSG-020, texto): A1 previo a cada montaje y desmontaje; RCCO mensual; deficiencias reportadas en POSGI011-A1 y corregidas 'inmediatamente' (sin plazo numérico). No definidos por los documentos: alturas, pesos, radios o distancias de caída, umbrales de la calculadora DROPS (anexo A4, ausente de los archivos) ni criterio numérico de aceptación."
+      "Frecuencias (procedimiento DROPS, texto): A1 previo a cada montaje y desmontaje; RCCO mensual; deficiencias reportadas en el registro de deficiencias y corregidas 'inmediatamente' (sin plazo numérico). No definidos por los documentos: alturas, pesos, radios o distancias de caída, umbrales de la calculadora DROPS (anexo A4, ausente de los archivos) ni criterio numérico de aceptación."
     ],
-    "disclaimer": "Dataset cualitativo derivado de documentos internos (Libro DROPS 2024, PO-WSG-020 y anexos, TK10 Drops 05/10/2023). No contiene distancias, radios, alturas ni pesos, y no es un cálculo ni una validación de seguridad. Las zonas Alto/Medio/Bajo son clasificaciones de área del layout A2, sin dimensión. La aplicabilidad del Libro al equipo 10 es una decisión interna (el documento no nombra el equipo); la relación de las fotos TK10 con los puntos es tentativa."
+    "disclaimer": "Dataset cualitativo derivado de un procedimiento interno de prevención de caída de objetos (Libro DROPS 2024 y anexos). No contiene distancias, radios, alturas ni pesos, y no es un cálculo ni una validación de seguridad. Las zonas Alto/Medio/Bajo son clasificaciones de área del layout A2, sin dimensión. La aplicabilidad del Libro al equipo 10 es una decisión interna (el documento no nombra el equipo)."
   },
   "sources": [
     {
@@ -29,42 +28,34 @@
       "verified": true
     },
     {
-      "id": "powsg020-rev02",
+      "id": "proc-drops",
       "kind": "procedure",
-      "title": "PO-WSG-020 Prevención de Caídas de Objetos desde Altura",
-      "ref": "docs/fuentes/drops/POWSG020 Caída de Objetos desde Altura 02.pdf (7 págs)",
+      "title": "procedimiento DROPS Prevención de Caídas de Objetos desde Altura",
+      "ref": "docs/fuentes/drops/procedimiento DROPS Caída de Objetos desde Altura 02.pdf (7 págs)",
       "revision": "Rev.02, 11/07/22",
       "verified": true
     },
     {
-      "id": "powsg020-a1",
+      "id": "proc-drops-a1",
       "kind": "procedure",
-      "title": "PO-WSG-020-A1 Check List de Caídas de Objetos",
-      "ref": "docs/fuentes/drops/POWSG020-A1 Check List de Caídas de Objetos.pdf (1 pág; código impreso PO-WSG-020-A1-1)",
+      "title": "anexo A1 Check List de Caídas de Objetos",
+      "ref": "docs/fuentes/drops/anexo A1 Check List de Caídas de Objetos.pdf (1 pág; código impreso anexo A1)",
       "revision": null,
       "verified": true
     },
     {
-      "id": "powsg020-a2",
+      "id": "proc-drops-a2",
       "kind": "layout",
-      "title": "PO-WSG-020-A2 Layout - Clasificación de Áreas sobre Caídas de Objetos",
-      "ref": "docs/fuentes/drops/POWSG020-A2 Layout Equipo Caida Objetos.pdf (1 pág; rótulo POWSG020-A2-0)",
+      "title": "layout A2 Layout - Clasificación de Áreas sobre Caídas de Objetos",
+      "ref": "docs/fuentes/drops/layout A2 Layout Equipo Caida Objetos.pdf (1 pág; rótulo layout A2)",
       "revision": null,
       "verified": true
     },
     {
-      "id": "powsg020-a3",
+      "id": "proc-drops-a3",
       "kind": "procedure",
-      "title": "PO-WSG-020-A3 Reporte de Control de Caídas de Objetos (RCCO)",
-      "ref": "docs/fuentes/drops/POWSG020-A3 Reporte de Control de Caidas de Objetos RCCO.pdf (25 págs; código impreso POWSG020-A3-2)",
-      "revision": null,
-      "verified": true
-    },
-    {
-      "id": "tk10-drops-2023",
-      "kind": "photo",
-      "title": "TK10 Drops, inspección fotográfica del equipo 10 (Quick Report, 05/10/2023)",
-      "ref": "docs/fuentes/drops/TK10 DROPS 05102023.pdf (9 págs, 36 fotos)",
+      "title": "anexo A3 Reporte de Control de Caídas de Objetos (RCCO)",
+      "ref": "docs/fuentes/drops/anexo A3 Reporte de Control de Caidas de Objetos RCCO.pdf (25 págs; código impreso anexo A3)",
       "revision": null,
       "verified": true
     },
@@ -104,8 +95,8 @@
         "Piso de enganche",
         "Entre Piso de enganche y Sección de mastil"
       ],
-      "sourceId": "powsg020-a2",
-      "note": "Leyenda del layout POWSG020-A2 (anillo interior, rojo). Clasificación cualitativa de áreas: el A2 no trae radio ni cota de la zona."
+      "sourceId": "proc-drops-a2",
+      "note": "Leyenda del layout A2 (anillo interior, rojo). Clasificación cualitativa de áreas: el A2 no trae radio ni cota de la zona."
     },
     {
       "id": "medio",
@@ -117,16 +108,16 @@
         "Casilla de Maquinista",
         "Plano inclinado y Planchada"
       ],
-      "sourceId": "powsg020-a2",
-      "note": "Leyenda del layout POWSG020-A2 (anillo intermedio, naranja). Sin radio ni cota. El RCCO (A3) marca 'Riesgo Alto' los 4 ítems del área de boca de pozo."
+      "sourceId": "proc-drops-a2",
+      "note": "Leyenda del layout A2 (anillo intermedio, naranja). Sin radio ni cota. El RCCO (A3) marca 'Riesgo Alto' los 4 ítems del área de boca de pozo."
     },
     {
       "id": "bajo",
       "label": "Riesgo BAJO",
       "color": "#22C55E",
       "areas": ["Pileta", "Bomba", "Generador", "Campamento", "Depósito"],
-      "sourceId": "powsg020-a2",
-      "note": "Leyenda del layout POWSG020-A2 (anillo exterior, verde). Sin radio ni cota."
+      "sourceId": "proc-drops-a2",
+      "note": "Leyenda del layout A2 (anillo exterior, verde). Sin radio ni cota."
     }
   ],
   "sections": [
@@ -135,7 +126,7 @@
       "label": "Corona",
       "order": 1,
       "zone": "alto",
-      "zoneBasis": "POWSG020-A2: 'Corona de equipo' = Riesgo ALTO (RCCO A3, sección Corona: Riesgo Alto).",
+      "zoneBasis": "layout A2: 'Corona de equipo' = Riesgo ALTO (RCCO A3, sección Corona: Riesgo Alto).",
       "pageRange": "1-4",
       "sourceId": "libro-drops-2024"
     },
@@ -144,7 +135,7 @@
       "label": "Debajo de la Corona y Encima del Piso de Enganche",
       "order": 2,
       "zone": "alto",
-      "zoneBasis": "POWSG020-A2: 'Entre Corona y Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
+      "zoneBasis": "layout A2: 'Entre Corona y Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
       "pageRange": "4-7",
       "sourceId": "libro-drops-2024"
     },
@@ -153,7 +144,7 @@
       "label": "Piso de Enganche",
       "order": 3,
       "zone": "alto",
-      "zoneBasis": "POWSG020-A2: 'Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
+      "zoneBasis": "layout A2: 'Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
       "pageRange": "7-11",
       "sourceId": "libro-drops-2024"
     },
@@ -162,7 +153,7 @@
       "label": "Debajo del Piso de Enganche y sobre la Primer Sección del Mástil",
       "order": 4,
       "zone": "alto",
-      "zoneBasis": "POWSG020-A2: 'Entre Piso de enganche y Sección de mastil' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
+      "zoneBasis": "layout A2: 'Entre Piso de enganche y Sección de mastil' = Riesgo ALTO (RCCO A3: Riesgo Alto).",
       "pageRange": "11-14",
       "sourceId": "libro-drops-2024"
     },
@@ -171,7 +162,7 @@
       "label": "Área de Boca de Pozo",
       "order": 5,
       "zone": "medio",
-      "zoneBasis": "POWSG020-A2: 'Área boca de pozo' = Riesgo MEDIO. Conflicto: el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; no se resuelve aquí.",
+      "zoneBasis": "layout A2: 'Área boca de pozo' = Riesgo MEDIO. Conflicto: el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; no se resuelve aquí.",
       "pageRange": "14-15",
       "sourceId": "libro-drops-2024"
     },
@@ -180,7 +171,7 @@
       "label": "Subestructura y Carrier",
       "order": 6,
       "zone": "medio",
-      "zoneBasis": "POWSG020-A2: 'Sub estructura y Carrier' = Riesgo MEDIO (RCCO A3: Riesgo Medio). PO-WSG-020 6.3.5 nombra 'carrier' junto a piletas y bombas bajo Riesgo Bajo: no coincide con el A2.",
+      "zoneBasis": "layout A2: 'Sub estructura y Carrier' = Riesgo MEDIO (RCCO A3: Riesgo Medio). procedimiento DROPS 6.3.5 nombra 'carrier' junto a piletas y bombas bajo Riesgo Bajo: no coincide con el A2.",
       "pageRange": "16-17",
       "sourceId": "libro-drops-2024"
     },
@@ -189,7 +180,7 @@
       "label": "Casilla de Maquinista",
       "order": 7,
       "zone": "medio",
-      "zoneBasis": "POWSG020-A2: 'Casilla de Maquinista' = Riesgo MEDIO.",
+      "zoneBasis": "layout A2: 'Casilla de Maquinista' = Riesgo MEDIO.",
       "pageRange": "18-19",
       "sourceId": "libro-drops-2024"
     },
@@ -198,7 +189,7 @@
       "label": "Plano inclinado y Planchada",
       "order": 8,
       "zone": "medio",
-      "zoneBasis": "POWSG020-A2: 'Plano inclinado y Planchada' = Riesgo MEDIO.",
+      "zoneBasis": "layout A2: 'Plano inclinado y Planchada' = Riesgo MEDIO.",
       "pageRange": "20",
       "sourceId": "libro-drops-2024"
     },
@@ -207,7 +198,7 @@
       "label": "Piletas · Bombas · Generador · Depósito · Trailer Campamento",
       "order": 9,
       "zone": "bajo",
-      "zoneBasis": "POWSG020-A2: 'Pileta; Bomba; Generador; Campamento; Depósito' = Riesgo BAJO.",
+      "zoneBasis": "layout A2: 'Pileta; Bomba; Generador; Campamento; Depósito' = Riesgo BAJO.",
       "pageRange": "21",
       "sourceId": "libro-drops-2024"
     },
@@ -216,7 +207,7 @@
       "label": "Piso de trabajo · Escalera de acceso",
       "order": 10,
       "zone": null,
-      "zoneBasis": "No clasificada en POWSG020-A2",
+      "zoneBasis": "No clasificada en layout A2",
       "pageRange": "22-24",
       "sourceId": "libro-drops-2024"
     },
@@ -225,7 +216,7 @@
       "label": "Poste de retenida de llave hidráulica",
       "order": 11,
       "zone": null,
-      "zoneBasis": "No clasificada en POWSG020-A2",
+      "zoneBasis": "No clasificada en layout A2",
       "pageRange": "24-25",
       "sourceId": "libro-drops-2024"
     }
@@ -250,12 +241,6 @@
         "sourceId": "libro-drops-2024",
         "page": 1,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [4],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 4: Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -277,12 +262,6 @@
         "sourceId": "libro-drops-2024",
         "page": 1,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [4],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 4: Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -304,12 +283,6 @@
         "sourceId": "libro-drops-2024",
         "page": 1,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [4],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 4: Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -331,12 +304,6 @@
         "sourceId": "libro-drops-2024",
         "page": 2,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [4],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 4: Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -358,12 +325,6 @@
         "sourceId": "libro-drops-2024",
         "page": 2,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [4],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 4: Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -385,12 +346,6 @@
         "sourceId": "libro-drops-2024",
         "page": 2,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -412,12 +367,6 @@
         "sourceId": "libro-drops-2024",
         "page": 2,
         "note": "Fila entre págs. 2 y 3 (art. 7 impreso en p.3)."
-      },
-      "tk10": {
-        "status": "correcto",
-        "photos": [1, 2],
-        "note": "Foto(s) 1, 2 del TK10 («CORRECTO»): baliza (esfera amarilla y baliza en la corona). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -439,12 +388,6 @@
         "sourceId": "libro-drops-2024",
         "page": 3,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -466,12 +409,6 @@
         "sourceId": "libro-drops-2024",
         "page": 3,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -493,12 +430,6 @@
         "sourceId": "libro-drops-2024",
         "page": 3,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -520,12 +451,6 @@
         "sourceId": "libro-drops-2024",
         "page": 3,
         "note": "Fila entre págs. 3 y 4."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -547,12 +472,6 @@
         "sourceId": "libro-drops-2024",
         "page": 4,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -574,12 +493,6 @@
         "sourceId": "libro-drops-2024",
         "page": 4,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [30],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 30: Reflector led con tornillos sueltos y faltantes (TK10: «INCORRECTO. COLOCAR BULONES FALTANTES»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -601,12 +514,6 @@
         "sourceId": "libro-drops-2024",
         "page": 4,
         "note": "Fila entre págs. 4 y 5."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -628,12 +535,6 @@
         "sourceId": "libro-drops-2024",
         "page": 5,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -655,12 +556,6 @@
         "sourceId": "libro-drops-2024",
         "page": 5,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -682,12 +577,6 @@
         "sourceId": "libro-drops-2024",
         "page": 5,
         "note": "Fila entre págs. 5 y 6."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -709,12 +598,6 @@
         "sourceId": "libro-drops-2024",
         "page": 6,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -736,12 +619,6 @@
         "sourceId": "libro-drops-2024",
         "page": 6,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -763,12 +640,6 @@
         "sourceId": "libro-drops-2024",
         "page": 6,
         "note": "Fila entre págs. 6 y 7."
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [8],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 8: Polea sin bolsillo antichaída (TK10: «IDEM OBSERVACIÓN ANTERIOR DE POLEA. FALTANTE DE BOLSILLO. INCORRECTO SEGUN REQUERIMIENTO DE PROCEDIMEINTO DE INSPECCIÓN DE EQUIPOS.»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -790,12 +661,6 @@
         "sourceId": "libro-drops-2024",
         "page": 7,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -817,12 +682,6 @@
         "sourceId": "libro-drops-2024",
         "page": 7,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -844,12 +703,6 @@
         "sourceId": "libro-drops-2024",
         "page": 7,
         "note": "Fila entre págs. 7 y 8."
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [22],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 22: Deslizador de pirosalva con faltante de un tornillo (TK10: «INCORRECTO. SE DEBE COMPLETAR ELEMENTO FALTANTE EN DESLIZADOR DE PIROSALVA»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -871,12 +724,6 @@
         "sourceId": "libro-drops-2024",
         "page": 8,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [19],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 19: Plancha metálica con bisagra sin retención secundaria (TK10: «INCORRECTO. SE DEBE COLOCAR RETENCION SECUNDARIA AL ELEMENTO.»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -898,12 +745,6 @@
         "sourceId": "libro-drops-2024",
         "page": 8,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [19],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 19: Plancha metálica con bisagra sin retención secundaria (TK10: «INCORRECTO. SE DEBE COLOCAR RETENCION SECUNDARIA AL ELEMENTO.»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -925,12 +766,6 @@
         "sourceId": "libro-drops-2024",
         "page": 8,
         "note": "Fila entre págs. 8 y 9."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -952,12 +787,6 @@
         "sourceId": "libro-drops-2024",
         "page": 9,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -979,12 +808,6 @@
         "sourceId": "libro-drops-2024",
         "page": 9,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1006,12 +829,6 @@
         "sourceId": "libro-drops-2024",
         "page": 9,
         "note": "Fila entre págs. 9 y 10."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1033,12 +850,6 @@
         "sourceId": "libro-drops-2024",
         "page": 10,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1060,12 +871,6 @@
         "sourceId": "libro-drops-2024",
         "page": 10,
         "note": null
-      },
-      "tk10": {
-        "status": "correcto",
-        "photos": [28],
-        "note": "Foto(s) 28 del TK10 («CORRECTO»): pasador retenido con cadena. Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1087,12 +892,6 @@
         "sourceId": "libro-drops-2024",
         "page": 10,
         "note": "Fila entre págs. 10 y 11."
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [21],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 21: Polea sin bolsillo (TK10: «IDEM OBSERVACIONES ANTERIORES DE POLEAS.»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1114,12 +913,6 @@
         "sourceId": "libro-drops-2024",
         "page": 11,
         "note": null
-      },
-      "tk10": {
-        "status": "correcto",
-        "photos": [10, 11],
-        "note": "Foto(s) 10, 11 del TK10 («CORRECTO»): grillete con cadena en nudo del reticulado. Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1141,12 +934,6 @@
         "sourceId": "libro-drops-2024",
         "page": 11,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1168,12 +955,6 @@
         "sourceId": "libro-drops-2024",
         "page": 11,
         "note": "Fila entre págs. 11 y 12."
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [30],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 30: Reflector led con tornillos sueltos y faltantes (TK10: «INCORRECTO. COLOCAR BULONES FALTANTES»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1195,12 +976,6 @@
         "sourceId": "libro-drops-2024",
         "page": 12,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1222,12 +997,6 @@
         "sourceId": "libro-drops-2024",
         "page": 12,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1249,12 +1018,6 @@
         "sourceId": "libro-drops-2024",
         "page": 13,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [21],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 21: Polea sin bolsillo (TK10: «IDEM OBSERVACIONES ANTERIORES DE POLEAS.»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1276,12 +1039,6 @@
         "sourceId": "libro-drops-2024",
         "page": 13,
         "note": null
-      },
-      "tk10": {
-        "status": "correcto",
-        "photos": [31],
-        "note": "Foto(s) 31 del TK10 («CORRECTO»): caja de conexión blanca. Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1303,12 +1060,6 @@
         "sourceId": "libro-drops-2024",
         "page": 13,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [32, 33],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 32: Grampas cepo sin retención: se debe asegurar que el tornillo de la grampa no se salga (TK10, sin la palabra «INCORRECTO»). | foto 33: Grampas cepo sin retención (TK10: descripción de la foto, sin campo de resultado propio). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1330,12 +1081,6 @@
         "sourceId": "libro-drops-2024",
         "page": 14,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [32, 33, 34, 35],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 32: Grampas cepo sin retención: se debe asegurar que el tornillo de la grampa no se salga (TK10, sin la palabra «INCORRECTO»). | foto 33: Grampas cepo sin retención (TK10: descripción de la foto, sin campo de resultado propio). | foto 34: Eslinga de retención secundaria colocada de manera errónea (TK10: descripción de la foto, sin resultado propio). | foto 35: Manguera hidráulica sin retención secundaria colocada (TK10: «ESLINGAS DE RETENCION DEBEN TENER UN EXTREMO COLOCADO EN UN PUNTO FIJO.»; ese texto está en la posición de la fila 35, su aplicación a la 34 es dudosa). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1357,12 +1102,6 @@
         "sourceId": "libro-drops-2024",
         "page": 14,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1384,12 +1123,6 @@
         "sourceId": "libro-drops-2024",
         "page": 15,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1411,12 +1144,6 @@
         "sourceId": "libro-drops-2024",
         "page": 15,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1438,12 +1165,6 @@
         "sourceId": "libro-drops-2024",
         "page": 15,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1465,12 +1186,6 @@
         "sourceId": "libro-drops-2024",
         "page": 15,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1492,12 +1207,6 @@
         "sourceId": "libro-drops-2024",
         "page": 16,
         "note": null
-      },
-      "tk10": {
-        "status": "correcto",
-        "photos": [23],
-        "note": "Foto(s) 23 del TK10 («CORRECTO»): cilindros hidráulicos con cables. Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1519,12 +1228,6 @@
         "sourceId": "libro-drops-2024",
         "page": 16,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1546,12 +1249,6 @@
         "sourceId": "libro-drops-2024",
         "page": 16,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1573,12 +1270,6 @@
         "sourceId": "libro-drops-2024",
         "page": 17,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [30],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 30: Reflector led con tornillos sueltos y faltantes (TK10: «INCORRECTO. COLOCAR BULONES FALTANTES»). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1600,12 +1291,6 @@
         "sourceId": "libro-drops-2024",
         "page": 18,
         "note": null
-      },
-      "tk10": {
-        "status": "hallazgo",
-        "photos": [32, 33, 34, 35],
-        "note": "Hallazgo(s) TK10 05/10/2023 — foto 32: Grampas cepo sin retención: se debe asegurar que el tornillo de la grampa no se salga (TK10, sin la palabra «INCORRECTO»). | foto 33: Grampas cepo sin retención (TK10: descripción de la foto, sin campo de resultado propio). | foto 34: Eslinga de retención secundaria colocada de manera errónea (TK10: descripción de la foto, sin resultado propio). | foto 35: Manguera hidráulica sin retención secundaria colocada (TK10: «ESLINGAS DE RETENCION DEBEN TENER UN EXTREMO COLOCADO EN UN PUNTO FIJO.»; ese texto está en la posición de la fila 35, su aplicación a la 34 es dudosa). Correspondencia tentativa: el TK10 no rotula la ubicación de sus fotos.",
-        "inferred": true
       }
     },
     {
@@ -1627,12 +1312,6 @@
         "sourceId": "libro-drops-2024",
         "page": 18,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1654,12 +1333,6 @@
         "sourceId": "libro-drops-2024",
         "page": 19,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1681,12 +1354,6 @@
         "sourceId": "libro-drops-2024",
         "page": 20,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1708,12 +1375,6 @@
         "sourceId": "libro-drops-2024",
         "page": 20,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1735,12 +1396,6 @@
         "sourceId": "libro-drops-2024",
         "page": 21,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1762,12 +1417,6 @@
         "sourceId": "libro-drops-2024",
         "page": 21,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1789,12 +1438,6 @@
         "sourceId": "libro-drops-2024",
         "page": 22,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1816,12 +1459,6 @@
         "sourceId": "libro-drops-2024",
         "page": 22,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1843,12 +1480,6 @@
         "sourceId": "libro-drops-2024",
         "page": 23,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1870,12 +1501,6 @@
         "sourceId": "libro-drops-2024",
         "page": 23,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1897,12 +1522,6 @@
         "sourceId": "libro-drops-2024",
         "page": 23,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1924,12 +1543,6 @@
         "sourceId": "libro-drops-2024",
         "page": 24,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1951,12 +1564,6 @@
         "sourceId": "libro-drops-2024",
         "page": 24,
         "note": null
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -1978,12 +1585,6 @@
         "sourceId": "libro-drops-2024",
         "page": 25,
         "note": "La pág. 25 lleva otro encabezado: «REGISTRO DE CAÍDAS ELEMENTOS EN ALTURA (DROPS)», Rev.01, 18/09/23 (págs. 1-24: Rev.03, 04/01/24)."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     },
     {
@@ -2005,83 +1606,9 @@
         "sourceId": "libro-drops-2024",
         "page": 25,
         "note": "La pág. 25 lleva otro encabezado: «REGISTRO DE CAÍDAS ELEMENTOS EN ALTURA (DROPS)», Rev.01, 18/09/23 (págs. 1-24: Rev.03, 04/01/24)."
-      },
-      "tk10": {
-        "status": "sin-dato",
-        "photos": [],
-        "note": "Sin foto asociada en el TK10 (05/10/2023); el TK10 no rotula ubicaciones.",
-        "inferred": true
       }
     }
   ],
-  "tk10Inspection": {
-    "date": "2023-10-05",
-    "sourceId": "tk10-drops-2023",
-    "total": 36,
-    "correct": 26,
-    "findings": [
-      {
-        "photo": 4,
-        "summary": "Pasteca/polea sin bolsillo que evite la caída de la polea si se corta el eje (TK10: «INCORRECTO SEGUN REQUERIMIENTO LAS PASTECAS DEBEN DISPONER DE UN BOLSILLO QUE EVITE LA CAIDA DE LA POLEA CASO SE CORTE EL EJE DE LA MISMA»).",
-        "relatedPointIds": ["COR-1", "COR-2", "COR-3", "COR-4", "COR-5"],
-        "inferred": true
-      },
-      {
-        "photo": 8,
-        "summary": "Polea sin bolsillo antichaída (TK10: «IDEM OBSERVACIÓN ANTERIOR DE POLEA. FALTANTE DE BOLSILLO. INCORRECTO SEGUN REQUERIMIENTO DE PROCEDIMEINTO DE INSPECCIÓN DE EQUIPOS.»).",
-        "relatedPointIds": ["DCO-9"],
-        "inferred": true
-      },
-      {
-        "photo": 19,
-        "summary": "Plancha metálica con bisagra sin retención secundaria (TK10: «INCORRECTO. SE DEBE COLOCAR RETENCION SECUNDARIA AL ELEMENTO.»).",
-        "relatedPointIds": ["PE-4", "PE-5"],
-        "inferred": true
-      },
-      {
-        "photo": 21,
-        "summary": "Polea sin bolsillo (TK10: «IDEM OBSERVACIONES ANTERIORES DE POLEAS.»).",
-        "relatedPointIds": ["PE-12", "DPE-5"],
-        "inferred": true
-      },
-      {
-        "photo": 22,
-        "summary": "Deslizador de pirosalva con faltante de un tornillo (TK10: «INCORRECTO. SE DEBE COMPLETAR ELEMENTO FALTANTE EN DESLIZADOR DE PIROSALVA»).",
-        "relatedPointIds": ["PE-3"],
-        "inferred": true
-      },
-      {
-        "photo": 30,
-        "summary": "Reflector led con tornillos sueltos y faltantes (TK10: «INCORRECTO. COLOCAR BULONES FALTANTES»).",
-        "relatedPointIds": ["DCO-2", "DPE-2", "SUB-4"],
-        "inferred": true
-      },
-      {
-        "photo": 32,
-        "summary": "Grampas cepo sin retención: se debe asegurar que el tornillo de la grampa no se salga (TK10, sin la palabra «INCORRECTO»).",
-        "relatedPointIds": ["DPE-7", "DPE-8", "CAS-1"],
-        "inferred": true
-      },
-      {
-        "photo": 33,
-        "summary": "Grampas cepo sin retención (TK10: descripción de la foto, sin campo de resultado propio).",
-        "relatedPointIds": ["DPE-7", "DPE-8", "CAS-1"],
-        "inferred": true
-      },
-      {
-        "photo": 34,
-        "summary": "Eslinga de retención secundaria colocada de manera errónea (TK10: descripción de la foto, sin resultado propio).",
-        "relatedPointIds": ["DPE-8", "CAS-1"],
-        "inferred": true
-      },
-      {
-        "photo": 35,
-        "summary": "Manguera hidráulica sin retención secundaria colocada (TK10: «ESLINGAS DE RETENCION DEBEN TENER UN EXTREMO COLOCADO EN UN PUNTO FIJO.»; ese texto está en la posición de la fila 35, su aplicación a la 34 es dudosa).",
-        "relatedPointIds": ["DPE-8", "CAS-1"],
-        "inferred": true
-      }
-    ]
-  },
   "references": [
     {
       "id": "ref-ypf-giratorio-winche",
@@ -2092,18 +1619,18 @@
       "sourceId": "alerta-ypf-inc18068"
     },
     {
-      "id": "ref-powsg020-bolsillo-roldanas",
-      "title": "PO-WSG-020 6.3.4 (ítem 2): roldanas con protección por corte del eje (bolsillo contenedor)",
+      "id": "ref-proc-drops-bolsillo-roldanas",
+      "title": "procedimiento DROPS 6.3.4 (ítem 2): roldanas con protección por corte del eje (bolsillo contenedor)",
       "date": "2022-07-11",
-      "summary": "El procedimiento dice: «Verificar que las roldanas posean un sistema de protección por corte del eje (Bolsillo contenedor) y eslinga de seguridad a las colgadas en los perfiles.» Los ítems de poleas del Libro (RCCO Rev.03) no listan ese bolsillo; los hallazgos TK10 de las fotos 4, 8 y 21 (poleas sin bolsillo) lo invocan. Vinculación con los puntos de poleas por similitud de nombre (tentativa).",
+      "summary": "El procedimiento dice: «Verificar que las roldanas posean un sistema de protección por corte del eje (Bolsillo contenedor) y eslinga de seguridad a las colgadas en los perfiles.» Los ítems de poleas del Libro (RCCO Rev.03) no listan ese bolsillo. Vinculación con los puntos de poleas por similitud de nombre (tentativa).",
       "relatedPointIds": ["COR-1", "COR-2", "COR-3", "COR-4", "COR-5", "DCO-9", "PE-12", "DPE-5"],
-      "sourceId": "powsg020-rev02"
+      "sourceId": "proc-drops"
     },
     {
-      "id": "ref-powsg020-a1-checklist",
-      "title": "PO-WSG-020-A1 Check List de Caídas de Objetos (14 ítems, Si/No)",
+      "id": "ref-proc-drops-a1-checklist",
+      "title": "anexo A1 Check List de Caídas de Objetos (14 ítems, Si/No)",
       "date": "2022-07-11",
-      "summary": "Check list previo a cada montaje y desmontaje (PO-WSG-020 p.3, rev.02, 11/07/22): baliza, aparejo, pistón principal, peines, grilletes y eslingas del piso de enganche, pirosalva, guinche, corona, elevadores, luminarias, stand pipe y manguerote, power swivel, poleas y eslingas sobre la corona. Vinculación por similitud de nombre (tentativa); el A1 no cita ids de punto.",
+      "summary": "Check list previo a cada montaje y desmontaje (procedimiento DROPS p.3, rev.02, 11/07/22): baliza, aparejo, pistón principal, peines, grilletes y eslingas del piso de enganche, pirosalva, guinche, corona, elevadores, luminarias, stand pipe y manguerote, power swivel, poleas y eslingas sobre la corona. Vinculación por similitud de nombre (tentativa); el A1 no cita ids de punto.",
       "relatedPointIds": [
         "COR-1",
         "COR-2",
@@ -2125,7 +1652,7 @@
         "BP-3",
         "SUB-1"
       ],
-      "sourceId": "powsg020-a1"
+      "sourceId": "proc-drops-a1"
     },
     {
       "id": "ref-manual-drops-rev04",

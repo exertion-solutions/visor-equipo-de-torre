@@ -9,15 +9,15 @@
  *   - caballetes   → planchada 12×2,4 m, plano inclinado (bandeja) y caballetes de 2 m con tubing/varillas
  *   - circulacion  → pileta de ensayo 12×2,4 m, cubicador, desgasificador, bomba triplex 6×2,4 m, cañerías al pozo (el manifold de maniobra anterior es ahora el choke manifold del BOP)
  *   - entorno      → Group `locacion_entorno` (fuera de los 13 componentes: ni seleccionable ni en R.pickables): ripio, torres de luz,
- *                    vallado, conos, señalización, tráilers/tanques del LAYOUT TKR-10.
+ *                    vallado, conos, señalización, tráilers/tanques del layout de locación.
  *
  * Técnica: cada componente se construye con geometrías FUSIONADAS por material (color por vértice), así se agregan pocos meshes y
  * pocos draw calls. Las clases de three no están expuestas en `onPre`: se recuperan de los helpers del visor (ver bootKit).
  *
  * Convención: 1 u = 1 m · origen = boca de pozo · +X hacia el mástil · carrier hacia −X · Z lateral · Y arriba.
- * Datos documentados (FOLLETO Equipo 10 rev. 26/06/2024, LAYOUT TKR-10 11/07/2025, Libro DROPS Rev.03): BOP 7 1/16" 5000 psi anular+doble,
+ * Datos documentados (FOLLETO Equipo 10 rev. 26/06/2024, layout de locación 11/07/2025, Libro DROPS Rev.03): BOP 7 1/16" 5000 psi anular+doble,
  * acumulador de 5 botellones (8×2,4 m), aparejo IDECO 110 t con 6 líneas, amelas 150 t, elevador 100 t, bomba triplex 6×2,4 m,
- * pileta de ensayo 12×2,4 m (40 m³) con cubicador 3,5 m³, caballetes de 2 m (4,5 t), planchada 12×2,4 m, anclaje de pirosalva a 45 m (LAYOUT-WS10-0001; LAYOUT TKR-10 2025: 30 m, fuente en conflicto).
+ * pileta de ensayo 12×2,4 m (40 m³) con cubicador 3,5 m³, caballetes de 2 m (4,5 t), planchada 12×2,4 m, anclaje de pirosalva a 45 m (layout de locación 2019; layout de locación 2025: 30 m, fuente en conflicto).
  * Todo lo demás (alturas, colores, detalle de forma) es ESTÉTICO y aproximado; no es as-built ni apto para fabricación.
  *
  * CONFLICTO DOCUMENTAL (aparejo): el folleto y el informe técnico dicen 6 líneas; el Libro DROPS (BP-3) dice "8 líneas de cable
@@ -274,7 +274,7 @@
 
   const PI = Math.PI
 
-  /** Desplazamiento del acumulador (m en X) para ubicarlo como en el LAYOUT TKR-10 (cad/components/layout_tkr10.py). */
+  /** Desplazamiento del acumulador (m en X) para ubicarlo como en el layout de locación (cad/components/layout_locacion.py). */
   const DX_ACUM = -3.2
 
   // ═════════════════════════════════════════ BOP + CHOKE MANIFOLD + ACUMULADOR ═════════════════════════════════════════
@@ -605,21 +605,21 @@
   }
 
   /**
-   * Acumulador (8×2,4 m, 5 botellones, LAYOUT TKR-10 / folleto) — misma posición que el visor: x −18…−10, z=4,2. Se afina el detalle con
+   * Acumulador (8×2,4 m, 5 botellones, layout de locación / folleto) — misma posición que el visor: x −18…−10, z=4,2. Se afina el detalle con
    * fotos de referencia de unidades genéricas: botellones con casquetes y etiqueta, bastidor/jaula, colector con válvulas, tablero de
    * control de acero inoxidable, orejas de izaje y bolsillos para autoelevador. Color PENDIENTE (ver BOP_COLOR).
-   * Nota: el acta de prueba funcional TK-10 (06/10/2023) registra "abiertos 4 líneas"; se mantienen los 5 botellones del folleto.
+   * Nota: el acta de prueba funcional equipo 10 (06/10/2023) registra "abiertos 4 líneas"; se mantienen los 5 botellones del folleto.
    */
   function buildAcumulador(g, m) {
     const { main: BC, acc: BA } = WELL_PAINT
     const ga = new K.Group()
     ga.name = 'acumulador_5_botellas'
     g.add(ga)
-    ga.position.x = DX_ACUM // LAYOUT TKR-10: x −21,2…−13,2 (medido del vector del PDF); el modelo estaba en −18…−10. Lateral z 4,2 coincide
+    ga.position.x = DX_ACUM // layout de locación: x −21,2…−13,2 (medido del vector del PDF); el modelo estaba en −18…−10. Lateral z 4,2 coincide
     const AP = new Batch()
     const AM = new Batch()
     const zc = 4.2
-    AP.box(C.SKID, 8, 0.18, 2.4, -14, 0.15, zc) // patín 8×2,4 m (LAYOUT TKR-10)
+    AP.box(C.SKID, 8, 0.18, 2.4, -14, 0.15, zc) // patín 8×2,4 m (layout de locación)
     for (const dz of [-1.1, 1.1]) AM.box(C.GRAY, 8, 0.1, 0.12, -14, 0.27, zc + dz)
     for (let k = 0; k < 6; k++) AP.box(C.SKID, 0.1, 0.1, 2.1, -17.6 + k * 1.44, 0.27, zc) // travesaños
     for (const x of [-16, -12]) AP.box(C.DARK, 0.42, 0.1, 0.03, x, 0.15, zc + 1.21) // bolsillos de autoelevador
@@ -1413,7 +1413,7 @@
     const P = new Batch()
     const M = new Batch()
 
-    // PLANCHADA 12×2,4 m (LAYOUT TKR-10): x 3…15, eje del equipo. Altura de cubierta 0,6 m: estético.
+    // PLANCHADA 12×2,4 m (layout de locación): x 3…15, eje del equipo. Altura de cubierta 0,6 m: estético.
     const X0 = 3
     const X1 = 15
     const XC = (X0 + X1) / 2
@@ -1537,7 +1537,7 @@
     const M = new Batch() // circulacion_acero: bomba y cañerías al pozo
     const H = new Batch() // circulacion_mangueras
     const zc = -14.7 // eje longitudinal de pileta y bomba (lateral del layout ≈ 14,4 m)
-    const DX_BOMBA = -3.0 // m: bomba a 5 m de la pileta (cota rotulada en LAYOUT TKR-10); la pileta (x −8…4) no se mueve
+    const DX_BOMBA = -3.0 // m: bomba a 5 m de la pileta (cota rotulada en layout de locación); la pileta (x −8…4) no se mueve
     const BLACK = '#1B1D21' // patín de vigas y rodillos (foto de campo: patín negro)
     const WHITE_R = '#D3D6D0' // chapa lisa entre nervaduras (las nervaduras van en C.WHITE)
     const SUB = '#8E1F25' // rojo oscuro: bandas de soldadura y uniones
@@ -1703,7 +1703,7 @@
         B.box(C.GRAY_L, alongX ? 2 * w : 0.028, 0.028, alongX ? 0.028 : 2 * w, cx, y, cz)
     }
 
-    // ═════════════ PILETA DE ENSAYO 12 × 2,4 m (40 m³, Folleto/LAYOUT TKR-10) · tipología: foto de campo con golpeador ═════════════
+    // ═════════════ PILETA DE ENSAYO 12 × 2,4 m (40 m³, Folleto/layout de locación) · tipología: foto de campo con golpeador ═════════════
     // Confirmado: envolvente en planta y capacidad. Aproximado (estético): altura, corrugado, patín, escalera, tapas, equipo de cubierta.
     const ge = sub('pileta_ensayo')
     const PE = new Batch() // pileta_ensayo_pintura
@@ -1875,7 +1875,7 @@
     GB.flush(gG, m.paint, 'golpeador_pintura')
 
     // ── bomba triplex 6×2,4 m (camisas 5", carrera 8", 3.000 psi, 12 bpm). Se modela en x −16…−10 y su grupo se desplaza DX_BOMBA:
-    //    el LAYOUT TKR-10 rotula 5 m entre la bomba y la pileta (cota confirmada) y el modelo dejaba 2 m (ver docs/audit-dimensional-*.md).
+    //    el layout de locación rotula 5 m entre la bomba y la pileta (cota confirmada) y el modelo dejaba 2 m (ver docs/audit-dimensional-*.md).
     const bombaG = new K.Group()
     bombaG.name = 'bomba_triplex'
     bombaG.position.x = DX_BOMBA
@@ -2235,7 +2235,7 @@
       )
     }
 
-    // ── tráilers, tanques y usinas según LAYOUT-WS10-0001 (12×2,4 m; columna a 40 m del pozo hacia el carrier, cota "40"
+    // ── tráilers, tanques y usinas según layout de locación 2019 (12×2,4 m; columna a 40 m del pozo hacia el carrier, cota "40"
     //    rotulada; z = lateral del plano, +z = lado opuesto a las piletas). Posiciones medidas del vector del PDF (C).
     //    alongX: tráiler con el largo según x (fila laboratorio · taller · depósito · usinas, arriba en el plano).
     const trailer = (cx, cz, opts = {}) => {
@@ -2281,9 +2281,9 @@
     trailer(LX, 8.5, { stripe: '#9a9d94' }) // jefe de equipo
     trailer(LX, 21.5, { stripe: '#9a9d94' }) // inspector
     // laboratorio · taller · depósito · usinas: por indicación del usuario (2026-10-20) va al extremo +z de la columna, fuera de la fila norte del
-    // LAYOUT WS10 (−29,6 m lateral): fuente en conflicto, posición pendiente de validación.
+    // LAYOUT layout de locación 2019 (−29,6 m lateral): fuente en conflicto, posición pendiente de validación.
     trailer(-37.4, 33.2, { parts: 4, stripe: C.RED, wheels: false, alongX: true })
-    // tanques de combustible (12.465 l) y agua (8.300 l) sobre patín (WS10: tanque de combustible y agua, z −23,5…−11,5)
+    // tanques de combustible (12.465 l) y agua (8.300 l) sobre patín (layout de locación 2019: tanque de combustible y agua, z −23,5…−11,5)
     S.box('#3a3e45', 12.2, 0.25, 2.2, LX, 0.5, -17.5, PI / 2)
     for (const [dz, r, L, col] of [
       [-3.3, 0.95, 5.4, '#c9cdc8'],
@@ -2414,8 +2414,8 @@
       S.rod('#C9CDD0', [u(-2.6), 0.0, v(-1.15)], [u(-2.6), 0.4, v(-1.0)], 0.012, 4)
     }
 
-    // ── anclaje de pirosalva a 45 m del pozo en el eje del equipo, lado planchada (LAYOUT-WS10-0001, cota "45").
-    //    Fuente en conflicto: LAYOUT TKR-10 (2025) lo pone a 30 m. Coincide con el anclaje del modelo SK-575 (sk575_vientos).
+    // ── anclaje de pirosalva a 45 m del pozo en el eje del equipo, lado planchada (layout de locación 2019, cota "45").
+    //    Fuente en conflicto: layout de locación (2025) lo pone a 30 m. Coincide con el anclaje del modelo SK-575 (sk575_vientos).
     S.box(C.CONC, 1.2, 0.3, 1.2, 45, 0.17, 0)
     S.loop('#4d5057', 45, 0.5, 0, 0.22, 'zy', 0, PI * 2, 0.03, 14)
 
@@ -2891,7 +2891,7 @@
       'Stack estándar WS 7-1/16": ram simple, cruz, doble ram + shear (10.000 psi) y anular (5.000 psi), 3,731 m. ' +
       'Presión: Fuente en conflicto con el folleto (7-1/16" 5.000 psi). Base a nivel de terreno con cabezal en sótano y volantes de los rams hacia los laterales de la subestructura: ' +
       'interpretación pendiente de relevar. Acumulador de 5 botellas (folleto, A). Manifold de ahogo: disposición de un esquema sin identificar ' +
-      'y escala de otro equipo (TKR-08): no es el manifold del TKR-10. Geometría aproximada, no as-built. ' +
+      'y escala de otro equipo (equipo 08): no es el manifold del equipo 10. Geometría aproximada, no as-built. ' +
       'Pendientes: placa del BOP instalado, cota real del cabezal / sótano, identidad del manifold y color del BOP/acumulador.',
   }
   const applyMeta = () => {

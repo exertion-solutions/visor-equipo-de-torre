@@ -1,18 +1,18 @@
 """Equipo 10 (Service King SK-575, pulling/workover) — modelo CAD de referencia (build123d). NO es as-built.
 Generado desde ~/cad/rig10/rig10.py; cada pieza se etiqueta con `comp()` = Component.id del visor.
 Lo exporta cad/sk575/exportar.py (un GLB por componente, origen en la boca de pozo). Confianza por cota en
-docs/pdf-review/informe-sk575-2026-10-09.md.
+informe técnico interno (no publicado).
 Documentado: mástil 31,7 m (tramo inferior 16,4 + superior 15,3).
 Carrier y cuadro de maniobras: SK575 Parts & Service Manual (vista lateral p23, bastidor p19: 40 ft, 5 ejes) + spec sheet.
-Plano LAYOUT-WS10-0001 (Layout Equipo TKR 10 RN119): carrier 18 m, subestructura 5 m, planchada 12 m,
+Plano layout de locación 2019 (Layout Equipo equipo 10 RN119): carrier 18 m, subestructura 5 m, planchada 12 m,
 anclajes de vientos a 27,4 m (lado carrier) / 24,4 m (lado planchada) y ±26,8 m laterales. Resto estimado por foto.
 Manuales: BOP doble ram 11" 5M (Xinde 2FZ28-35II) + anular 11" 5M (FH28-35I); llave Gill 500; tubing 2-7/8" R2 (Tenaris);
 línea 2" HM (planos L602); corona/aparejo/cuñas (presentaciones API 8A/8B); vientos, anclajes y pirosalva (Módulo Transporte y Montaje YPF).
-Equipo = Service King SK-575, mástil SK 104-330-08 S/N DK-3033 (placa API 4F: 104', 8 líneas, 325.725 lb a 3,5° de la
+Equipo = Service King SK-575, mástil SK 104-330-08 (placa API 4F: 104', 8 líneas, 325.725 lb a 3,5° de la
 vertical, base a 4'-0"; vientos A 3/4" / B 5/8" EEIPS). Corona: 4 poleas 24" + 30" línea rápida (spec sheet SK-575).
-Plano 8123-1002-2611 (Equipo TKR10): piso 3606 [12'], piso de enganche 20629 [68'], mástil 31710 [104'].
-Piso pulling: planos 8114-1006-0200/0201/0210/0212 (2600 × 3304, abertura 730 × 700). Escalera: EscaleraPisoPulling (45°, C 180).
-Fuente: X:\\Mantenimiento WS\\Planos Tecnicos\\TKR-10 y ...\\COC's - Trazabilidad\\Equipos\\Rig TKR-10\\COC.
+Plano del mástil (Equipo equipo 10): piso 3606 [12'], piso de enganche 20629 [68'], mástil 31710 [104'].
+Piso pulling: planos del piso (2600 × 3304, abertura 730 × 700). Escalera: EscaleraPisoPulling (45°, C 180).
+Fuente: documentación interna de la empresa (no publicada)...\\COC's - Trazabilidad\\Equipos\\equipo 10\\COC.
 CAD: metros, X a lo largo del carrier (+X hacia el pozo), Y lateral, Z arriba. Salida: un GLB por material + STEP."""
 from math import cos, pi, sin
 
@@ -111,7 +111,7 @@ LEAN, ZB = 3.5, 48 * 0.0254            # placa API: 3,5° desde la vertical; bas
 # voladizo ~0,9 m para llegar a plomo del pozo; con 3,5° y ~30,5 m de mástil la punta se corre ≈ 1,86 m (≈ 73"), casi
 # exactamente 76": medidos desde el pie/bisagra, la corona queda centrada sobre el reticulado y las poleas a plomo del pozo.
 WXP = MX + 76 * 0.0254
-ZP = 3.606                     # altura del piso de trabajo: 3606 [12'] (plano 8123-1002-2611)
+ZP = 3.606                     # altura del piso de trabajo: 3606 [12'] (plano del mástil)
 H_INF, H_SUP, SOLAPE = 16.4, 15.2992, 1.0
 H = H_INF + H_SUP
 
@@ -172,7 +172,7 @@ for y in (-0.62, 0.62):                                                         
 # Bisagra en el borde interior (cara del mástil), eje lateral Y: origen del nodo = bisagra (el visor lo pliega contra el mástil
 # en transporte e izado y lo baja al telescopar el 2.º tramo; ilustrativo). Se nivela con el mástil inclinado (estético, C).
 comp("sk575_mastil/sk575_enganche")
-ZM, XF = 20.629, MX + 0.68     # piso de enganche a 68' (plano 8123-1002-2611 / Engineering Report SK 2021)
+ZM, XF = 20.629, MX + 0.68     # piso de enganche a 68' (plano del mástil / Engineering Report SK 2021)
 add("grating", box(XF, XF + 1.9, -1.2, 1.2, ZM, ZM + 0.08, f=0.02))
 for k in range(9):
     y = -1.0 + k * 0.25
@@ -518,7 +518,7 @@ add("cable", bar((XS + 0.24, -0.4, ZS + 0.12), M(MC - 0.305, -0.48, H + 0.75), 0
 add("cable", bar(M(MC + 0.305, -0.26, H + 0.75), M(MX + 0.55, -0.55, 3.0), 0.0127))
 add("acero_oscuro", Pos(*M(MX + 0.55, -0.55, 2.8)) * Rot(90, 0, 0) * fillet(Cylinder(0.2, 0.12).edges(), 0.02))
 comp("sk575_izaje")
-# cilindros de izaje HYCO 50162-813-13150 = SK DK50162 (plano PISTON TKR 10 "CYL, SATEL W/LAST STAGE DA", Hydraulics p3):
+# cilindros de izaje HYCO 50162-813-13150 = SK DK50162 (plano PISTON equipo 10 "CYL, SATEL W/LAST STAGE DA", Hydraulics p3):
 # camisa Ø9,42" con glándula Ø10,00"; etapas Ø8,12 / 7,00 / 4,00" (último doble efecto) con carreras 42,82 / 44,07 / 44,62"
 # (total 131,5"); cerrado 60,00" → extendido 191,50" entre pernos; D 3,12"; ojos con perno Ø1,77", R 1,75", ancho 2,00";
 # base 2,25"; cabezal del émbolo Ø3,69"; puertos 1/2" NPTF extender (base) / retraer (cabezal); 2000 psi → 103.697 lb.
@@ -629,7 +629,7 @@ add("rojo", Pos(WXP + 0.12, 0.08, ZA - 1.0) * Rot(90, 0, 0) * Cylinder(0.025, 0.
 for s_ in (-1, 1):                                                              # orejas (asas) para las amelas
     add("amarillo", box(WXP - 0.07, WXP + 0.07, min(s_ * 0.11, s_ * 0.17), max(s_ * 0.11, s_ * 0.17), ZA - 1.08, ZA - 0.86, f=0.015))
 # asas del gancho + amelas 150 t (Ø 3", largo útil 73", ojo sup. 3-1/2") + elevador de cierre central (paso 3-7/32",
-# tubing 2-7/8") — planillas de inspección TKR-10 (API RP 8B / SPEC 8C)
+# tubing 2-7/8") — planillas de inspección equipo 10 (API RP 8B / SPEC 8C)
 LA, RA = 73 * 0.0254, 1.5 * 0.0254
 ZT = ZA - 1.04                                                                  # apoyo del ojo superior en la asa
 ZE_ = ZT - LA                                                                   # fondo interior del ojo inferior
@@ -967,7 +967,7 @@ add("rojo", box(WXP + 0.66, WXP + 0.72, YM - 0.1, YM + 0.1, ZM0 + 0.35, ZM0 + 0.
 add("cable", bar((WXP + 0.3, YM, ZM0 + 1.14), M(MX + 0.7, 0.6, 13.0), 0.008))
 
 # ───────── grampa de seguridad AOT A-MP-S (2-7/8"–4-1/8": 7 eslabones, 8 mordazas, 128 lb; catálogo Access Oil Tools p57,
-# referencia: no es equipo relevado del TKR-10) apoyada en el piso. Paso de eslabón y alturas: C.
+# referencia: no es equipo relevado del equipo 10) apoyada en el piso. Paso de eslabón y alturas: C.
 GX, GYC = WXP - 0.7, -0.8
 for k in range(7):
     a = 2 * pi * k / 8
@@ -987,7 +987,7 @@ for k in (2, 5):                                                                
         add("rojo", bar(u, v, 0.012))
 
 comp("sk575_piso")
-# ───────────────────────── piso de trabajo (planos 8114-1006-0200/0201/0210/0212) ─────────────────────────
+# ───────────────────────── piso de trabajo (planos del piso) ─────────────────────────
 # Central 2600 × 2300 (UPN 100 + chapa semilla de melón 3/16") + 2 laterales 2500 × 500 × 190 → 2600 × 3304.
 # Abertura de pozo 730 × 700 a 770 del borde lado mástil; panel removible (RVB) 1100 × 680 hacia la V.
 X0 = WXP - 0.77 - 0.365                                           # borde lado mástil
@@ -1045,11 +1045,11 @@ comp("sk575_carrier")
 for y in (-0.35, 0.0, 0.35):
     manguera((-2.3, y, ZKL + 0.05), (-1.6, y * 1.6, 0.4), (X0 + 0.1, y * 2, ZP - 0.2))
 comp("sk575_planchada")
-# planchada de 12 m (pipe rack) + rampa a la puerta en V. Posición respecto del pozo medida del vector de LAYOUT-WS10-0001
+# planchada de 12 m (pipe rack) + rampa a la puerta en V. Posición respecto del pozo medida del vector de layout de locación 2019
 # (4,66 pt/m calibrado con los anclajes 27,4 + 24,4 m): planchada a 4,96…16,96 m del pozo; caballetes transversales a 7,45 y
 # 14,4 m (cota "7" rotulada) con 6 m a cada lado del eje (cota "6" rotulada). Posiciones no rotuladas: confianza C.
 XP0 = WXP + 4.96                                                                 # extremo de la planchada lado pozo
-XCB = (WXP + 7.45, WXP + 14.4)                                                   # caballetes (WS10)
+XCB = (WXP + 7.45, WXP + 14.4)                                                   # caballetes (layout de locación 2019)
 add("grating", box(XP0, XP0 + 12.0, -1.0, 1.0, 1.0, 1.05, f=0.01))
 for y in (-1.0, 1.0):
     add("rojo", perfil_c(XP0, XP0 + 12.0, y, 0.85, abre=-1 if y > 0 else 1))
@@ -1118,8 +1118,8 @@ for s_ in (-1, 1):
     VIENTOS.append(dict(id="interno_%s" % ("-z" if s_ > 0 else "+z"), tipo="viento interno corona → apoyo del carrier",
                         diametro_in=1.0, mastil=M(MC - 0.9, s_ * 0.9, H), carrier=(xc(64), s_ * 0.9, 121 * IN)))
 # pirosalva (línea de escape) desde el piso de enganche al anclaje en el eje del equipo, lado planchada, a 45 m del pozo
-# (LAYOUT-WS10-0001, cota "45" rotulada). Fuente en conflicto: LAYOUT TKR-10 (2025) lo pone a 30 m y el Módulo Transporte y
-# Montaje YPF pide ~35°; con 45 m la línea queda a ≈ 26° de la horizontal. El modelo dibuja WS10.
+# (layout de locación 2019, cota "45" rotulada). Fuente en conflicto: layout de locación (2025) lo pone a 30 m y el Módulo Transporte y
+# Montaje YPF pide ~35°; con 45 m la línea queda a ≈ 26° de la horizontal. El modelo dibuja layout de locación 2019.
 pz = ZM + 1.1
 P0 = M(XF + 1.9, 1.2, pz)
 PA = (WXP + 45.0, 0.0, 0.5)
@@ -1140,7 +1140,7 @@ for s in (-1, 1):
 add("rojo", Pos(WX, WY, 2.7) * Torus(0.22, 0.025))
 
 comp("sk575_piletas")
-# ───────────────────────── locación: piletas, choke manifold, bomba, acumulador (LAYOUT-WS10-0001) ─────────────────────────
+# ───────────────────────── locación: piletas, choke manifold, bomba, acumulador (layout de locación 2019) ─────────────────────────
 # Posiciones medidas en el layout respecto al eje del pozo (x a lo largo de la planchada, y hacia las piletas).
 # Piletas: plano "Pileta 1-2-3" (golpeador / zaranda / preparadora): patín 12000 × 2400, cuba 11000 × 2300,
 # alto 1742 (2011 con baranda), compartimentos 4500 / 4500 / 2000 (15,5 / 15,5 / 7 m3).
@@ -1388,7 +1388,7 @@ for path, r in ((fl, 0.045), (kl, 0.03)):
         add("azul", bar(p, q, r), Pos(*q) * Sphere(r * 1.3))
 
 comp("sk575_bomba")
-# bomba triplex sobre patín (6 × 2,4, layout WS10 = A). Detalle por REFERENCIA FOTOGRÁFICA GENÉRICA de una bomba de lodo triplex de catálogo
+# bomba triplex sobre patín (6 × 2,4, layout de locación 2019 = A). Detalle por REFERENCIA FOTOGRÁFICA GENÉRICA de una bomba de lodo triplex de catálogo
 # (power end con tapas y eje de piñón, fluid end de 3 cilindros con tapas abulonadas, múltiple de succión inferior, múltiple de descarga
 # superior con amortiguador de pulsaciones rojo y válvula de seguridad). Marca, modelo, camisas, carrera, presión y caudal del equipo
 # instalado: PENDIENTES (no se inventan); motor y cardán ilustrativos. Confianza C, no as-built.
@@ -1483,7 +1483,7 @@ add("rojo", bar((BX + 5.45, YC - 0.55, 2.3), (BX + 5.45 - 0.2, YC - 0.55, 2.3), 
 
 comp("sk575_acumulador")
 # ───────────────────────── acumulador del BOP (unidad de cierre API 16D) ─────────────────────────
-"""Acumulador del BOP sobre la huella del layout (8 × 2,4 m, src-layout-ws10) con 5 botellones a 3.000 psi (src-folleto).
+"""Acumulador del BOP sobre la huella del layout (8 × 2,4 m, src-layout-2019) con 5 botellones a 3.000 psi (src-folleto).
 El resto es REFERENCIA GENÉRICA (confianza C, no es el equipo instalado): manual O&M de la unidad de cierre CPC S/N 4650
 (Rig Manufacturing / Consolidated Pressure Control, API 16D, 07/2011; fuente src-ref-rigmfg-4650):
   · botellón 11 gal 3.000 psi de vejiga, carga superior, prueba 4.500 psi, precarga 1.000 psi ........ p33 §2.3, p23 §5.1.3
@@ -1504,8 +1504,8 @@ El resto es REFERENCIA GENÉRICA (confianza C, no es el equipo instalado): manua
 Cantidad de selectoras = funciones del stack modelado (anular, 2 rams, HCR de choke CL2 y de ahogo KL2: src-esquema-ahogo);
 2 bombas neumáticas (la unidad 4650 tiene 3). Dimensiones de válvulas, reguladoras, bombas y depósito: proporciones de las
 fotos p94-95 y de la página CAMTOP (src-ref-rigmfg-4650 / referencia), confianza C. Ilustrativo: no es cálculo."""
-AX, AY = WXP - 24.6, -5.9                     # esquina del patín (layout WS10)
-ACUM_L, ACUM_W = 8.0, 2.4                     # huella del layout (src-layout-ws10) — NO cambiar
+AX, AY = WXP - 24.6, -5.9                     # esquina del patín (layout de locación 2019)
+ACUM_L, ACUM_W = 8.0, 2.4                     # huella del layout (src-layout-2019) — NO cambiar
 N_BOT = 5                                     # botellones (src-folleto) — NO cambiar
 BOT_GAL = 11                                  # volumen nominal por botellón (ref. p33)
 BOT_LD = 5.5                                  # largo/Ø de la envolvente medido en el plano p17 (C)

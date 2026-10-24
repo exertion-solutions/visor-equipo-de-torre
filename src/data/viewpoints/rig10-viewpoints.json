@@ -8,17 +8,17 @@
     "terreno": { "cota": 0, "fuente": "origen del marco (boca de pozo a nivel de terreno)" },
     "pisoTrabajo": {
       "cota": 3.61,
-      "fuente": "src-plano-8123 (3.606 m, 12'); cara superior del piso del modelo SK-575"
+      "fuente": "src-plano-mastil (3.606 m, 12'); cara superior del piso del modelo SK-575"
     },
     "pisoEnganche": {
       "cota": 20.63,
-      "fuente": "src-plano-8123 (20.629 m, 68'); solo visual, no implica acceso"
+      "fuente": "src-plano-mastil (20.629 m, 68'); solo visual, no implica acceso"
     }
   },
   "locacion": {
     "min": [-45, -30.5],
     "max": [33.5, 30.5],
-    "fuente": "vallado del entorno del V2 (layout TKR-10, ilustrativo)"
+    "fuente": "vallado del entorno del V2 (layout de locación, ilustrativo)"
   },
   "caminata": { "velocidad": 1.4, "radio": 0.35 },
   "transicion": { "ms": 1800 },
