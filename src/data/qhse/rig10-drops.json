@@ -17,7 +17,7 @@
       "Manual DROPS Rev.04 (©2017, genérico, offshore), Taller YPF y Alerta YPF INC18068 son guías o evidencia de incidente, no requisitos de la empresa: solo aparecen en 'references' y 'sources' (no son puntos). Como el enum de 'sources.kind' no tiene un tipo para guías/alertas, se los clasificó 'brochure'; ninguno respalda un punto.",
       "Frecuencias (PO-WSG-020, texto): A1 previo a cada montaje y desmontaje; RCCO mensual; deficiencias reportadas en POSGI011-A1 y corregidas 'inmediatamente' (sin plazo numérico). No definidos por los documentos: alturas, pesos, radios o distancias de caída, umbrales de la calculadora DROPS (anexo A4, ausente de los archivos) ni criterio numérico de aceptación."
     ],
-    "disclaimer": "Dataset cualitativo derivado de documentos internos (Libro DROPS 2024, PO-WSG-020 y anexos, TK10 Drops 05/10/2023). No contiene distancias, radios, alturas ni pesos, y no es un cálculo ni una validación de seguridad. Las zonas Alto/Medio/Bajo son clasificaciones de área del layout A2, sin dimensión. La aplicabilidad del Libro al equipo 10 la declara el usuario; la relación de las fotos TK10 con los puntos es tentativa."
+    "disclaimer": "Dataset cualitativo derivado de documentos internos (Libro DROPS 2024, PO-WSG-020 y anexos, TK10 Drops 05/10/2023). No contiene distancias, radios, alturas ni pesos, y no es un cálculo ni una validación de seguridad. Las zonas Alto/Medio/Bajo son clasificaciones de área del layout A2, sin dimensión. La aplicabilidad del Libro al equipo 10 es una decisión interna (el documento no nombra el equipo); la relación de las fotos TK10 con los puntos es tentativa."
   },
   "sources": [
     {

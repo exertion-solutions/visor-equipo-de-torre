@@ -147,10 +147,28 @@
       if (C.vientos) C.vientos.funcion = FUNCION_VIENTOS
     }
     const dlg = document.getElementById('ref-dialog')
-    if (dlg)
+    if (dlg) {
       for (const el of dlg.querySelectorAll('p, li'))
         for (const [viejo, nuevo] of MODAL)
           if (el.innerHTML.includes(viejo)) el.innerHTML = el.innerHTML.replace(viejo, nuevo)
+      quitarSecciones(dlg)
+    }
+  }
+
+  // Secciones del modal que el sitio público no muestra (pedido del usuario): documentos de la empresa y trabajos de terceros.
+  // Se quita el <h3> y todo lo que sigue hasta el próximo <h3>. La trazabilidad sigue en el repo (docs/, src/data/rigs/rig10.ts).
+  const SECCIONES_OCULTAS = [/^Datos específicos/i, /^Fuentes descriptivas complementarias/i]
+  function quitarSecciones(dlg) {
+    for (const h of [...dlg.querySelectorAll('h3')]) {
+      if (!SECCIONES_OCULTAS.some((re) => re.test(h.textContent.trim()))) continue
+      let n = h.nextElementSibling
+      while (n && n.tagName !== 'H3') {
+        const sig = n.nextElementSibling
+        n.remove()
+        n = sig
+      }
+      h.remove()
+    }
   }
 
   if (window.__rigBooted) aplicar()

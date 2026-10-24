@@ -170,7 +170,7 @@ window.__rigExt.onPost(() => {
       line.title = ''
       status.innerHTML =
         '<div class="sq-text">«Todo» vuelve a mostrar todos los componentes.</div>' +
-        '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
+        '<div class="sq-warn">Secuencia típica de referencia: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
       return
     }
     const s = STEPS[current - 1]
@@ -182,7 +182,7 @@ window.__rigExt.onPost(() => {
       `<div class="sq-text">${s.texto}</div>` +
       `<div class="sq-meta" title="${names.join(' · ')}">${s.geo ? 'Se suma en este paso: ' + (s.add.join(', ') || '—') : 'Paso documental: sin geometría propia.'}` +
       `${vis.length ? ' · Visibles: ' + names.length + ' de ' + ALL.length : ' · Sin componentes visibles'}${s.nota ? ' · ' + s.nota : ''}</div>` +
-      '<div class="sq-warn">Secuencia típica aportada por el usuario: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
+      '<div class="sq-warn">Secuencia típica de referencia: no es el procedimiento de la empresa ni un requisito. Recorrido visual, no simulación.</div>'
   }
 
   function go(n) {

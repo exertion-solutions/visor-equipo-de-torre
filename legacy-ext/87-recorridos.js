@@ -115,6 +115,38 @@ window.__rigExt.onPost((R) => {
     $('vp-toggle').setAttribute('aria-expanded', String(abierto))
   })
 
+  // Con la ficha de componente (#detail, misma esquina) abierta, el panel se pliega y se corre a su izquierda para no tapar
+  // su botón Cerrar. Si no entra al lado (pantallas angostas), se oculta mientras la ficha está abierta.
+  const detail = document.getElementById('detail')
+  if (detail) {
+    let antes = null
+    const acomodar = () => {
+      const abierta = !detail.classList.contains('hidden')
+      if (abierta) {
+        if (antes === null) {
+          antes = panel.classList.contains('collapsed')
+          panel.classList.add('collapsed')
+          $('vp-toggle').setAttribute('aria-expanded', 'false')
+        }
+        // Sin getBoundingClientRect: al abrir, la ficha todavía está en transición (translateX) y daría una posición falsa.
+        const derecha = (parseFloat(getComputedStyle(detail).right) || 12) + detail.offsetWidth + 12
+        const entra = (panel.offsetParent || document.body).clientWidth - derecha >= 140
+        panel.style.right = entra ? derecha + 'px' : ''
+        panel.style.display = entra ? '' : 'none'
+      } else {
+        panel.style.right = ''
+        panel.style.display = ''
+        if (antes === false) {
+          panel.classList.remove('collapsed')
+          $('vp-toggle').setAttribute('aria-expanded', 'true')
+        }
+        antes = null
+      }
+    }
+    new MutationObserver(acomodar).observe(detail, { attributes: true, attributeFilter: ['class'] })
+    window.addEventListener('resize', acomodar)
+  }
+
   const CAMPOS = { funcion: 'Función', riesgos: 'Riesgos', EPP: 'EPP', controles: 'Controles' }
   function ficha(v) {
     const f = $('vp-ficha')
@@ -123,9 +155,11 @@ window.__rigExt.onPost((R) => {
       b.setAttribute('aria-current', String(!!v && b.dataset.vp === v.id))
     if (!v) return
     $('vp-nombre').textContent = v.nombre
-    $('vp-datos').innerHTML = Object.entries(CAMPOS)
-      .map(([k, l]) => `<dt>${l}</dt><dd>${esc((v.ficha && v.ficha[k]) || '—')}</dd>`)
-      .join('')
+    const conDatos = Object.keys(CAMPOS).filter((k) => v.ficha && v.ficha[k])
+    // Ficha sin cargar: un aviso en vez de cuatro guiones (no se inventan riesgos ni controles).
+    $('vp-datos').innerHTML = conDatos.length
+      ? conDatos.map((k) => `<dt>${CAMPOS[k]}</dt><dd>${esc(v.ficha[k])}</dd>`).join('')
+      : '<dd style="grid-column:1/-1;opacity:.7">Ficha del sector pendiente de completar.</dd>'
   }
 
   // ───────── cámara ─────────
