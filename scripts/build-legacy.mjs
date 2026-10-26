@@ -79,6 +79,15 @@ const THREE_CLASSES = {
   DoubleSide: 'sn',
   BackSide: 'cn',
   PMREMGenerator: 'dl',
+  // 95-99 / 77-78 / 74 (efectos, personas, maniobra, cortes, medición, VR)
+  Plane: 'hn',
+  BufferAttribute: 'Pt',
+  CanvasTexture: 'wr',
+  ShaderMaterial: 'bn',
+  PerspectiveCamera: 'en',
+  LineSegments: 'Ka',
+  Quaternion: 'ln',
+  Vector2: 'Vc',
 }
 
 const obj = (map) =>

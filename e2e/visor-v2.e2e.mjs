@@ -1030,3 +1030,109 @@ test('consola sin errores durante toda la sesión', (t) => {
   if (skip) return t.skip(skip)
   assert.deepEqual(problemas, [])
 })
+
+// ─────────── efectos y herramientas 3D (74-78, 95-99) + capturas fijas de referencia en .tmp/e2e/vista-*.png ───────────
+test('efectos 3D: perfiles, cielo, halos de noche, clima, personas, maniobra, cortes Y/Z y ángulo', async (t) => {
+  if (skip) return t.skip(skip)
+  await hasta(() => !!(window.__rigFx && window.__rigFx.perfil()))
+  try {
+    const perfiles = await page.evaluate(async () => {
+      const out = {}
+      for (const id of ['movil', 'pc', 'presentacion']) {
+        await window.__rigFx.elegir(id)
+        const R = window.__rig
+        let m = 0
+        R.scene.traverse((o) => {
+          if (o.isDirectionalLight && o.castShadow) m = o.shadow.mapSize.x
+        })
+        out[id] = [R.renderer.shadowMap.enabled, m]
+      }
+      return out
+    })
+    assert.deepEqual(perfiles.movil, [false, 1024])
+    assert.deepEqual(perfiles.presentacion, [true, 4096])
+
+    await page.evaluate(() => window.__rigAmbiente.cielo('dia'))
+    await cuadro()
+    assert.equal((await page.evaluate(() => window.__rigAmbiente.estado())).cielo, true)
+    await snap('vista-iso-dia')
+
+    await page.evaluate(() => document.getElementById('c-night').click())
+    await cuadro()
+    const noche = await page.evaluate(() => window.__rigAmbiente.estado())
+    assert.equal(noche.cielo, false, 'sin cielo de día en vista nocturna')
+    assert.ok(noche.halos >= 4, `halos en las torres: ${noche.halos}`)
+    await snap('vista-iso-noche')
+    await page.evaluate(() => document.getElementById('c-night').click())
+
+    const clima = await page.evaluate(
+      () => (window.__rigClima.set('lluvia', 60), window.__rigClima.estado()),
+    )
+    assert.deepEqual([clima.cond, clima.kmh, clima.visible], ['lluvia', 60, true])
+    assert.equal(
+      await page.evaluate(() => document.querySelector('#clima-ctl [data-aviso]').hidden),
+      false,
+    )
+    await page.evaluate(() => window.__rigClima.set('despejado', 0))
+
+    const personas = await page.evaluate(
+      () => (window.__rigPersonas.set(true), window.__rigPersonas.lista()),
+    )
+    assert.ok(personas.length >= 4, `personas apoyadas: ${personas.length}`)
+    for (const p of personas)
+      assert.ok(
+        [0, 3.61, 20.63].some((c) => Math.abs(p.y - c) < 0.6),
+        `${p.id} y=${p.y}`,
+      )
+
+    const man = await page.evaluate(() => {
+      const M = window.__rigManiobra
+      M.lineaFuego(true)
+      const fase = (v) => {
+        M.set(v)
+        const R = window.__rig
+        const b = new R.three.Box3().setFromObject(R.scene.getObjectByName('maniobra_tiro'))
+        return { min: b.min.y, max: b.max.y, linea: M.estado().linea }
+      }
+      return { arriba: fase(0.54), estibado: fase(0.9) }
+    })
+    assert.ok(
+      man.arriba.min > 3.5 && man.arriba.min < 4.2,
+      `pie del tiro sobre el piso: ${man.arriba.min}`,
+    )
+    assert.ok(
+      Math.abs(man.estibado.max - 21.3) < 0.6,
+      `tope del tiro en el peine: ${man.estibado.max}`,
+    )
+    assert.equal(man.arriba.linea, true)
+    await snap('vista-maniobra')
+    await page.evaluate(() => window.__rigManiobra.reset())
+
+    const cortes = await page.evaluate(async () => {
+      window.__rigCortes.y(true, 6)
+      window.__rigCortes.z(true, 0)
+      const a = window.__rigCortes.planos()
+      window.__rigCortes.y(false)
+      window.__rigCortes.z(false)
+      return [a, window.__rigCortes.planos()]
+    })
+    assert.deepEqual(cortes, [2, 0])
+
+    const ang = await page.evaluate(() => {
+      const V = window.__rig.three.Vector3
+      return window.__rigAngulo.medir(new V(1, 0, 0), new V(0, 0, 0), new V(0, 1, 1))
+    })
+    assert.ok(Math.abs(ang.ang - 90) < 1e-6 && Math.abs(ang.dy - 1) < 1e-9)
+  } finally {
+    await page.evaluate(() => {
+      window.__rigPersonas?.set(false)
+      window.__rigClima?.set('despejado', 0)
+      window.__rigManiobra?.reset()
+      window.__rigManiobra?.lineaFuego(false)
+      window.__rigCortes?.y(false)
+      window.__rigCortes?.z(false)
+      if (window.__rig.view.night) document.getElementById('c-night').click()
+      return window.__rigFx?.elegir('pc')
+    })
+  }
+})

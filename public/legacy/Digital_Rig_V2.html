@@ -8371,6 +8371,79 @@ window.__rigExt.onPost(() => {
   })
 })()
 
+/* 74-vr.js */
+/*
+ * 74-vr.js · "Entrar en VR" (WebXR, visores tipo Quest con navegador). Menú Vista.
+ *
+ * El botón aparece solo si el navegador ofrece sesiones 'immersive-vr'. Al entrar:
+ *  - pasa a cámara en perspectiva (la VR no admite ortográfica);
+ *  - ubica al usuario en el sector actual de "Ir a equipo" (o en el acceso a la locación) con un espacio de referencia
+ *    desplazado ('local-floor'): la altura de ojos la pone el visor real, el piso es la cota del sector;
+ *  - renderiza en bucle mientras dura la sesión (el visor normal renderiza a demanda).
+ * Sin controles de desplazamiento: el usuario mira y camina en su espacio físico. Probado solo con el emulador del
+ * navegador; requiere verificación en un visor real.
+ */
+window.__rigExt.onPost((R) => {
+  const ren = R.renderer
+  if (!ren || !ren.xr || !navigator.xr || !window.XRRigidTransform) return
+  let sesion = null
+
+  const btn = document.createElement('button')
+  btn.className = 'btn'
+  btn.id = 'c-vr'
+  btn.type = 'button'
+  btn.textContent = 'Entrar en VR'
+  btn.hidden = true
+
+  async function entrar() {
+    if (sesion) return sesion.end()
+    try {
+      if (R.view && R.view.ortho) document.getElementById('c-ortho')?.click()
+      const s = await navigator.xr.requestSession('immersive-vr', {
+        optionalFeatures: ['local-floor'],
+      })
+      ren.xr.enabled = true
+      ren.xr.setReferenceSpaceType('local-floor')
+      await ren.xr.setSession(s)
+      // ubicación: sector actual de "Ir a equipo" o acceso; cota del piso del sector
+      const D = window.__RIG_VIEWPOINTS
+      const vp = window.__rigVp
+      const id = (vp && vp.current()) || 'acceso'
+      const v = D && D.viewpoints.find((x) => x.id === id)
+      const cota = v && D.pisos[v.piso] ? D.pisos[v.piso].cota : 0
+      const [x, , z] = v ? v.camPos : [-26, 0, -24]
+      const base = ren.xr.getReferenceSpace()
+      if (base)
+        ren.xr.setReferenceSpace(
+          base.getOffsetReferenceSpace(new XRRigidTransform({ x: -x, y: -cota, z: -z })),
+        )
+      ren.setAnimationLoop(() => ren.render(R.scene, R.camera()))
+      sesion = s
+      btn.textContent = 'Salir de VR'
+      s.addEventListener('end', () => {
+        sesion = null
+        ren.setAnimationLoop(null)
+        ren.xr.enabled = false
+        btn.textContent = 'Entrar en VR'
+        if (R.invalidate) R.invalidate()
+      })
+    } catch (e) {
+      console.warn('[74-vr] no se pudo iniciar la sesión VR:', e && e.message)
+      btn.textContent = 'VR no disponible'
+      setTimeout(() => (btn.textContent = 'Entrar en VR'), 2500)
+    }
+  }
+  btn.addEventListener('click', entrar)
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('vista', btn)
+
+  navigator.xr
+    .isSessionSupported('immersive-vr')
+    .then((ok) => (btn.hidden = !ok))
+    .catch(() => {})
+  window.__rigVr = { disponible: () => !btn.hidden, activa: () => !!sesion }
+})
+
 /* 75-mode-presets.js */
 /*
  * 75-mode-presets.js — los 4 modos del visor V2 cambian de forma visible el estado de las capas.
@@ -8702,6 +8775,272 @@ window.__rigExt.onPost(() => {
     current: () => current,
     isOpen: () => !!pop() && !pop().hidden,
   }
+})
+
+/* 77-cortes.js */
+/*
+ * 77-cortes.js · cortes Y (altura) y Z (lateral), además del Corte X del visor (menú Medición).
+ *
+ * Planos de recorte del renderer: Corte Y deja lo que está por debajo de la altura elegida (sirve para ver el piso de
+ * trabajo, el BOP o la boca de pozo desde arriba); Corte Z deja el lado −Z del plano. Se combinan con el Corte X.
+ * Corte visual, superficies abiertas, sin tapas ni sólidos CAD (igual que el Corte X original).
+ * API para pruebas: window.__rigCortes = { y(on, h), z(on, z), planos() }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const ren = R.renderer
+  if (!T || !T.Plane || !ren) return
+  const planoY = new T.Plane(new T.Vector3(0, -1, 0), 12)
+  const planoZ = new T.Plane(new T.Vector3(0, 0, -1), 0)
+  const mios = [planoY, planoZ]
+  const act = { y: false, z: false }
+
+  function aplicar() {
+    const otros = (ren.clippingPlanes || []).filter((p) => !mios.includes(p))
+    const extra = []
+    if (act.y) extra.push(planoY)
+    if (act.z) extra.push(planoZ)
+    ren.clippingPlanes = [...otros, ...extra]
+    btnY.setAttribute('aria-pressed', String(act.y))
+    btnZ.setAttribute('aria-pressed', String(act.z))
+    rY.disabled = !act.y
+    rZ.disabled = !act.z
+    if (R.invalidate) R.invalidate()
+  }
+  function y(on, h) {
+    act.y = !!on
+    if (typeof h === 'number') planoY.constant = h
+    rY.value = String(planoY.constant)
+    aplicar()
+  }
+  function z(on, v) {
+    act.z = !!on
+    if (typeof v === 'number') planoZ.constant = v
+    rZ.value = String(planoZ.constant)
+    aplicar()
+  }
+
+  const fila = (btn, rango) => {
+    const d = document.createElement('div')
+    d.style.cssText = 'display:flex;flex-direction:column;gap:3px;margin-top:4px'
+    d.append(btn, rango)
+    return d
+  }
+  const mkBtn = (id, txt) => {
+    const b = document.createElement('button')
+    b.className = 'btn'
+    b.id = id
+    b.type = 'button'
+    b.textContent = txt
+    b.setAttribute('aria-pressed', 'false')
+    return b
+  }
+  const mkRango = (min, max, val, label) => {
+    const r = document.createElement('input')
+    r.type = 'range'
+    r.min = String(min)
+    r.max = String(max)
+    r.step = '0.1'
+    r.value = String(val)
+    r.disabled = true
+    r.setAttribute('aria-label', label)
+    return r
+  }
+  const btnY = mkBtn('c-cut-y', 'Corte Y (altura)')
+  const btnZ = mkBtn('c-cut-z', 'Corte Z (lateral)')
+  const rY = mkRango(0.5, 34, 12, 'Altura del corte Y')
+  const rZ = mkRango(-15, 15, 0, 'Posición del corte Z')
+  btnY.addEventListener('click', () => y(!act.y))
+  btnZ.addEventListener('click', () => z(!act.z))
+  rY.addEventListener('input', () => {
+    planoY.constant = Number(rY.value)
+    if (R.invalidate) R.invalidate()
+  })
+  rZ.addEventListener('input', () => {
+    planoZ.constant = Number(rZ.value)
+    if (R.invalidate) R.invalidate()
+  })
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function') {
+    window.__rigToolbar.add('medicion', fila(btnY, rY))
+    window.__rigToolbar.add('medicion', fila(btnZ, rZ))
+  }
+  // el Corte X original reemplaza la lista de planos: se vuelven a agregar los propios
+  document.getElementById('c-cut')?.addEventListener('click', () => setTimeout(aplicar, 0))
+  document.getElementById('b-reset')?.addEventListener('click', () => {
+    act.y = act.z = false
+    setTimeout(aplicar, 0)
+  })
+
+  window.__rigCortes = { y, z, planos: () => (ren.clippingPlanes || []).length }
+})
+
+/* 78-medicion-angulo.js */
+/*
+ * 78-medicion-angulo.js · "Medir ángulo (3 puntos)" y desnivel (menú Medición).
+ *
+ * Clic en tres superficies del modelo: A, B (vértice) y C. Muestra el ángulo ABC y, como dato extra, el desnivel
+ * vertical y la distancia horizontal entre A y C. Valores del MODELO aproximado (no as-built), con coma decimal.
+ * Mientras está activo, los clics no seleccionan componentes. Se desactiva solo si se enciende "Medir 2 puntos".
+ * API para pruebas: window.__rigAngulo = { activo(), medir(a, b, c) }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const ren = R.renderer
+  if (!T || !ren || !R.raycaster) return
+  const sc = R.scene
+  const el = ren.domElement
+  const coma = (v, d) => v.toFixed(d).replace('.', ',')
+  let on = false
+  let pts = []
+  let down = null
+
+  const grupo = new T.Group()
+  grupo.name = 'medicion_angulo'
+  sc.add(grupo)
+  const matL = new T.LineBasicMaterial({ color: '#7fd3ff', depthTest: false, transparent: true })
+  const matP = new T.MeshBasicMaterial({ color: '#7fd3ff', depthTest: false })
+  const esfera = new T.SphereGeometry(0.1, 10, 8)
+  const label = document.createElement('div')
+  label.className = 'cad-dim'
+  label.id = 'cad-angle-label'
+  label.style.cssText =
+    'position:absolute;display:none;z-index:4;background:#13304a;border-color:#3f7fae;color:#cfeaff;pointer-events:none'
+  ;(document.getElementById('cad-dimlabels') || document.body).appendChild(label)
+
+  function limpiar() {
+    pts = []
+    grupo.clear()
+    label.style.display = 'none'
+    if (R.invalidate) R.invalidate()
+  }
+  function medir(a, b, c) {
+    const u = a.clone().sub(b)
+    const v = c.clone().sub(b)
+    const ang = (u.angleTo(v) * 180) / Math.PI
+    const dy = c.y - a.y
+    const dh = Math.hypot(c.x - a.x, c.z - a.z)
+    return { ang, dy, dh }
+  }
+  function dibujar() {
+    grupo.clear()
+    for (const p of pts) {
+      const m = new T.Mesh(esfera, matP)
+      m.position.copy(p)
+      m.renderOrder = 80
+      grupo.add(m)
+    }
+    if (pts.length >= 2) {
+      const arr = []
+      for (let i = 1; i < pts.length; i++) arr.push(...pts[i - 1].toArray(), ...pts[i].toArray())
+      const g = new T.BufferGeometry()
+      g.setAttribute('position', new T.BufferAttribute(new Float32Array(arr), 3))
+      const l = new T.LineSegments(g, matL)
+      l.renderOrder = 80
+      grupo.add(l)
+    }
+    grupo.traverse((o) => (o.raycast = () => {}))
+    if (pts.length === 3) {
+      const r = medir(...pts)
+      label.textContent = `≈ ${coma(r.ang, 1)}° · desnivel A→C ${coma(r.dy, 2)} m · horiz. ${coma(r.dh, 2)} m · modelo`
+      label.style.display = 'block'
+      posicionar()
+    }
+    if (R.invalidate) R.invalidate()
+  }
+  function posicionar() {
+    if (pts.length !== 3 || label.style.display === 'none') return
+    const p = pts[1].clone().project(R.camera())
+    const rect = el.getBoundingClientRect()
+    const host = label.offsetParent
+      ? label.offsetParent.getBoundingClientRect()
+      : { left: 0, top: 0 }
+    label.style.left = `${rect.left - host.left + ((p.x + 1) / 2) * rect.width + 12}px`
+    label.style.top = `${rect.top - host.top + ((1 - p.y) / 2) * rect.height - 28}px`
+  }
+  const loop = () => {
+    if (on || label.style.display !== 'none') posicionar()
+    requestAnimationFrame(loop)
+  }
+  requestAnimationFrame(loop)
+
+  function pick(cx, cy) {
+    const rect = el.getBoundingClientRect()
+    const ndc = new T.Vector2(
+      ((cx - rect.left) / rect.width) * 2 - 1,
+      -((cy - rect.top) / rect.height) * 2 + 1,
+    )
+    const cam = R.camera()
+    R.raycaster.setFromCamera(ndc, cam)
+    const capas = R.raycaster.layers.mask
+    R.raycaster.layers.mask = cam.layers.mask // el modelo SK-575 vive en otras capas además de la 0
+    const vis = (o) => {
+      let q = o
+      while (q) {
+        if (!q.visible) return false
+        q = q.parent
+      }
+      return o.layers.test(cam.layers)
+    }
+    const h = R.raycaster
+      .intersectObjects(sc.children, true)
+      .find(
+        (x) =>
+          x.object.isMesh &&
+          vis(x.object) &&
+          !/cielo|clima|halos|sombra_contacto|medicion/.test(x.object.parent?.name + x.object.name),
+      )
+    R.raycaster.layers.mask = capas
+    return h ? h.point.clone() : null
+  }
+
+  el.addEventListener(
+    'pointerdown',
+    (e) => {
+      if (on && e.button === 0) down = { x: e.clientX, y: e.clientY }
+    },
+    { capture: true },
+  )
+  el.addEventListener(
+    'pointerup',
+    (e) => {
+      if (!on || e.button !== 0 || !down) return
+      const d = Math.hypot(e.clientX - down.x, e.clientY - down.y)
+      down = null
+      if (d > 6) return // fue un arrastre de cámara
+      e.stopImmediatePropagation()
+      const p = pick(e.clientX, e.clientY)
+      if (!p) return
+      if (pts.length === 3) pts = []
+      pts.push(p)
+      dibujar()
+    },
+    { capture: true },
+  )
+
+  const btn = document.createElement('button')
+  btn.className = 'btn'
+  btn.id = 'c-angle'
+  btn.type = 'button'
+  btn.textContent = 'Medir ángulo (3 puntos)'
+  btn.setAttribute('aria-pressed', 'false')
+  btn.addEventListener('click', () => {
+    on = !on
+    btn.setAttribute('aria-pressed', String(on))
+    if (on && R.view && R.view.measure) document.getElementById('c-measure')?.click()
+    if (!on) limpiar()
+  })
+  document.getElementById('c-measure')?.addEventListener('click', () => {
+    if (on && R.view && R.view.measure) {
+      on = false
+      btn.setAttribute('aria-pressed', 'false')
+      limpiar()
+    }
+  })
+  document.getElementById('c-clear')?.addEventListener('click', limpiar)
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('medicion', btn)
+
+  window.__rigAngulo = { activo: () => on, medir, puntos: () => pts.length }
 })
 
 /* 79-cabina-desmontable.js */
@@ -12665,6 +13004,1060 @@ window.__rigExt.onPost(() => {
   window.addEventListener('resize', marcar)
   new ResizeObserver(marcar).observe(bar)
   marcar()
+})
+
+/* 95-calidad.js */
+/*
+ * 95-calidad.js · perfiles de calidad y bucle de animación compartido.
+ *
+ *  - Perfiles: Celular (pixel ratio 1, sin sombras, efectos mínimos) · PC (pixel ratio ≤ 1,5, sombra 2048) ·
+ *    Presentación (pixel ratio ≤ 2, sombra 4096, todos los efectos). "Auto" mide los cuadros por segundo al arrancar
+ *    (hasta 40 cuadros forzados o 1,5 s) y elige Celular por debajo de 30 FPS o en pantallas táctiles chicas; si no, PC.
+ *    El perfil elegido se guarda en el almacén de campo (`campo:calidad`).
+ *  - window.__rigFx: { perfil(), onPerfil(cb), anim(nombre, on) }. `anim` mantiene un bucle de render continuo mientras
+ *    algún efecto animado esté activo (el visor renderiza a demanda: sin efectos animados no gasta GPU).
+ * El perfil es presentación visual: no cambia geometría, cotas ni datos.
+ */
+window.__rigExt.onPost((R) => {
+  const ren = R.renderer
+  if (!ren) return
+  const KV = window.__rigKv
+  const PERFILES = {
+    movil: { nombre: 'Celular', pr: 1, sombras: false, mapa: 1024, efectos: 'min' },
+    pc: {
+      nombre: 'PC',
+      pr: Math.min(window.devicePixelRatio || 1, 1.5),
+      sombras: true,
+      mapa: 2048,
+      efectos: 'medio',
+    },
+    presentacion: {
+      nombre: 'Presentación',
+      pr: Math.min(window.devicePixelRatio || 1, 2),
+      sombras: true,
+      mapa: 4096,
+      efectos: 'max',
+    },
+  }
+  let actual = null
+  let eleccion = 'auto'
+  const subs = []
+
+  const luzSombra = () => {
+    let l = null
+    R.scene.traverse((o) => {
+      if (!l && o.isDirectionalLight && o.castShadow) l = o
+    })
+    return l
+  }
+
+  function aplicar(id) {
+    const P = PERFILES[id]
+    if (!P) return
+    const cambioSombra = ren.shadowMap.enabled !== P.sombras
+    ren.setPixelRatio(P.pr)
+    ren.shadowMap.enabled = P.sombras
+    const L = luzSombra()
+    if (L && L.shadow.mapSize.x !== P.mapa) {
+      L.shadow.mapSize.set(P.mapa, P.mapa)
+      if (L.shadow.map) {
+        L.shadow.map.dispose()
+        L.shadow.map = null
+      }
+    }
+    if (cambioSombra)
+      R.scene.traverse((o) => {
+        if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true
+      })
+    ren.shadowMap.needsUpdate = true
+    actual = id
+    document.body.dataset.calidad = id
+    for (const cb of subs) {
+      try {
+        cb(id, P)
+      } catch (e) {
+        console.error('[95-calidad]', e)
+      }
+    }
+    if (R.invalidate) R.invalidate()
+    if (sel) sel.value = eleccion
+  }
+
+  // ───────── bucle compartido ─────────
+  const activos = new Set()
+  let raf = 0
+  const tick = () => {
+    raf = activos.size ? requestAnimationFrame(tick) : 0
+    if (raf && R.invalidate) R.invalidate()
+  }
+  function anim(nombre, on) {
+    if (on) activos.add(nombre)
+    else activos.delete(nombre)
+    if (activos.size && !raf) raf = requestAnimationFrame(tick)
+  }
+
+  function medir() {
+    return new Promise((res) => {
+      let n = 0
+      const t0 = performance.now()
+      const paso = () => {
+        R.renderer.render(R.scene, R.camera())
+        // hasta 40 cuadros o 1,5 s: en equipos lentos la medición no debe demorar el arranque
+        if (++n < 40 && (n < 3 || performance.now() - t0 < 1500)) requestAnimationFrame(paso)
+        else res((n * 1000) / (performance.now() - t0))
+      }
+      requestAnimationFrame(paso)
+    })
+  }
+
+  async function auto() {
+    const tactilChico =
+      matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 900
+    if (tactilChico) return 'movil'
+    const fps = await medir()
+    window.__rigFxFps = Math.round(fps)
+    return fps < 30 ? 'movil' : 'pc'
+  }
+
+  async function elegir(v) {
+    eleccion = PERFILES[v] ? v : 'auto'
+    if (KV) KV.set('campo:calidad', eleccion)
+    aplicar(eleccion === 'auto' ? await auto() : eleccion)
+  }
+
+  // ───────── UI (menú Vista) ─────────
+  const sel = document.createElement('select')
+  sel.id = 'c-calidad'
+  sel.setAttribute('aria-label', 'Calidad gráfica')
+  sel.innerHTML =
+    '<option value="auto">Calidad: Auto</option><option value="movil">Calidad: Celular</option><option value="pc">Calidad: PC</option><option value="presentacion">Calidad: Presentación</option>'
+  sel.style.cssText =
+    'width:100%;height:32px;font:inherit;font-size:12px;color:#DDE3EC;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:0 8px'
+  sel.addEventListener('change', () => elegir(sel.value))
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('vista', sel)
+
+  window.__rigFx = {
+    perfil: () => actual,
+    datos: () => (actual ? PERFILES[actual] : null),
+    onPerfil(cb) {
+      subs.push(cb)
+      if (actual) cb(actual, PERFILES[actual])
+    },
+    anim,
+    elegir,
+  }
+
+  const arrancar = async () => {
+    if (KV) await KV.ready
+    const g = KV ? KV.get('campo:calidad', 'auto') : 'auto'
+    await elegir(typeof g === 'string' ? g : 'auto')
+  }
+  if (window.__rigBooted) setTimeout(arrancar, 300)
+  else document.addEventListener('rig:boot', () => setTimeout(arrancar, 300), { once: true })
+})
+
+/* 96-ambiente.js */
+/*
+ * 96-ambiente.js · presentación de la escena (sin tocar geometría ni datos):
+ *
+ *  1. Cielo: domo con degradé (Día / Atardecer) o fondo liso original. Se oculta en vista nocturna y en Vista CAD.
+ *  2. Sombra de contacto: manchas suaves bajo las piezas apoyadas en el terreno (carrier, piletas, acumulador, BOP…),
+ *     calculadas con la caja de cada componente SK-575. Es el "asentado" que da la oclusión ambiental, sin post-proceso.
+ *  3. Halos de noche: resplandor aditivo en los proyectores de las torres de iluminación y las luces del equipo, solo con
+ *     Vista nocturna. Es un efecto de imagen: no representa niveles de iluminación (lux) ni zonas iluminadas reales.
+ * Respeta el perfil de 95-calidad.js (Celular: sin halos ni sombra de contacto).
+ * API para pruebas: window.__rigAmbiente = { cielo(preset), estado() }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const sc = R.scene
+  if (!T || !T.ShaderMaterial || !sc) return
+  const KV = window.__rigKv
+  const $ = (id) => document.getElementById(id)
+  const on = (id) => $(id) && $(id).getAttribute('aria-pressed') === 'true'
+  const nocheActiva = () => !!(R.view && R.view.night)
+  const cadActiva = () => on('c-vista-cad')
+
+  // ───────── 1. cielo ─────────
+  const PRESETS = {
+    dia: { cenit: '#3d6fa8', horizonte: '#c9d9e6', suelo: '#8d8578' },
+    atardecer: { cenit: '#34466f', horizonte: '#d9a982', suelo: '#5d4a3e' },
+  }
+  const skyMat = new T.ShaderMaterial({
+    uniforms: {
+      cenit: { value: new T.Color(PRESETS.dia.cenit) },
+      horizonte: { value: new T.Color(PRESETS.dia.horizonte) },
+      suelo: { value: new T.Color(PRESETS.dia.suelo) },
+    },
+    vertexShader:
+      'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: [
+      'uniform vec3 cenit; uniform vec3 horizonte; uniform vec3 suelo; varying vec3 vDir;',
+      'void main(){',
+      '  float h = vDir.y;',
+      '  vec3 c = h > 0.0 ? mix(horizonte, cenit, pow(clamp(h, 0.0, 1.0), 0.55)) : mix(horizonte, suelo, clamp(-h * 4.0, 0.0, 1.0));',
+      '  gl_FragColor = vec4(c, 1.0);',
+      '  #include <colorspace_fragment>',
+      '}',
+    ].join('\n'),
+    side: T.BackSide,
+    depthWrite: false,
+    depthTest: false,
+    fog: false,
+  })
+  const sky = new T.Mesh(new T.SphereGeometry(450, 32, 16), skyMat)
+  sky.name = 'cielo_domo'
+  sky.renderOrder = -1000
+  sky.frustumCulled = false
+  sky.raycast = () => {}
+  sky.onBeforeRender = (r, s, cam) => sky.position.copy(cam.position)
+  sc.add(sky)
+  let preset = 'dia'
+  let fondo0 = null
+
+  function cielo(p) {
+    preset = PRESETS[p] ? p : 'liso'
+    if (PRESETS[preset]) {
+      const c = PRESETS[preset]
+      skyMat.uniforms.cenit.value.set(c.cenit)
+      skyMat.uniforms.horizonte.value.set(c.horizonte)
+      skyMat.uniforms.suelo.value.set(c.suelo)
+    }
+    if (KV) KV.set('campo:cielo', preset)
+    if (selCielo) selCielo.value = preset
+    sync()
+  }
+
+  // ───────── 2. sombra de contacto ─────────
+  const soft = (() => {
+    const cv = document.createElement('canvas')
+    cv.width = cv.height = 128
+    const g = cv.getContext('2d')
+    const grd = g.createRadialGradient(64, 64, 8, 64, 64, 64)
+    grd.addColorStop(0, 'rgba(0,0,0,1)')
+    grd.addColorStop(0.55, 'rgba(0,0,0,.75)')
+    grd.addColorStop(1, 'rgba(0,0,0,0)')
+    g.fillStyle = grd
+    g.fillRect(0, 0, 128, 128)
+    return new T.CanvasTexture(cv)
+  })()
+  const aoMat = new T.MeshBasicMaterial({
+    map: soft,
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4,
+  })
+  const ao = new T.Group()
+  ao.name = 'sombra_contacto'
+  sc.add(ao)
+  function quad(cx, cz, w, d) {
+    const g = new T.BufferGeometry()
+    const x0 = -w / 2
+    const x1 = w / 2
+    const z0 = -d / 2
+    const z1 = d / 2
+    g.setAttribute(
+      'position',
+      new T.BufferAttribute(new Float32Array([x0, 0, z0, x1, 0, z0, x1, 0, z1, x0, 0, z1]), 3),
+    )
+    g.setAttribute('uv', new T.BufferAttribute(new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), 2))
+    g.setIndex([0, 2, 1, 0, 3, 2])
+    const m = new T.Mesh(g, aoMat)
+    m.position.set(cx, 0.02, cz)
+    m.renderOrder = -10
+    m.raycast = () => {}
+    return m
+  }
+  function armarAo() {
+    while (ao.children.length) {
+      const c = ao.children.pop()
+      c.geometry.dispose()
+    }
+    const cam = R.camera()
+    const vis = (o) => {
+      let q = o
+      while (q) {
+        if (!q.visible) return false
+        q = q.parent
+      }
+      return o.layers.test(cam.layers)
+    }
+    sc.updateMatrixWorld(true)
+    const porComp = new Map()
+    const b = new T.Box3()
+    sc.traverse((o) => {
+      if (!o.isMesh || !/^sk575_[a-z]+/.test(o.name) || !vis(o)) return
+      if (/aristas|cable|lineas|vientos|tiros/.test(o.name)) return
+      b.setFromObject(o)
+      if (b.min.y > 0.6 || b.isEmpty()) return
+      const k = o.name.match(/^sk575_([a-z]+)/)[1]
+      if (!porComp.has(k)) porComp.set(k, new T.Box3())
+      porComp.get(k).union(b)
+    })
+    for (const [k, bb] of porComp) {
+      const w = bb.max.x - bb.min.x
+      const d = bb.max.z - bb.min.z
+      if (w * d < 0.8 || w > 30 || d > 30 || k === 'mastil') continue
+      ao.add(quad((bb.min.x + bb.max.x) / 2, (bb.min.z + bb.max.z) / 2, w + 1.2, d + 1.2))
+    }
+  }
+
+  // ───────── 3. halos de noche ─────────
+  const glow = (() => {
+    const cv = document.createElement('canvas')
+    cv.width = cv.height = 128
+    const g = cv.getContext('2d')
+    const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64)
+    grd.addColorStop(0, 'rgba(255,244,214,1)')
+    grd.addColorStop(0.2, 'rgba(255,226,160,.55)')
+    grd.addColorStop(0.55, 'rgba(255,200,120,.12)')
+    grd.addColorStop(1, 'rgba(255,200,120,0)')
+    g.fillStyle = grd
+    g.fillRect(0, 0, 128, 128)
+    return new T.CanvasTexture(cv)
+  })()
+  const haloMat = new T.MeshBasicMaterial({
+    map: glow,
+    transparent: true,
+    blending: 2, // AdditiveBlending
+    depthWrite: false,
+    fog: false,
+  })
+  const halos = new T.Group()
+  halos.name = 'halos_noche'
+  sc.add(halos)
+  const disco = new T.CircleGeometry(1, 24)
+  function halo(p, r) {
+    const m = new T.Mesh(disco, haloMat)
+    m.position.copy(p)
+    m.scale.setScalar(r)
+    m.renderOrder = 50
+    m.raycast = () => {}
+    m.onBeforeRender = (rr, s, cam) => m.quaternion.copy(cam.quaternion)
+    halos.add(m)
+  }
+  function armarHalos() {
+    halos.clear()
+    const lentes = sc.getObjectByName('torres_lentes_on')
+    if (lentes && lentes.geometry) {
+      lentes.updateMatrixWorld(true)
+      const pos = lentes.geometry.attributes.position
+      const v = new T.Vector3()
+      const grupos = new Map()
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(lentes.matrixWorld)
+        const k = Math.round(v.x / 3) + ':' + Math.round(v.z / 3)
+        if (!grupos.has(k)) grupos.set(k, { s: new T.Vector3(), n: 0 })
+        const gr = grupos.get(k)
+        gr.s.add(v)
+        gr.n++
+      }
+      for (const gr of grupos.values()) halo(gr.s.divideScalar(gr.n), 3.2)
+    }
+    const b = new T.Box3()
+    const c = new T.Vector3()
+    sc.traverse((o) => {
+      if (!o.isMesh || !/_luz$/.test(o.name) || /mastil/.test(o.name)) return
+      b.setFromObject(o).getCenter(c)
+      halo(c.clone(), 0.9)
+    })
+  }
+
+  // ───────── sincronía con modo noche / CAD / perfil ─────────
+  let perfil = 'pc'
+  let armado = false
+  function sync() {
+    if (!armado) return
+    const noche = nocheActiva()
+    const cad = cadActiva()
+    sky.visible = !noche && !cad && preset !== 'liso'
+    // la niebla de distancia toma el color del horizonte para que el terreno se funda con el cielo
+    if (sc.fog && sc.fog.color) {
+      if (fondo0 === null) fondo0 = sc.fog.color.getHex()
+      if (sky.visible) sc.fog.color.copy(skyMat.uniforms.horizonte.value)
+      else if (!noche && !cad) sc.fog.color.setHex(fondo0)
+    }
+    halos.visible = noche && perfil !== 'movil'
+    ao.visible = perfil !== 'movil' && !cad
+    if (R.invalidate) R.invalidate()
+  }
+
+  const selCielo = document.createElement('select')
+  selCielo.id = 'c-cielo'
+  selCielo.setAttribute('aria-label', 'Cielo')
+  selCielo.innerHTML =
+    '<option value="dia">Cielo: Día</option><option value="atardecer">Cielo: Atardecer</option><option value="liso">Cielo: Liso</option>'
+  selCielo.style.cssText =
+    'width:100%;height:32px;margin-top:4px;font:inherit;font-size:12px;color:#DDE3EC;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:0 8px'
+  selCielo.addEventListener('change', () => cielo(selCielo.value))
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('vista', selCielo)
+
+  for (const id of ['c-night', 'c-vista-cad'])
+    $(id)?.addEventListener('click', () => setTimeout(sync, 0))
+  document.addEventListener('rig:mode', () => setTimeout(sync, 0))
+
+  const arrancar = async () => {
+    armarAo()
+    armarHalos()
+    armado = true
+    if (window.__rigFx) window.__rigFx.onPerfil((p) => ((perfil = p), sync()))
+    if (KV) await KV.ready
+    const g = KV ? KV.get('campo:cielo', 'dia') : 'dia'
+    cielo(typeof g === 'string' ? g : 'dia')
+  }
+  const listo = () =>
+    window.__rigSk575 && window.__rigSk575.ready ? window.__rigSk575.ready() : Promise.resolve()
+  const go = () =>
+    Promise.resolve(listo())
+      .then(arrancar)
+      .catch((e) => console.error('[96-ambiente]', e))
+  if (window.__rigBooted) go()
+  else document.addEventListener('rig:boot', go, { once: true })
+
+  window.__rigAmbiente = {
+    cielo,
+    estado: () => ({
+      preset,
+      cielo: sky.visible,
+      halos: halos.visible ? halos.children.length : 0,
+      ao: ao.visible ? ao.children.length : 0,
+    }),
+  }
+})
+
+/* 97-clima.js */
+/*
+ * 97-clima.js · clima ilustrativo de la locación (menú Capas → "Clima").
+ *
+ *  - Condición: Despejado · Viento con polvo · Lluvia · Nieve. Partículas en un solo draw call: cuadritos orientados a
+ *    cámara en el vertex shader, posición = semilla + (viento + caída) · t, envueltas en una caja de 90 × 40 × 70 m
+ *    alrededor del pozo. La GPU anima todo; el bucle continuo (95-calidad) corre solo mientras hay clima activo.
+ *  - Viento: deslizador 0–100 km/h desde el oeste (dirección fija, ilustrativa). Por encima de 40 km/h el panel muestra
+ *    "Consultar el procedimiento aplicable para maniobras con viento": el visor NO fija umbrales ni suspende tareas.
+ *  - Celular: un cuarto de las partículas.
+ * Es una representación visual: no simula clima, cargas de viento sobre el mástil ni visibilidad real.
+ * API para pruebas: window.__rigClima = { set(cond, kmh), estado() }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const sc = R.scene
+  if (!T || !T.ShaderMaterial || !T.BufferAttribute) return
+  const FX = window.__rigFx
+  const N = 6000
+  const CAJA = [90, 40, 70]
+  const CENTRO = [-6, 20, 0]
+
+  const COND = {
+    despejado: null,
+    polvo: { color: [0.78, 0.68, 0.52], tam: 0.12, caida: 0.15, alfa: 0.35, n: 1, vientoMin: 25 },
+    lluvia: { color: [0.75, 0.82, 0.92], tam: 0.03, caida: 9, alfa: 0.45, n: 1, estirar: 14 },
+    nieve: { color: [0.97, 0.98, 1.0], tam: 0.11, caida: 1.1, alfa: 0.85, n: 0.8 },
+  }
+
+  // geometría: N cuadritos (4 vértices) con semilla y esquina
+  const seed = new Float32Array(N * 4 * 3)
+  const corner = new Float32Array(N * 4 * 2)
+  const idx = new Uint32Array(N * 6)
+  let s = 12345
+  const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+  for (let i = 0; i < N; i++) {
+    const sx = (rnd() - 0.5) * CAJA[0]
+    const sy = rnd() * CAJA[1]
+    const sz = (rnd() - 0.5) * CAJA[2]
+    const cs = [-1, -1, 1, -1, 1, 1, -1, 1]
+    for (let k = 0; k < 4; k++) {
+      seed.set([sx, sy, sz], (i * 4 + k) * 3)
+      corner.set([cs[k * 2], cs[k * 2 + 1]], (i * 4 + k) * 2)
+    }
+    idx.set([i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3], i * 6)
+  }
+  const geo = new T.BufferGeometry()
+  geo.setAttribute('position', new T.BufferAttribute(seed, 3))
+  geo.setAttribute('corner', new T.BufferAttribute(corner, 2))
+  geo.setIndex(new T.BufferAttribute(idx, 1))
+  const mat = new T.ShaderMaterial({
+    uniforms: {
+      t: { value: 0 },
+      viento: { value: new T.Vector3(0, 0, 0) },
+      caida: { value: 1 },
+      tam: { value: 0.05 },
+      estirar: { value: 0 },
+      color: { value: new T.Color(1, 1, 1) },
+      alfa: { value: 0.5 },
+      caja: { value: new T.Vector3(...CAJA) },
+      centro: { value: new T.Vector3(...CENTRO) },
+    },
+    vertexShader: `
+      attribute vec2 corner;
+      uniform float t, caida, tam, estirar; uniform vec3 viento, caja, centro;
+      varying vec2 vC;
+      void main(){
+        vec3 p = position + (viento + vec3(0.0, -caida, 0.0)) * t;
+        p.x += sin(t * 0.7 + position.y) * 0.3 * (1.0 - step(5.0, caida));
+        p = mod(p + caja * 0.5, caja) - caja * 0.5;
+        p.y += caja.y * 0.5;
+        p += centro - vec3(0.0, caja.y * 0.5, 0.0);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        vec2 c = corner * tam;
+        c.y *= 1.0 + estirar;
+        mv.xy += c;
+        vC = corner;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 color; uniform float alfa; varying vec2 vC;
+      void main(){ float d = length(vC); if (d > 1.0) discard; gl_FragColor = vec4(color, alfa * (1.0 - d * d)); }`,
+    transparent: true,
+    depthWrite: false,
+    fog: false,
+  })
+  const mesh = new T.Mesh(geo, mat)
+  mesh.name = 'clima_particulas'
+  mesh.frustumCulled = false
+  mesh.renderOrder = 60
+  mesh.visible = false
+  mesh.raycast = () => {}
+  sc.add(mesh)
+
+  let cond = 'despejado'
+  let kmh = 0
+  let t0 = performance.now()
+  mesh.onBeforeRender = () => {
+    mat.uniforms.t.value = ((performance.now() - t0) / 1000) % 3600
+  }
+
+  function aplicar() {
+    const C = COND[cond]
+    const ms = kmh / 3.6
+    mat.uniforms.viento.value.set(ms, 0, ms * 0.25) // del oeste, levemente al sur (ilustrativo)
+    if (C) {
+      const movil = window.__rigFx && window.__rigFx.perfil() === 'movil'
+      const usar = Math.round(N * C.n * (movil ? 0.25 : 1))
+      geo.setDrawRange(0, usar * 6)
+      mat.uniforms.caida.value = C.caida
+      mat.uniforms.tam.value = C.tam
+      mat.uniforms.estirar.value = C.estirar || 0
+      mat.uniforms.color.value.setRGB(...C.color)
+      mat.uniforms.alfa.value = C.alfa
+    }
+    mesh.visible = !!C
+    if (FX) FX.anim('clima', !!C)
+    aviso.hidden = kmh <= 40
+    salida.textContent = `${kmh} km/h`
+    if (R.invalidate) R.invalidate()
+  }
+
+  function set(c, v) {
+    if (Object.prototype.hasOwnProperty.call(COND, c)) cond = c
+    if (typeof v === 'number' && isFinite(v)) kmh = Math.max(0, Math.min(100, Math.round(v)))
+    if (cond === 'polvo' && kmh < COND.polvo.vientoMin) kmh = COND.polvo.vientoMin
+    sel.value = cond
+    rango.value = String(kmh)
+    t0 = performance.now()
+    aplicar()
+  }
+
+  // ───────── UI (menú Capas) ─────────
+  const box = document.createElement('div')
+  box.id = 'clima-ctl'
+  box.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:12px'
+  box.innerHTML =
+    '<select aria-label="Clima" style="height:32px;font:inherit;color:#DDE3EC;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:0 8px">' +
+    '<option value="despejado">Clima: Despejado</option><option value="polvo">Clima: Viento con polvo</option><option value="lluvia">Clima: Lluvia</option><option value="nieve">Clima: Nieve</option></select>' +
+    '<label style="display:flex;align-items:center;gap:6px">Viento <input type="range" min="0" max="100" step="5" value="0" style="flex:1" aria-label="Velocidad del viento (ilustrativa)"><output>0 km/h</output></label>' +
+    '<div data-aviso hidden style="color:#E8C978;font-size:11px">Viento fuerte: consultar el procedimiento aplicable para maniobras con viento (el visor no fija umbrales).</div>' +
+    '<div style="opacity:.6;font-size:10.5px">Clima ilustrativo: no simula cargas de viento ni visibilidad.</div>'
+  const sel = box.querySelector('select')
+  const rango = box.querySelector('input')
+  const salida = box.querySelector('output')
+  const aviso = box.querySelector('[data-aviso]')
+  sel.addEventListener('change', () => set(sel.value))
+  rango.addEventListener('input', () => set(cond, Number(rango.value)))
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('capas', box)
+
+  if (FX) FX.onPerfil(() => aplicar())
+  window.__rigClima = { set, estado: () => ({ cond, kmh, visible: mesh.visible }) }
+})
+
+/* 98-personas.js */
+/*
+ * 98-personas.js · operarios genéricos con EPP como referencia de escala (menú Capas → "Personas").
+ *
+ * Figuras simples propias (casco, mameluco, chaleco reflectivo, botines), 1,75 m de alto, apoyadas sobre la superficie
+ * real del modelo (rayo vertical contra la geometría visible). Puestos ilustrativos: boca de pozo (2), enganchador en el
+ * piso de enganche, maquinista en el cuadro de maniobras y ayudante en la planchada. Si el rayo no encuentra la superficie
+ * esperada, esa figura no se dibuja (no se inventa una altura).
+ * NO representan puestos de trabajo definidos por procedimiento ni distancias de seguridad.
+ * Encendidas por defecto en Entrenamiento. API para pruebas: window.__rigPersonas = { set(on), lista() }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const sc = R.scene
+  if (!T || !R.raycaster) return
+
+  // [id, rol, x, z, cota esperada de apoyo (m), tolerancia, rumbo (rad; null = mirando a la boca de pozo), color de casco]
+  const PUESTOS = [
+    ['boca-1', 'Boca de pozo', 0.95, 0.75, 3.61, 0.45, null, '#f4f4f0'],
+    ['boca-2', 'Boca de pozo', -0.55, -1.15, 3.61, 0.45, null, '#f4f4f0'],
+    ['enganche', 'Enganchador', 1.25, 0.2, 20.63, 0.6, Math.PI * 1.5, '#f4f4f0'],
+    ['maquinista', 'Maquinista', -6.3, -1.75, 0, 0.6, 0, '#2f6fd6'],
+    ['planchada', 'Ayudante', 8.2, -2.6, 0, 0.6, Math.PI * 0.85, '#f2c230'],
+  ]
+
+  const M = (c, extra = {}) =>
+    new T.MeshStandardMaterial({ color: c, roughness: 0.75, metalness: 0, ...extra })
+  const mat = {
+    mameluco: M('#1f3a63'),
+    chaleco: M('#ff7a1a', { emissive: new T.Color('#ff7a1a'), emissiveIntensity: 0.15 }),
+    franja: M('#e8eef2', {
+      emissive: new T.Color('#9aa4ab'),
+      emissiveIntensity: 0.35,
+      metalness: 0.4,
+      roughness: 0.3,
+    }),
+    piel: M('#c99b7c'),
+    botin: M('#2b2118'),
+    guante: M('#d6c25a'),
+  }
+  const G = {
+    pierna: new T.CylinderGeometry(0.075, 0.065, 0.82, 10),
+    torso: new T.BoxGeometry(0.42, 0.56, 0.24),
+    franja: new T.BoxGeometry(0.43, 0.04, 0.245),
+    brazo: new T.CylinderGeometry(0.055, 0.05, 0.62, 8),
+    cabeza: new T.SphereGeometry(0.11, 14, 10),
+    casco: new T.SphereGeometry(0.135, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    ala: new T.CylinderGeometry(0.16, 0.16, 0.015, 18),
+    botin: new T.BoxGeometry(0.12, 0.09, 0.26),
+    mano: new T.SphereGeometry(0.05, 8, 6),
+  }
+
+  function figura(colorCasco) {
+    const g = new T.Group()
+    const add = (geo, m, x, y, z, rx = 0, rz = 0) => {
+      const o = new T.Mesh(geo, m)
+      o.position.set(x, y, z)
+      o.rotation.set(rx, 0, rz)
+      o.castShadow = true
+      o.receiveShadow = true
+      g.add(o)
+      return o
+    }
+    for (const sx of [-0.1, 0.1]) {
+      add(G.pierna, mat.mameluco, sx, 0.5, 0)
+      add(G.botin, mat.botin, sx, 0.045, 0.03)
+    }
+    add(G.torso, mat.chaleco, 0, 1.19, 0)
+    for (const y of [1.06, 1.24]) add(G.franja, mat.franja, 0, y, 0)
+    for (const sx of [-0.27, 0.27]) {
+      add(G.brazo, mat.mameluco, sx, 1.16, 0.02, 0, sx > 0 ? 0.12 : -0.12)
+      add(G.mano, mat.guante, sx * 1.13, 0.83, 0.03)
+    }
+    add(G.cabeza, mat.piel, 0, 1.58, 0)
+    const casco = M(colorCasco)
+    add(G.casco, casco, 0, 1.62, 0)
+    add(G.ala, casco, 0, 1.625, 0.02)
+    g.traverse((o) => (o.raycast = () => {}))
+    return g
+  }
+
+  const grupo = new T.Group()
+  grupo.name = 'personas_epp'
+  grupo.visible = false
+  sc.add(grupo)
+  const colocadas = []
+
+  function apoyo(x, z, cota, tol) {
+    const cam = R.camera()
+    const ray = R.raycaster
+    const capas = ray.layers.mask
+    ray.layers.mask = cam.layers.mask
+    ray.set(new T.Vector3(x, cota + 2.5, z), new T.Vector3(0, -1, 0))
+    ray.far = 6
+    const vis = (o) => {
+      let q = o
+      while (q) {
+        if (!q.visible) return false
+        q = q.parent
+      }
+      return true
+    }
+    const hits = ray
+      .intersectObjects(sc.children, true)
+      .filter((h) => h.object.isMesh && vis(h.object) && !grupo.children.includes(h.object))
+    ray.layers.mask = capas
+    ray.far = Infinity
+    const h = hits.find((h) => Math.abs(h.point.y - cota) <= tol)
+    return h ? h.point.y : null
+  }
+
+  function armar() {
+    grupo.clear()
+    colocadas.length = 0
+    sc.updateMatrixWorld(true)
+    for (const [id, rol, x, z, cota, tol, rumbo, casco] of PUESTOS) {
+      const y = cota === 0 ? 0 : apoyo(x, z, cota, tol)
+      if (y === null) continue
+      const f = figura(casco)
+      f.position.set(x, y, z)
+      f.rotation.y = rumbo === null ? Math.atan2(-x, -z) : rumbo
+      f.name = 'persona_' + id
+      f.userData.rol = rol
+      grupo.add(f)
+      colocadas.push({ id, rol, y: +y.toFixed(2) })
+    }
+  }
+
+  let armado = false
+  function set(on) {
+    if (on && !armado) {
+      armar()
+      armado = true
+    }
+    grupo.visible = !!on
+    btn.setAttribute('aria-pressed', String(!!on))
+    if (R.renderer) R.renderer.shadowMap.needsUpdate = true
+    if (R.invalidate) R.invalidate()
+  }
+
+  const btn = document.createElement('button')
+  btn.className = 'btn'
+  btn.id = 'c-personas'
+  btn.type = 'button'
+  btn.textContent = 'Personas (escala)'
+  btn.title =
+    'Operarios genéricos con EPP como referencia de escala; no son puestos definidos por procedimiento'
+  btn.setAttribute('aria-pressed', 'false')
+  btn.addEventListener('click', () => set(!grupo.visible))
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('capas', btn)
+
+  document.addEventListener('rig:mode', (e) => {
+    if (e.detail === 'training') set(true)
+  })
+
+  window.__rigPersonas = { set, lista: () => colocadas.slice() }
+})
+
+/* 99-maniobra.js */
+/*
+ * 99-maniobra.js · maniobra ilustrativa "sacar un tiro" + línea de fuego (menú Animar).
+ *
+ * Fases (cinemática visual, NO cálculo ni simulación):
+ *   1. El elevador baja al piso de trabajo y toma el tiro (el tiro sale de la boca de pozo, por debajo del piso).
+ *   2. El aparejo sube con el tiro colgado (mueve el deslizador real del aparejo: el modelo SK-575 lo acompaña).
+ *   3. El tiro se estiba: el extremo superior va al peine del piso de enganche y el inferior al piso, donde está el
+ *      conjunto de tiros del modelo (sk575_tiros).
+ *   4. El aparejo vuelve vacío a la altura de reposo.
+ * Largo del tiro = (piso de enganche − piso de trabajo) del modelo + 0,6 m; diámetro 2-7/8" (73 mm) como referencia
+ * visual. Todo lo geométrico sale del modelo (cajas de sk575_aparejo y sk575_tiros); nada de esto es un dato operativo.
+ *
+ * Línea de fuego: mientras está activa, una línea vertical discontinua y un anillo marcan la PROYECCIÓN VERTICAL del
+ * elevador / carga suspendida sobre el piso. No es una distancia ni una zona de exclusión aprobada.
+ * API para pruebas: window.__rigManiobra = { play(), stop(), set(p), estado(), lineaFuego(on) }.
+ */
+window.__rigExt.onPost((R) => {
+  const T = R.three
+  const sc = R.scene
+  const hoist = document.getElementById('hoist')
+  if (!T || !hoist) return
+  const FX = window.__rigFx
+  const PISO = 3.61
+  const ENGANCHE = 20.63
+  const LARGO = ENGANCHE - PISO + 0.6
+  const DUR = 26000 // ms de la maniobra completa
+  const H0 = Number(hoist.value) || 14
+
+  const box = new T.Box3()
+  const parteAparejo = () =>
+    sc.getObjectByName('sk575_aparejo_rojo') || sc.getObjectByName('sk575_aparejo_acero')
+  function elevador() {
+    const o = parteAparejo()
+    if (!o) return null
+    o.updateWorldMatrix(true, false)
+    box.setFromObject(o)
+    const c = new T.Vector3()
+    box.getCenter(c)
+    return { x: c.x, z: c.z, fondo: box.min.y }
+  }
+  let offset = null // fondo del elevador − altura del deslizador (se mide una vez)
+  function alto(h) {
+    hoist.value = String(h)
+    hoist.dispatchEvent(new Event('input'))
+  }
+  function medirOffset() {
+    alto(H0)
+    sc.updateMatrixWorld(true)
+    const e = elevador()
+    offset = e ? e.fondo - H0 : -3.4
+  }
+  // destino de estiba: centro y piso de los tiros del modelo; si no están, al costado del piso de trabajo
+  function estiba() {
+    const o =
+      sc.getObjectByName('sk575_tiros') ||
+      (() => {
+        let f = null
+        sc.traverse((q) => {
+          if (!f && /^sk575_tiros/.test(q.name)) f = q
+        })
+        return f
+      })()
+    if (o) {
+      box.setFromObject(o)
+      const c = new T.Vector3()
+      box.getCenter(c)
+      return { x: c.x, z: c.z, piso: Math.max(box.min.y, PISO) }
+    }
+    return { x: 1.6, z: 1.6, piso: PISO }
+  }
+
+  // ───────── tiro ─────────
+  const tuboMat = new T.MeshStandardMaterial({ color: '#4a4f57', roughness: 0.45, metalness: 0.6 })
+  const cuplaMat = new T.MeshStandardMaterial({ color: '#8d939a', roughness: 0.4, metalness: 0.7 })
+  const tiro = new T.Group()
+  tiro.name = 'maniobra_tiro'
+  const cuerpo = new T.Mesh(new T.CylinderGeometry(0.0365, 0.0365, LARGO, 12), tuboMat)
+  cuerpo.position.y = -LARGO / 2
+  tiro.add(cuerpo)
+  for (const y of [-0.12, -LARGO / 2, -LARGO + 0.1]) {
+    const c = new T.Mesh(new T.CylinderGeometry(0.047, 0.047, 0.2, 12), cuplaMat)
+    c.position.y = y
+    tiro.add(c)
+  }
+  tiro.traverse((o) => {
+    o.castShadow = true
+    o.raycast = () => {}
+  })
+  tiro.visible = false
+  sc.add(tiro)
+
+  // ───────── línea de fuego ─────────
+  const lf = new T.Group()
+  lf.name = 'linea_de_fuego'
+  lf.visible = false
+  const dashes = []
+  for (let y = 0; y < 30; y += 0.6) dashes.push(0, -y, 0, 0, -y - 0.35, 0)
+  const lgeo = new T.BufferGeometry()
+  lgeo.setAttribute('position', new T.BufferAttribute(new Float32Array(dashes), 3))
+  const linea = new T.LineSegments(
+    lgeo,
+    new T.LineBasicMaterial({ color: '#ff4d4d', depthTest: false, transparent: true }),
+  )
+  linea.renderOrder = 70
+  const anillo = new T.Mesh(
+    new T.RingGeometry(0.42, 0.5, 40),
+    new T.MeshBasicMaterial({
+      color: '#ff4d4d',
+      transparent: true,
+      opacity: 0.85,
+      depthTest: false,
+      side: T.DoubleSide,
+    }),
+  )
+  anillo.rotation.x = -Math.PI / 2
+  anillo.renderOrder = 70
+  lf.add(linea, anillo)
+  lf.traverse((o) => (o.raycast = () => {}))
+  sc.add(lf)
+  let lfOn = false
+
+  function actualizarLinea() {
+    if (!lfOn) return (lf.visible = false)
+    const e = elevador()
+    if (!e) return (lf.visible = false)
+    const piso = e.fondo > PISO ? PISO : 0
+    lf.visible = true
+    lf.position.set(e.x, e.fondo, e.z)
+    linea.scale.y = 1
+    lgeo.setDrawRange(0, Math.max(2, Math.ceil((e.fondo - piso) / 0.6) * 2))
+    anillo.position.set(0, piso - e.fondo + 0.03, 0)
+  }
+
+  // ───────── fases ─────────
+  const ease = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2)
+  const lerp = (a, b, k) => a + (b - a) * k
+  let p = 0
+  let playing = false
+  let tPrev = 0
+  let est = null
+  const hAbajo = () => PISO + 0.9 - offset // elevador justo sobre el piso
+  const hArriba = () => Math.min(25, PISO + 0.05 + LARGO - offset) // pie del tiro apenas sobre el piso
+
+  function set(v) {
+    if (offset === null) medirOffset()
+    if (!est) est = estiba()
+    p = Math.max(0, Math.min(1, v))
+    const hA = hAbajo()
+    const hB = hArriba()
+    let h
+    let estado
+    tiro.visible = true
+    const e0 = elevador() || { x: 0, z: 0 }
+    if (p < 0.15) {
+      const k = ease(p / 0.15)
+      h = lerp(H0, hA, k)
+      estado = 'El elevador baja al piso de trabajo'
+      tiro.position.set(e0.x, hA + offset, e0.z) // el tiro asoma de la boca de pozo, esperando
+      tiro.rotation.set(0, 0, 0)
+    } else if (p < 0.55) {
+      const k = ease((p - 0.15) / 0.4)
+      h = lerp(hA, hB, k)
+      estado = 'Sacando el tiro: carga suspendida'
+    } else if (p < 0.8) {
+      const k = ease((p - 0.55) / 0.25)
+      h = hB
+      estado = 'Estibando el tiro en el peine'
+      const top = new T.Vector3(lerp(e0.x, est.x, k), hB + offset, lerp(e0.z, est.z, k))
+      const pie = new T.Vector3(
+        lerp(e0.x, est.x, k * k),
+        lerp(hB + offset - LARGO, est.piso, k),
+        lerp(e0.z, est.z, k * k),
+      )
+      colocarEntre(top, pie)
+    } else {
+      const k = ease((p - 0.8) / 0.2)
+      h = lerp(hB, H0, k)
+      estado = 'El aparejo vuelve vacío'
+    }
+    alto(h)
+    if (p >= 0.15 && p < 0.55) {
+      sc.updateMatrixWorld(true)
+      const e = elevador()
+      tiro.position.set(e.x, e.fondo, e.z)
+      tiro.rotation.set(0, 0, 0)
+    }
+    actualizarLinea()
+    rotulo.textContent = `${estado} · ${Math.round(p * 100)} %`
+    rango.value = String(Math.round(p * 1000))
+    if (R.renderer) R.renderer.shadowMap.needsUpdate = true
+    if (R.invalidate) R.invalidate()
+  }
+  const up = new T.Vector3(0, 1, 0)
+  const q = new T.Quaternion()
+  function colocarEntre(top, pie) {
+    const dir = top.clone().sub(pie)
+    const L = dir.length()
+    q.setFromUnitVectors(up, dir.normalize())
+    tiro.quaternion.copy(q)
+    tiro.position.copy(top)
+    tiro.scale.y = L / LARGO
+  }
+
+  function frame(t) {
+    if (!playing) return
+    const dt = tPrev ? t - tPrev : 16
+    tPrev = t
+    set(p + dt / DUR)
+    if (p >= 1) return stop(true)
+    requestAnimationFrame(frame)
+  }
+  function play() {
+    if (p >= 1) p = 0
+    playing = true
+    tPrev = 0
+    btnPlay.textContent = 'Pausar maniobra'
+    btnPlay.setAttribute('aria-pressed', 'true')
+    if (FX) FX.anim('maniobra', true)
+    requestAnimationFrame(frame)
+  }
+  function stop(fin) {
+    playing = false
+    btnPlay.textContent = 'Maniobra: sacar un tiro'
+    btnPlay.setAttribute('aria-pressed', 'false')
+    if (FX) FX.anim('maniobra', false)
+    if (fin === true) {
+      tiro.scale.y = 1
+      rotulo.textContent = 'Tiro estibado · maniobra terminada (ilustrativa)'
+    }
+  }
+  function reset() {
+    stop()
+    p = 0
+    tiro.visible = false
+    tiro.scale.y = 1
+    alto(H0)
+    rotulo.textContent = 'Maniobra ilustrativa: no es procedimiento ni cálculo'
+    actualizarLinea()
+    if (R.invalidate) R.invalidate()
+  }
+  function lineaFuego(on) {
+    lfOn = !!on
+    btnLf.setAttribute('aria-pressed', String(lfOn))
+    actualizarLinea()
+    if (R.invalidate) R.invalidate()
+  }
+  // la línea acompaña también al deslizador manual del aparejo
+  hoist.addEventListener('input', () => {
+    if (!playing) {
+      sc.updateMatrixWorld(true)
+      actualizarLinea()
+    }
+  })
+
+  // ───────── UI (menú Animar) ─────────
+  const ui = document.createElement('div')
+  ui.id = 'maniobra-ctl'
+  ui.style.cssText =
+    'display:flex;flex-direction:column;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)'
+  const btnPlay = document.createElement('button')
+  btnPlay.className = 'btn'
+  btnPlay.id = 'c-maniobra'
+  btnPlay.type = 'button'
+  btnPlay.textContent = 'Maniobra: sacar un tiro'
+  btnPlay.setAttribute('aria-pressed', 'false')
+  btnPlay.addEventListener('click', () => (playing ? stop() : play()))
+  const rango = document.createElement('input')
+  rango.type = 'range'
+  rango.min = '0'
+  rango.max = '1000'
+  rango.value = '0'
+  rango.setAttribute('aria-label', 'Avance de la maniobra')
+  rango.addEventListener('input', () => {
+    stop()
+    set(Number(rango.value) / 1000)
+  })
+  const fila = document.createElement('div')
+  fila.style.cssText = 'display:flex;gap:4px'
+  const btnReset = document.createElement('button')
+  btnReset.className = 'btn'
+  btnReset.type = 'button'
+  btnReset.textContent = 'Reiniciar'
+  btnReset.addEventListener('click', reset)
+  const btnLf = document.createElement('button')
+  btnLf.className = 'btn'
+  btnLf.id = 'c-linea-fuego'
+  btnLf.type = 'button'
+  btnLf.textContent = 'Línea de fuego'
+  btnLf.title = 'Proyección vertical de la carga suspendida (ilustrativa, no es zona de exclusión)'
+  btnLf.setAttribute('aria-pressed', 'false')
+  btnLf.addEventListener('click', () => lineaFuego(!lfOn))
+  fila.append(btnReset, btnLf)
+  const rotulo = document.createElement('div')
+  rotulo.style.cssText = 'font-size:11px;opacity:.8'
+  rotulo.textContent = 'Maniobra ilustrativa: no es procedimiento ni cálculo'
+  ui.append(btnPlay, rango, fila, rotulo)
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('animar', ui)
+
+  document.addEventListener('rig:mode', (e) => {
+    if (e.detail === 'qhse' || e.detail === 'operation') lineaFuego(true)
+    else if (e.detail === 'explore') lineaFuego(false)
+  })
+
+  window.__rigManiobra = {
+    play,
+    stop,
+    set,
+    reset,
+    lineaFuego,
+    estado: () => ({ p, playing, offset, linea: lf.visible, tiro: tiro.visible, largo: LARGO }),
+  }
 })
 
 </script>
@@ -16785,7 +18178,7 @@ void main() {
     <h3>${n.name}</h3>
     <p>${n.funcion}</p>
     <div class="d-sec"><h4 style="color:#FCA5A5">Peligros y eventos de referencia</h4><ul>${r(n.riesgos)}</ul></div>
-    <div class="d-sec"><h4 style="color:#67E8F9">Controles orientativos \xB7 verificar aplicabilidad</h4><ul>${r(n.epp)}</ul></div>`,document.getElementById("d-body").scrollTop=0,t.classList.remove("hidden")}function ia(i,e){Jt[i].visible=e;let t=document.querySelector(`.item[data-id="${i}"]`);t&&(t.classList.toggle("off",!e),t.querySelector("input").checked=e),sa[i].style.display="none",qx()}function qx(){Object.keys(nr).forEach(i=>{let e=Object.keys(at).filter(s=>at[s].family===i),t=document.querySelector(`input[data-fam="${i}"]`);if(!t)return;let n=e.filter(s=>Jt[s].visible).length;t.checked=n===e.length,t.indeterminate=n>0&&n<e.length})}var sa={};function Yx(){let i=document.getElementById("tree-body");Object.entries(nr).forEach(([a,o])=>{let l=Object.keys(at).filter(h=>at[h].family===a);if(!l.length)return;let c=document.createElement("div");c.className="fam",c.innerHTML=`<div class="fam-head"><input type="checkbox" checked data-fam="${a}" aria-label="Mostrar ${o.name}"><span class="dot" style="background:${o.color}"></span>${o.name}</div>`,l.sort((h,d)=>at[h].n-at[d].n).forEach(h=>{let d=at[h],u=document.createElement("div");u.className="item",u.dataset.id=h,u.innerHTML=`<input type="checkbox" checked aria-label="Mostrar ${d.name}"><button class="item-name"><span class="num">${String(d.n).padStart(2,"0")}</span><span>${d.name}</span></button>`,u.querySelector("input").addEventListener("change",f=>ia(h,f.target.checked)),u.querySelector("button").addEventListener("click",()=>tr(Me.selected===h?null:h)),c.appendChild(u)}),c.querySelector("input[data-fam]").addEventListener("change",h=>{let d=h.target.checked;l.forEach(u=>ia(u,d)),At()}),i.appendChild(c)});let e=document.getElementById("labels");Object.entries(at).forEach(([a,o])=>{let l=document.createElement("div");l.className="lbl",l.style.display="none",l.innerHTML=`<b style="background:${nr[o.family].color}">${o.n}</b>${o.name}`,e.appendChild(l),sa[a]=l}),document.querySelectorAll("#views .btn").forEach(a=>a.addEventListener("click",()=>{Me.savedView=null,document.getElementById("d-back").disabled=!0,Uh(a.dataset.view)}));let t=document.getElementById("t-explode"),n=document.getElementById("explode"),s=()=>n.style.setProperty("--p",n.value+"%");s(),t.addEventListener("click",()=>{let a=!t.classList.contains("on");t.classList.toggle("on",a),t.setAttribute("aria-pressed",a),n.disabled=!a,Me.explodeTarget=a?n.value/100:0}),n.addEventListener("input",()=>{s(),Me.explodeTarget=n.value/100});let r=(a,o,l)=>{let c=document.getElementById(a);c.addEventListener("click",()=>{Me[o]=!Me[o],c.classList.toggle("on",Me[o]),c.setAttribute("aria-pressed",Me[o]),l&&l()})};r("t-labels","labels",()=>{Me.labels||Object.values(sa).forEach(a=>a.style.display="none")}),r("t-zones","zones",()=>{Pn.visible=Me.zones&&Me.explode===0,document.getElementById("legend").style.display=Me.zones&&Me.explode===0?"flex":"none"}),document.getElementById("b-reset").addEventListener("click",Zx),document.getElementById("d-close").addEventListener("click",()=>tr(null)),document.getElementById("d-focus").addEventListener("click",()=>Me.selected&&ef(Me.selected)),document.getElementById("d-back").addEventListener("click",Xx),document.getElementById("tree-toggle").addEventListener("click",()=>{let a=document.getElementById("tree");a.classList.toggle("collapsed"),document.getElementById("legend").style.left=a.classList.contains("collapsed")?"68px":"304px"}),addEventListener("keydown",a=>{a.key==="Escape"&&tr(null)})}function Zx(){$x(),tr(null),Oh(null),Object.keys(Jt).forEach(e=>ia(e,!0));let i=document.getElementById("t-explode");i.classList.remove("on"),i.setAttribute("aria-pressed",!1),document.getElementById("explode").disabled=!0,Me.explodeTarget=0,["labels","zones"].forEach(e=>{Me[e]=!1;let t=document.getElementById("t-"+e);t.classList.remove("on"),t.setAttribute("aria-pressed",!1)}),Object.values(sa).forEach(e=>e.style.display="none"),Pn.visible=!1,document.getElementById("legend").style.display="none",Me.savedView=null,document.getElementById("d-back").disabled=!0,Uh("iso")}var Sl=new zr,El=new xe,Zi=null,Qs=null,er=document.getElementById("tooltip");function tf(i,e){let t=ot.domElement.getBoundingClientRect();El.set((i-t.left)/t.width*2-1,-((e-t.top)/t.height)*2+1),Sl.setFromCamera(El,wt);let n=Sl.intersectObjects(Dh,!1).find(s=>Jt[s.object.userData.id].visible&&(!Pe.cut||s.point.x<=aa.constant));return n?n.object.userData.id:null}ot.domElement.addEventListener("pointermove",i=>{Zi={x:i.clientX,y:i.clientY,type:i.pointerType}});ot.domElement.addEventListener("pointerleave",()=>{Zi=null,Oh(null),er.style.display="none"});ot.domElement.addEventListener("pointerdown",i=>{Qs={x:i.clientX,y:i.clientY,b:i.button}});ot.domElement.addEventListener("pointerup",i=>{if(!Qs||Qs.b!==0)return;let e=Math.hypot(i.clientX-Qs.x,i.clientY-Qs.y);if(Qs=null,e>6)return;if(Pe.measure){Jx(i.clientX,i.clientY);return}let t=tf(i.clientX,i.clientY);tr(t&&t===Me.selected?null:t)});function nf(){if(!Zi||Zi.type==="touch"||Ut)return;let i=tf(Zi.x,Zi.y);if(Oh(i),i){let e=gn.getBoundingClientRect();er.textContent=at[i].name,er.style.left=Zi.x-e.left+"px",er.style.top=Zi.y-e.top+"px",er.style.display="block"}else er.style.display="none"}function Bh(){let i=gn.clientWidth,e=gn.clientHeight;!i||!e||(ot.setSize(i,e,!1),Rh.aspect=i/e,Rh.updateProjectionMatrix(),cr(),At())}new ResizeObserver(Bh).observe(gn);var fs=D();function sf(){if(!Me.labels)return;let i=gn.clientWidth,e=gn.clientHeight;Object.entries(Tn).forEach(([t,n])=>{let s=sa[t];if(!Jt[t].visible){s.style.display="none";return}if(fs.copy(n).add(Jt[t].position).project(wt),fs.z<-1||fs.z>1||Math.abs(fs.x)>1.1||Math.abs(fs.y)>1.1){s.style.display="none";return}s.style.display="flex",s.style.transform=`translate(${(fs.x*.5+.5)*i}px, ${(-fs.y*.5+.5)*e}px) translate(-50%, -50%)`})}var ra=performance.now(),Tl=0;function Cl(i){let e=Math.min((i-ra)/1e3,.05);if(ra=i,Ut){let t=Math.min((i-Ut.start)/Ut.dur,1),n=Qd(t);wt.position.lerpVectors(Ut.p0,Ut.p1,n),qt.target.lerpVectors(Ut.t0,Ut.t1,n),t>=1&&(Ut=null)}if(Me.explode!==Me.explodeTarget){let t=Me.explodeTarget-Me.explode;Fh(Math.abs(t)<.001?Me.explodeTarget:Me.explode+t*Math.min(1,e*7))}qt.update(),Tl++%2===0&&nf(),ot.render(Ft,wt),sf(),Tl===3&&(document.getElementById("tris").textContent=ot.info.render.triangles.toLocaleString("es-AR")+" tri\xE1ngulos"),requestAnimationFrame(Cl)}var Pe={ortho:!0,dims:!1,wire:!1,cut:!1,measure:!1,isolated:!1,night:!1,playing:!1,height:vt.blockStart,dir:1,visibility:null},Rh=wt,ei=new ki(-30,30,22,-22,.1,600);ei.position.copy(na.iso.pos);var _i=44,aa=new hn(D(-1,0,0),0),rr=new tn;rr.name="mediciones";Ft.add(rr);var ti=new tn;ti.name="cotas_aproximadas";Ft.add(ti);ti.visible=!1;var rf=[],gi=[],Al=null,ps=document.createElement("div");ps.className="cad-dim";ps.id="cad-measure-label";ps.style.display="none";document.getElementById("cad-dimlabels").appendChild(ps);var af=new Ni({color:"#7ADAD2",depthTest:!1});function Kt(i){document.getElementById("cad-message").textContent=i}function An(i,e){let t=document.getElementById(i);t.classList.toggle("on",e),t.setAttribute("aria-pressed",String(e))}function oa(i,e,t=af){let n=new Vs(new Nt().setFromPoints(e),t);return n.renderOrder=8,i.add(n),n}function yl(i,e,t){oa(ti,[i,e]);let n=e.clone().sub(i).normalize(),s=new R().crossVectors(n,D(0,0,1));s.length()<.1&&(s=D(1,0,0)),s.normalize().multiplyScalar(.18);for(let a of[i,e])oa(ti,[a.clone().sub(s),a.clone().add(s)]);let r=document.createElement("div");r.className="cad-dim",r.textContent=t,r.style.display="none",document.getElementById("cad-dimlabels").appendChild(r),rf.push({el:r,point:i.clone().add(e).multiplyScalar(.5)})}function qd(i,e,t){if(!t){i.style.display="none";return}let n=e.clone().project(wt);if(n.z>1||n.z<-1||Math.abs(n.x)>1||Math.abs(n.y)>1){i.style.display="none";return}i.style.display="block",i.style.left=(n.x*.5+.5)*gn.clientWidth+"px",i.style.top=(-n.y*.5+.5)*gn.clientHeight+"px",i.style.transform="translate(-50%,-50%)"}function Kx(){rf.forEach(i=>qd(i.el,i.point,Pe.dims&&Me.explode===0)),Al&&qd(ps,Al,!0)}function cr(){let i=gn.clientWidth/Math.max(1,gn.clientHeight);ei.left=-_i*i/2,ei.right=_i*i/2,ei.top=_i/2,ei.bottom=-_i/2,ei.updateProjectionMatrix()}function ar(i){let e=wt.position.clone(),t=qt.target.clone();Pe.ortho=i,wt=i?ei:Rh,wt.position.copy(e),wt.lookAt(t),qt.object=wt,qt.target.copy(t),qt.update(),Bh(),cr(),An("c-ortho",i),document.getElementById("projection-status").textContent=i?"ORTOGR\xC1FICA":"PERSPECTIVA",At()}function or(){rr.children.slice().forEach(i=>{rr.remove(i),i.geometry?.dispose(),i.material!==af&&i.material?.dispose()}),gi=[],Al=null,ps.style.display="none",At()}function Jx(i,e){let t=ot.domElement.getBoundingClientRect();El.set((i-t.left)/t.width*2-1,-(e-t.top)/t.height*2+1),Sl.setFromCamera(El,wt);let n=Sl.intersectObjects(Dh,!1).find(a=>Jt[a.object.userData.id].visible&&(!Pe.cut||a.point.x<=aa.constant));if(!n)return;gi.length===2&&or();let s=n.point.clone();gi.push(s);let r=new et(new Lr(.1,10,8),new Zn({color:"#FFD16B",depthTest:!1}));if(r.position.copy(s),r.renderOrder=10,rr.add(r),gi.length===2){oa(rr,gi,new Ni({color:"#FFD16B",depthTest:!1}));let a=gi[0].distanceTo(gi[1]);ps.textContent="\u2248 "+a.toFixed(2).replace(".",",")+" m \xB7 modelo",Al=gi[0].clone().add(gi[1]).multiplyScalar(.5),Kt("Medici\xF3n aproximada entre superficies. Otro clic inicia una nueva.")}else Kt("Seleccion\xE1 el segundo punto de la superficie.");At()}function of(i){let e=new Set;Object.values(Jt).forEach(t=>t.traverse(n=>{if(n.isMesh)for(let s of Array.isArray(n.material)?n.material:[n.material])e.has(s)||(e.add(s),i(s))}))}function lf(i){Pe.cut=i,ot.clippingPlanes=i?[aa]:[],document.getElementById("cut-pos").disabled=!i,An("c-cut",i),Kt(i?"Corte visual X: superficies abiertas, sin tapas ni s\xF3lidos CAD.":"Corte desactivado."),At()}function wl(i){Pe.height=i,wh&&(wh.position.y=i);for(let e of Lh)e.bottom.y=i+.28,Lx(e.mesh,e.top,e.bottom);Ch&&(Ch.rotation.z=-(i-vt.blockStart)*vt.reevingLines/.59),document.getElementById("hoist").value=i,document.getElementById("hoist-out").textContent="\u2248 "+i.toFixed(2).replace(".",",")+" m",Tn.aparejo&&(Tn.aparejo.y=i+1),At()}function ea(i){Pe.playing=i,An("c-play",i),document.getElementById("c-play").textContent=i?"Pausar movimiento":"Animar aparejo",i&&(or(),Kt("Animaci\xF3n did\xE1ctica \xB7 recorrido y aparejado sin validar.")),At()}function Yd(i){Pe.night=i,Ft.background.set(i?"#0C111B":"#26313E"),Ft.fog.color.copy(Ft.background),Ki.intensity=i?.6:2.8,Ft.children.find(e=>e.isHemisphereLight).intensity=i?.7:1.6,ot.toneMappingExposure=i?1.15:1,la.material.color.set(i?"#20232C":"#43484A"),Kd.forEach(e=>e.visible=i),An("c-night",i),At()}function $x(){ea(!1),Pe.measure=!1,An("c-measure",!1),or(),Pe.isolated=!1,Pe.visibility=null,An("c-isolate",!1),Pe.dims=!1,ti.visible=!1,An("c-dims",!1),Pe.wire=!1,of(i=>{i.wireframe=!1}),An("c-wire",!1),lf(!1),_i=44,ei.zoom=1,cr(),wl(vt.blockStart),ar(!0),Kt("Vista general \xB7 dimensiones aproximadas.")}function cf(i,e,t){let n=i instanceof Blob?i:new Blob([i],{type:t}),s=URL.createObjectURL(n),r=document.createElement("a");r.href=s,r.download=e,document.body.appendChild(r),r.click(),r.remove(),setTimeout(()=>URL.revokeObjectURL(s),2e4)}async function jx(){let i=document.getElementById("c-glb");i.disabled=!0,Kt("Preparando GLB ensamblado\u2026");try{let e=new tn;e.name="RIG10_REFERENCIA_VISUAL_NO_FABRICACION",e.userData={...vt,source:vt.reference,reeving:"6 l\xEDneas seg\xFAn folleto; ruta esquem\xE1tica"},Object.values(Jt).forEach(n=>{let s=n.clone(!0);s.position.set(0,0,0),s.visible=!0,s.traverse(r=>{r.isMesh&&(r.material=r.material.clone(),r.material.wireframe=!1,r.material.emissive&&r.material.emissive.set(0),r.material.clippingPlanes=[])}),e.add(s)}),e.updateMatrixWorld(!0);let t=await new Yi().parseAsync(e,{binary:!0,onlyVisible:!1});cf(t,"RIG10_Modelo_Aproximado.glb","model/gltf-binary"),e.traverse(n=>{n.isMesh&&n.material.dispose()}),Kt("GLB exportado \xB7 geometr\xEDa de referencia, unidades nominales en metros.")}catch(e){Kt("No se pudo exportar: "+e.message)}finally{i.disabled=!1,At()}}function Qx(){ot.render(Ft,wt);let i=document.createElement("canvas");i.width=ot.domElement.width,i.height=ot.domElement.height;let e=i.getContext("2d");e.drawImage(ot.domElement,0,0);let t=i.width/gn.clientWidth;e.fillStyle="rgba(10,16,24,.90)",e.fillRect(0,i.height-50*t,i.width,50*t),e.fillStyle="#E9C982",e.font=`${13*t}px Arial`,e.fillText("Equipo 10 | MODELO VISUAL APROXIMADO | NO APTO PARA FABRICACI\xD3N",20*t,i.height-20*t),i.toBlob(n=>{n&&cf(n,"RIG10_Vista.png","image/png")},"image/png"),Kt("Captura de la vista 3D con identificaci\xF3n de alcance.")}function ey(){ot.toneMapping=Hr,ot.localClippingEnabled=!0,Ft.fog.near=130,Ft.fog.far=260,yl(D(-4.7,0,2.6),D(-4.7,vt.mastHeight,2.6),"\u2248 "+vt.mastHeight.toFixed(1).replace(".",",")+" m \xB7 nominal (104 ft)"),oa(ti,[D(gt.bx,0,0),D(-4.7,0,2.6)]),oa(ti,[ni(31),D(-4.7,vt.mastHeight,2.6)]),yl(D(1.3,2.5,-1.65),D(1.3,2.5,1.65),"3,30 m \xB7 piso (folleto)"),yl(D(-25,.15,25),D(0,.15,25),"25 m \xB7 anclaje / eje (layout)"),yl(D(-17.7,.15,3.6),D(-1.8,.15,3.6),"\u2248 15,9 m \xB7 malla del carrier"),document.getElementById("c-ortho").onclick=()=>ar(!Pe.ortho),document.getElementById("c-dims").onclick=()=>{if(Me.explode>0){Kt("Volv\xE9 al conjunto ensamblado para mostrar las cotas.");return}Pe.dims=!Pe.dims,ti.visible=Pe.dims,An("c-dims",Pe.dims),At()},document.getElementById("c-wire").onclick=()=>{Pe.wire=!Pe.wire,of(i=>{i.wireframe=Pe.wire}),An("c-wire",Pe.wire),At()},document.getElementById("c-isolate").onclick=()=>{if(Pe.isolated)Object.entries(Pe.visibility).forEach(([i,e])=>ia(i,e)),Pe.isolated=!1,Pe.visibility=null;else{if(!Me.selected){Kt("Seleccion\xE1 primero un conjunto para aislarlo.");return}Pe.visibility=Object.fromEntries(Object.entries(Jt).map(([i,e])=>[i,e.visible])),Object.keys(Jt).forEach(i=>ia(i,i===Me.selected)),Pe.isolated=!0}An("c-isolate",Pe.isolated),At()},document.getElementById("c-measure").onclick=()=>{if(Me.explode>0){Kt("Desactiv\xE1 la vista explosionada antes de medir.");return}ea(!1),Pe.measure=!Pe.measure,An("c-measure",Pe.measure),Kt(Pe.measure?"Hac\xE9 clic en dos superficies del modelo. Valores aproximados.":"Medici\xF3n desactivada.")},document.getElementById("c-clear").onclick=()=>{or(),Kt("Medici\xF3n borrada.")},document.getElementById("c-cut").onclick=()=>lf(!Pe.cut),document.getElementById("cut-pos").oninput=i=>{aa.constant=Number(i.target.value),Kt("Corte X \u2248 "+aa.constant.toFixed(1)+" m \xB7 sin tapas"),At()},document.getElementById("hoist").oninput=i=>{ea(!1),or(),wl(Number(i.target.value))},document.getElementById("c-play").onclick=()=>{if(Me.explode>0){Kt("Ensambl\xE1 el equipo antes de animar.");return}ea(!Pe.playing)},document.getElementById("c-night").onclick=()=>Yd(!Pe.night),document.getElementById("c-glb").onclick=jx,document.getElementById("c-png").onclick=Qx,document.getElementById("c-info").onclick=()=>document.getElementById("ref-dialog").showModal(),document.getElementById("ref-thumb").onclick=()=>document.getElementById("ref-dialog").showModal(),document.getElementById("ref-close").onclick=()=>document.getElementById("ref-dialog").close(),gn.addEventListener("pointermove",At),gn.addEventListener("pointerleave",At),document.getElementById("app").addEventListener("click",()=>{At()}),document.getElementById("app").addEventListener("input",At),qt.addEventListener("change",At),document.addEventListener("visibilitychange",()=>{document.hidden||At()}),ot.domElement.addEventListener("webglcontextlost",i=>{i.preventDefault(),Kt("Se perdi\xF3 el contexto gr\xE1fico. Recarg\xE1 el archivo.")}),wl(vt.blockStart),Yd(!1),ar(!0),innerWidth<700&&document.getElementById("tree").classList.add("collapsed"),document.getElementById("cad-health").textContent="13 conjuntos \xB7 listo"}var Ih=!1;function At(){!Ih&&!document.hidden&&(Ih=!0,requestAnimationFrame(Cl))}function ty(i){Ih=!1;let e=Math.min((i-ra)/1e3,.05);if(ra=i,Ut){let n=Math.min((i-Ut.start)/Math.max(1,Ut.dur),1),s=Qd(n);wt.position.lerpVectors(Ut.p0,Ut.p1,s),qt.target.lerpVectors(Ut.t0,Ut.t1,s),n>=1&&(Ut=null)}if(Me.explode!==Me.explodeTarget){Pe.playing&&ea(!1);let n=Me.explodeTarget-Me.explode;Fh(Math.abs(n)<.001?Me.explodeTarget:Me.explode+n*Math.min(1,e*7)),ti.visible=Pe.dims&&Me.explode===0,Lh.forEach(s=>s.mesh.visible=Me.explode===0),document.getElementById("hoist").disabled=Me.explode>0,or(),Pe.measure=!1,An("c-measure",!1)}if(Pe.playing){let n=Pe.height+Pe.dir*e*1;n>=vt.blockMax&&(n=vt.blockMax,Pe.dir=-1),n<=vt.blockMin&&(n=vt.blockMin,Pe.dir=1),wl(n)}let t=qt.update();Pe.measure||nf(),Ft.updateMatrixWorld(),ot.render(Ft,wt),sf(),Kx(),Tl++,Tl%10===1&&(document.getElementById("tris").textContent=ot.info.render.triangles.toLocaleString("es-AR")+" tri\xE1ngulos",document.getElementById("cad-health").textContent="13 conjuntos \xB7 "+ot.info.render.calls+" llamadas"),(Ut||Me.explode!==Me.explodeTarget||Pe.playing||t)&&At()}Cl=ty;Hx();Wx();Yx();ey();Bh();Uh("iso",0);wt.position.copy(na.iso.pos);qt.target.copy(na.iso.tgt);Ut=null;ot.domElement.style.cursor="grab";requestAnimationFrame(i=>{ra=i,Cl(i);let e=document.getElementById("loader");e.style.opacity=0,setTimeout(()=>e.style.display="none",500)});window.__rig={groups:Jt,COMPONENTS:at,selectComponent:tr,setExplode:Fh,focusOn:ef,state:Me,scene:Ft,renderer:ot,camera:()=>wt,controls:()=>qt,pickables:Dh,materials:jd,centers:Tn,explodeOffsets:Vx,view:Pe,families:nr,three:{Group:tn,Mesh:et,BoxGeometry:Ui,CylinderGeometry:pi,SphereGeometry:Lr,RingGeometry:Pr,CircleGeometry:Gs,TorusGeometry:Bn,MeshBasicMaterial:Zn,MeshStandardMaterial:os,LineBasicMaterial:Ni,Line:Vs,BufferGeometry:Nt,Vector3:R,Color:Be,Box3:On,Fog:Sr,HemisphereLight:Fr,DirectionalLight:Br,DoubleSide:sn,BackSide:cn,PMREMGenerator:dl},mast:gt,hookHeight:Hn,invalidate:At,raycaster:Sl,stopCam:()=>{Ut=null}};window.__rigExt&&window.__rigExt.runPost(window.__rig);})();
+    <div class="d-sec"><h4 style="color:#67E8F9">Controles orientativos \xB7 verificar aplicabilidad</h4><ul>${r(n.epp)}</ul></div>`,document.getElementById("d-body").scrollTop=0,t.classList.remove("hidden")}function ia(i,e){Jt[i].visible=e;let t=document.querySelector(`.item[data-id="${i}"]`);t&&(t.classList.toggle("off",!e),t.querySelector("input").checked=e),sa[i].style.display="none",qx()}function qx(){Object.keys(nr).forEach(i=>{let e=Object.keys(at).filter(s=>at[s].family===i),t=document.querySelector(`input[data-fam="${i}"]`);if(!t)return;let n=e.filter(s=>Jt[s].visible).length;t.checked=n===e.length,t.indeterminate=n>0&&n<e.length})}var sa={};function Yx(){let i=document.getElementById("tree-body");Object.entries(nr).forEach(([a,o])=>{let l=Object.keys(at).filter(h=>at[h].family===a);if(!l.length)return;let c=document.createElement("div");c.className="fam",c.innerHTML=`<div class="fam-head"><input type="checkbox" checked data-fam="${a}" aria-label="Mostrar ${o.name}"><span class="dot" style="background:${o.color}"></span>${o.name}</div>`,l.sort((h,d)=>at[h].n-at[d].n).forEach(h=>{let d=at[h],u=document.createElement("div");u.className="item",u.dataset.id=h,u.innerHTML=`<input type="checkbox" checked aria-label="Mostrar ${d.name}"><button class="item-name"><span class="num">${String(d.n).padStart(2,"0")}</span><span>${d.name}</span></button>`,u.querySelector("input").addEventListener("change",f=>ia(h,f.target.checked)),u.querySelector("button").addEventListener("click",()=>tr(Me.selected===h?null:h)),c.appendChild(u)}),c.querySelector("input[data-fam]").addEventListener("change",h=>{let d=h.target.checked;l.forEach(u=>ia(u,d)),At()}),i.appendChild(c)});let e=document.getElementById("labels");Object.entries(at).forEach(([a,o])=>{let l=document.createElement("div");l.className="lbl",l.style.display="none",l.innerHTML=`<b style="background:${nr[o.family].color}">${o.n}</b>${o.name}`,e.appendChild(l),sa[a]=l}),document.querySelectorAll("#views .btn").forEach(a=>a.addEventListener("click",()=>{Me.savedView=null,document.getElementById("d-back").disabled=!0,Uh(a.dataset.view)}));let t=document.getElementById("t-explode"),n=document.getElementById("explode"),s=()=>n.style.setProperty("--p",n.value+"%");s(),t.addEventListener("click",()=>{let a=!t.classList.contains("on");t.classList.toggle("on",a),t.setAttribute("aria-pressed",a),n.disabled=!a,Me.explodeTarget=a?n.value/100:0}),n.addEventListener("input",()=>{s(),Me.explodeTarget=n.value/100});let r=(a,o,l)=>{let c=document.getElementById(a);c.addEventListener("click",()=>{Me[o]=!Me[o],c.classList.toggle("on",Me[o]),c.setAttribute("aria-pressed",Me[o]),l&&l()})};r("t-labels","labels",()=>{Me.labels||Object.values(sa).forEach(a=>a.style.display="none")}),r("t-zones","zones",()=>{Pn.visible=Me.zones&&Me.explode===0,document.getElementById("legend").style.display=Me.zones&&Me.explode===0?"flex":"none"}),document.getElementById("b-reset").addEventListener("click",Zx),document.getElementById("d-close").addEventListener("click",()=>tr(null)),document.getElementById("d-focus").addEventListener("click",()=>Me.selected&&ef(Me.selected)),document.getElementById("d-back").addEventListener("click",Xx),document.getElementById("tree-toggle").addEventListener("click",()=>{let a=document.getElementById("tree");a.classList.toggle("collapsed"),document.getElementById("legend").style.left=a.classList.contains("collapsed")?"68px":"304px"}),addEventListener("keydown",a=>{a.key==="Escape"&&tr(null)})}function Zx(){$x(),tr(null),Oh(null),Object.keys(Jt).forEach(e=>ia(e,!0));let i=document.getElementById("t-explode");i.classList.remove("on"),i.setAttribute("aria-pressed",!1),document.getElementById("explode").disabled=!0,Me.explodeTarget=0,["labels","zones"].forEach(e=>{Me[e]=!1;let t=document.getElementById("t-"+e);t.classList.remove("on"),t.setAttribute("aria-pressed",!1)}),Object.values(sa).forEach(e=>e.style.display="none"),Pn.visible=!1,document.getElementById("legend").style.display="none",Me.savedView=null,document.getElementById("d-back").disabled=!0,Uh("iso")}var Sl=new zr,El=new xe,Zi=null,Qs=null,er=document.getElementById("tooltip");function tf(i,e){let t=ot.domElement.getBoundingClientRect();El.set((i-t.left)/t.width*2-1,-((e-t.top)/t.height)*2+1),Sl.setFromCamera(El,wt);let n=Sl.intersectObjects(Dh,!1).find(s=>Jt[s.object.userData.id].visible&&(!Pe.cut||s.point.x<=aa.constant));return n?n.object.userData.id:null}ot.domElement.addEventListener("pointermove",i=>{Zi={x:i.clientX,y:i.clientY,type:i.pointerType}});ot.domElement.addEventListener("pointerleave",()=>{Zi=null,Oh(null),er.style.display="none"});ot.domElement.addEventListener("pointerdown",i=>{Qs={x:i.clientX,y:i.clientY,b:i.button}});ot.domElement.addEventListener("pointerup",i=>{if(!Qs||Qs.b!==0)return;let e=Math.hypot(i.clientX-Qs.x,i.clientY-Qs.y);if(Qs=null,e>6)return;if(Pe.measure){Jx(i.clientX,i.clientY);return}let t=tf(i.clientX,i.clientY);tr(t&&t===Me.selected?null:t)});function nf(){if(!Zi||Zi.type==="touch"||Ut)return;let i=tf(Zi.x,Zi.y);if(Oh(i),i){let e=gn.getBoundingClientRect();er.textContent=at[i].name,er.style.left=Zi.x-e.left+"px",er.style.top=Zi.y-e.top+"px",er.style.display="block"}else er.style.display="none"}function Bh(){let i=gn.clientWidth,e=gn.clientHeight;!i||!e||(ot.setSize(i,e,!1),Rh.aspect=i/e,Rh.updateProjectionMatrix(),cr(),At())}new ResizeObserver(Bh).observe(gn);var fs=D();function sf(){if(!Me.labels)return;let i=gn.clientWidth,e=gn.clientHeight;Object.entries(Tn).forEach(([t,n])=>{let s=sa[t];if(!Jt[t].visible){s.style.display="none";return}if(fs.copy(n).add(Jt[t].position).project(wt),fs.z<-1||fs.z>1||Math.abs(fs.x)>1.1||Math.abs(fs.y)>1.1){s.style.display="none";return}s.style.display="flex",s.style.transform=`translate(${(fs.x*.5+.5)*i}px, ${(-fs.y*.5+.5)*e}px) translate(-50%, -50%)`})}var ra=performance.now(),Tl=0;function Cl(i){let e=Math.min((i-ra)/1e3,.05);if(ra=i,Ut){let t=Math.min((i-Ut.start)/Ut.dur,1),n=Qd(t);wt.position.lerpVectors(Ut.p0,Ut.p1,n),qt.target.lerpVectors(Ut.t0,Ut.t1,n),t>=1&&(Ut=null)}if(Me.explode!==Me.explodeTarget){let t=Me.explodeTarget-Me.explode;Fh(Math.abs(t)<.001?Me.explodeTarget:Me.explode+t*Math.min(1,e*7))}qt.update(),Tl++%2===0&&nf(),ot.render(Ft,wt),sf(),Tl===3&&(document.getElementById("tris").textContent=ot.info.render.triangles.toLocaleString("es-AR")+" tri\xE1ngulos"),requestAnimationFrame(Cl)}var Pe={ortho:!0,dims:!1,wire:!1,cut:!1,measure:!1,isolated:!1,night:!1,playing:!1,height:vt.blockStart,dir:1,visibility:null},Rh=wt,ei=new ki(-30,30,22,-22,.1,600);ei.position.copy(na.iso.pos);var _i=44,aa=new hn(D(-1,0,0),0),rr=new tn;rr.name="mediciones";Ft.add(rr);var ti=new tn;ti.name="cotas_aproximadas";Ft.add(ti);ti.visible=!1;var rf=[],gi=[],Al=null,ps=document.createElement("div");ps.className="cad-dim";ps.id="cad-measure-label";ps.style.display="none";document.getElementById("cad-dimlabels").appendChild(ps);var af=new Ni({color:"#7ADAD2",depthTest:!1});function Kt(i){document.getElementById("cad-message").textContent=i}function An(i,e){let t=document.getElementById(i);t.classList.toggle("on",e),t.setAttribute("aria-pressed",String(e))}function oa(i,e,t=af){let n=new Vs(new Nt().setFromPoints(e),t);return n.renderOrder=8,i.add(n),n}function yl(i,e,t){oa(ti,[i,e]);let n=e.clone().sub(i).normalize(),s=new R().crossVectors(n,D(0,0,1));s.length()<.1&&(s=D(1,0,0)),s.normalize().multiplyScalar(.18);for(let a of[i,e])oa(ti,[a.clone().sub(s),a.clone().add(s)]);let r=document.createElement("div");r.className="cad-dim",r.textContent=t,r.style.display="none",document.getElementById("cad-dimlabels").appendChild(r),rf.push({el:r,point:i.clone().add(e).multiplyScalar(.5)})}function qd(i,e,t){if(!t){i.style.display="none";return}let n=e.clone().project(wt);if(n.z>1||n.z<-1||Math.abs(n.x)>1||Math.abs(n.y)>1){i.style.display="none";return}i.style.display="block",i.style.left=(n.x*.5+.5)*gn.clientWidth+"px",i.style.top=(-n.y*.5+.5)*gn.clientHeight+"px",i.style.transform="translate(-50%,-50%)"}function Kx(){rf.forEach(i=>qd(i.el,i.point,Pe.dims&&Me.explode===0)),Al&&qd(ps,Al,!0)}function cr(){let i=gn.clientWidth/Math.max(1,gn.clientHeight);ei.left=-_i*i/2,ei.right=_i*i/2,ei.top=_i/2,ei.bottom=-_i/2,ei.updateProjectionMatrix()}function ar(i){let e=wt.position.clone(),t=qt.target.clone();Pe.ortho=i,wt=i?ei:Rh,wt.position.copy(e),wt.lookAt(t),qt.object=wt,qt.target.copy(t),qt.update(),Bh(),cr(),An("c-ortho",i),document.getElementById("projection-status").textContent=i?"ORTOGR\xC1FICA":"PERSPECTIVA",At()}function or(){rr.children.slice().forEach(i=>{rr.remove(i),i.geometry?.dispose(),i.material!==af&&i.material?.dispose()}),gi=[],Al=null,ps.style.display="none",At()}function Jx(i,e){let t=ot.domElement.getBoundingClientRect();El.set((i-t.left)/t.width*2-1,-(e-t.top)/t.height*2+1),Sl.setFromCamera(El,wt);let n=Sl.intersectObjects(Dh,!1).find(a=>Jt[a.object.userData.id].visible&&(!Pe.cut||a.point.x<=aa.constant));if(!n)return;gi.length===2&&or();let s=n.point.clone();gi.push(s);let r=new et(new Lr(.1,10,8),new Zn({color:"#FFD16B",depthTest:!1}));if(r.position.copy(s),r.renderOrder=10,rr.add(r),gi.length===2){oa(rr,gi,new Ni({color:"#FFD16B",depthTest:!1}));let a=gi[0].distanceTo(gi[1]);ps.textContent="\u2248 "+a.toFixed(2).replace(".",",")+" m \xB7 modelo",Al=gi[0].clone().add(gi[1]).multiplyScalar(.5),Kt("Medici\xF3n aproximada entre superficies. Otro clic inicia una nueva.")}else Kt("Seleccion\xE1 el segundo punto de la superficie.");At()}function of(i){let e=new Set;Object.values(Jt).forEach(t=>t.traverse(n=>{if(n.isMesh)for(let s of Array.isArray(n.material)?n.material:[n.material])e.has(s)||(e.add(s),i(s))}))}function lf(i){Pe.cut=i,ot.clippingPlanes=i?[aa]:[],document.getElementById("cut-pos").disabled=!i,An("c-cut",i),Kt(i?"Corte visual X: superficies abiertas, sin tapas ni s\xF3lidos CAD.":"Corte desactivado."),At()}function wl(i){Pe.height=i,wh&&(wh.position.y=i);for(let e of Lh)e.bottom.y=i+.28,Lx(e.mesh,e.top,e.bottom);Ch&&(Ch.rotation.z=-(i-vt.blockStart)*vt.reevingLines/.59),document.getElementById("hoist").value=i,document.getElementById("hoist-out").textContent="\u2248 "+i.toFixed(2).replace(".",",")+" m",Tn.aparejo&&(Tn.aparejo.y=i+1),At()}function ea(i){Pe.playing=i,An("c-play",i),document.getElementById("c-play").textContent=i?"Pausar movimiento":"Animar aparejo",i&&(or(),Kt("Animaci\xF3n did\xE1ctica \xB7 recorrido y aparejado sin validar.")),At()}function Yd(i){Pe.night=i,Ft.background.set(i?"#0C111B":"#26313E"),Ft.fog.color.copy(Ft.background),Ki.intensity=i?.6:2.8,Ft.children.find(e=>e.isHemisphereLight).intensity=i?.7:1.6,ot.toneMappingExposure=i?1.15:1,la.material.color.set(i?"#20232C":"#43484A"),Kd.forEach(e=>e.visible=i),An("c-night",i),At()}function $x(){ea(!1),Pe.measure=!1,An("c-measure",!1),or(),Pe.isolated=!1,Pe.visibility=null,An("c-isolate",!1),Pe.dims=!1,ti.visible=!1,An("c-dims",!1),Pe.wire=!1,of(i=>{i.wireframe=!1}),An("c-wire",!1),lf(!1),_i=44,ei.zoom=1,cr(),wl(vt.blockStart),ar(!0),Kt("Vista general \xB7 dimensiones aproximadas.")}function cf(i,e,t){let n=i instanceof Blob?i:new Blob([i],{type:t}),s=URL.createObjectURL(n),r=document.createElement("a");r.href=s,r.download=e,document.body.appendChild(r),r.click(),r.remove(),setTimeout(()=>URL.revokeObjectURL(s),2e4)}async function jx(){let i=document.getElementById("c-glb");i.disabled=!0,Kt("Preparando GLB ensamblado\u2026");try{let e=new tn;e.name="RIG10_REFERENCIA_VISUAL_NO_FABRICACION",e.userData={...vt,source:vt.reference,reeving:"6 l\xEDneas seg\xFAn folleto; ruta esquem\xE1tica"},Object.values(Jt).forEach(n=>{let s=n.clone(!0);s.position.set(0,0,0),s.visible=!0,s.traverse(r=>{r.isMesh&&(r.material=r.material.clone(),r.material.wireframe=!1,r.material.emissive&&r.material.emissive.set(0),r.material.clippingPlanes=[])}),e.add(s)}),e.updateMatrixWorld(!0);let t=await new Yi().parseAsync(e,{binary:!0,onlyVisible:!1});cf(t,"RIG10_Modelo_Aproximado.glb","model/gltf-binary"),e.traverse(n=>{n.isMesh&&n.material.dispose()}),Kt("GLB exportado \xB7 geometr\xEDa de referencia, unidades nominales en metros.")}catch(e){Kt("No se pudo exportar: "+e.message)}finally{i.disabled=!1,At()}}function Qx(){ot.render(Ft,wt);let i=document.createElement("canvas");i.width=ot.domElement.width,i.height=ot.domElement.height;let e=i.getContext("2d");e.drawImage(ot.domElement,0,0);let t=i.width/gn.clientWidth;e.fillStyle="rgba(10,16,24,.90)",e.fillRect(0,i.height-50*t,i.width,50*t),e.fillStyle="#E9C982",e.font=`${13*t}px Arial`,e.fillText("Equipo 10 | MODELO VISUAL APROXIMADO | NO APTO PARA FABRICACI\xD3N",20*t,i.height-20*t),i.toBlob(n=>{n&&cf(n,"RIG10_Vista.png","image/png")},"image/png"),Kt("Captura de la vista 3D con identificaci\xF3n de alcance.")}function ey(){ot.toneMapping=Hr,ot.localClippingEnabled=!0,Ft.fog.near=130,Ft.fog.far=260,yl(D(-4.7,0,2.6),D(-4.7,vt.mastHeight,2.6),"\u2248 "+vt.mastHeight.toFixed(1).replace(".",",")+" m \xB7 nominal (104 ft)"),oa(ti,[D(gt.bx,0,0),D(-4.7,0,2.6)]),oa(ti,[ni(31),D(-4.7,vt.mastHeight,2.6)]),yl(D(1.3,2.5,-1.65),D(1.3,2.5,1.65),"3,30 m \xB7 piso (folleto)"),yl(D(-25,.15,25),D(0,.15,25),"25 m \xB7 anclaje / eje (layout)"),yl(D(-17.7,.15,3.6),D(-1.8,.15,3.6),"\u2248 15,9 m \xB7 malla del carrier"),document.getElementById("c-ortho").onclick=()=>ar(!Pe.ortho),document.getElementById("c-dims").onclick=()=>{if(Me.explode>0){Kt("Volv\xE9 al conjunto ensamblado para mostrar las cotas.");return}Pe.dims=!Pe.dims,ti.visible=Pe.dims,An("c-dims",Pe.dims),At()},document.getElementById("c-wire").onclick=()=>{Pe.wire=!Pe.wire,of(i=>{i.wireframe=Pe.wire}),An("c-wire",Pe.wire),At()},document.getElementById("c-isolate").onclick=()=>{if(Pe.isolated)Object.entries(Pe.visibility).forEach(([i,e])=>ia(i,e)),Pe.isolated=!1,Pe.visibility=null;else{if(!Me.selected){Kt("Seleccion\xE1 primero un conjunto para aislarlo.");return}Pe.visibility=Object.fromEntries(Object.entries(Jt).map(([i,e])=>[i,e.visible])),Object.keys(Jt).forEach(i=>ia(i,i===Me.selected)),Pe.isolated=!0}An("c-isolate",Pe.isolated),At()},document.getElementById("c-measure").onclick=()=>{if(Me.explode>0){Kt("Desactiv\xE1 la vista explosionada antes de medir.");return}ea(!1),Pe.measure=!Pe.measure,An("c-measure",Pe.measure),Kt(Pe.measure?"Hac\xE9 clic en dos superficies del modelo. Valores aproximados.":"Medici\xF3n desactivada.")},document.getElementById("c-clear").onclick=()=>{or(),Kt("Medici\xF3n borrada.")},document.getElementById("c-cut").onclick=()=>lf(!Pe.cut),document.getElementById("cut-pos").oninput=i=>{aa.constant=Number(i.target.value),Kt("Corte X \u2248 "+aa.constant.toFixed(1)+" m \xB7 sin tapas"),At()},document.getElementById("hoist").oninput=i=>{ea(!1),or(),wl(Number(i.target.value))},document.getElementById("c-play").onclick=()=>{if(Me.explode>0){Kt("Ensambl\xE1 el equipo antes de animar.");return}ea(!Pe.playing)},document.getElementById("c-night").onclick=()=>Yd(!Pe.night),document.getElementById("c-glb").onclick=jx,document.getElementById("c-png").onclick=Qx,document.getElementById("c-info").onclick=()=>document.getElementById("ref-dialog").showModal(),document.getElementById("ref-thumb").onclick=()=>document.getElementById("ref-dialog").showModal(),document.getElementById("ref-close").onclick=()=>document.getElementById("ref-dialog").close(),gn.addEventListener("pointermove",At),gn.addEventListener("pointerleave",At),document.getElementById("app").addEventListener("click",()=>{At()}),document.getElementById("app").addEventListener("input",At),qt.addEventListener("change",At),document.addEventListener("visibilitychange",()=>{document.hidden||At()}),ot.domElement.addEventListener("webglcontextlost",i=>{i.preventDefault(),Kt("Se perdi\xF3 el contexto gr\xE1fico. Recarg\xE1 el archivo.")}),wl(vt.blockStart),Yd(!1),ar(!0),innerWidth<700&&document.getElementById("tree").classList.add("collapsed"),document.getElementById("cad-health").textContent="13 conjuntos \xB7 listo"}var Ih=!1;function At(){!Ih&&!document.hidden&&(Ih=!0,requestAnimationFrame(Cl))}function ty(i){Ih=!1;let e=Math.min((i-ra)/1e3,.05);if(ra=i,Ut){let n=Math.min((i-Ut.start)/Math.max(1,Ut.dur),1),s=Qd(n);wt.position.lerpVectors(Ut.p0,Ut.p1,s),qt.target.lerpVectors(Ut.t0,Ut.t1,s),n>=1&&(Ut=null)}if(Me.explode!==Me.explodeTarget){Pe.playing&&ea(!1);let n=Me.explodeTarget-Me.explode;Fh(Math.abs(n)<.001?Me.explodeTarget:Me.explode+n*Math.min(1,e*7)),ti.visible=Pe.dims&&Me.explode===0,Lh.forEach(s=>s.mesh.visible=Me.explode===0),document.getElementById("hoist").disabled=Me.explode>0,or(),Pe.measure=!1,An("c-measure",!1)}if(Pe.playing){let n=Pe.height+Pe.dir*e*1;n>=vt.blockMax&&(n=vt.blockMax,Pe.dir=-1),n<=vt.blockMin&&(n=vt.blockMin,Pe.dir=1),wl(n)}let t=qt.update();Pe.measure||nf(),Ft.updateMatrixWorld(),ot.render(Ft,wt),sf(),Kx(),Tl++,Tl%10===1&&(document.getElementById("tris").textContent=ot.info.render.triangles.toLocaleString("es-AR")+" tri\xE1ngulos",document.getElementById("cad-health").textContent="13 conjuntos \xB7 "+ot.info.render.calls+" llamadas"),(Ut||Me.explode!==Me.explodeTarget||Pe.playing||t)&&At()}Cl=ty;Hx();Wx();Yx();ey();Bh();Uh("iso",0);wt.position.copy(na.iso.pos);qt.target.copy(na.iso.tgt);Ut=null;ot.domElement.style.cursor="grab";requestAnimationFrame(i=>{ra=i,Cl(i);let e=document.getElementById("loader");e.style.opacity=0,setTimeout(()=>e.style.display="none",500)});window.__rig={groups:Jt,COMPONENTS:at,selectComponent:tr,setExplode:Fh,focusOn:ef,state:Me,scene:Ft,renderer:ot,camera:()=>wt,controls:()=>qt,pickables:Dh,materials:jd,centers:Tn,explodeOffsets:Vx,view:Pe,families:nr,three:{Group:tn,Mesh:et,BoxGeometry:Ui,CylinderGeometry:pi,SphereGeometry:Lr,RingGeometry:Pr,CircleGeometry:Gs,TorusGeometry:Bn,MeshBasicMaterial:Zn,MeshStandardMaterial:os,LineBasicMaterial:Ni,Line:Vs,BufferGeometry:Nt,Vector3:R,Color:Be,Box3:On,Fog:Sr,HemisphereLight:Fr,DirectionalLight:Br,DoubleSide:sn,BackSide:cn,PMREMGenerator:dl,Plane:hn,BufferAttribute:Pt,CanvasTexture:wr,ShaderMaterial:bn,PerspectiveCamera:en,LineSegments:Ka,Quaternion:ln,Vector2:Vc},mast:gt,hookHeight:Hn,invalidate:At,raycaster:Sl,stopCam:()=>{Ut=null}};window.__rigExt&&window.__rigExt.runPost(window.__rig);})();
 
 </script>
 

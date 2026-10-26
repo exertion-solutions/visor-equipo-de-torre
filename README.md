@@ -83,3 +83,21 @@ docs/           arquitectura, paridad, auditoría legacy, setup
   nombre/empresa/puntaje, CSV y envío opcional. No es una habilitación.
 - **Enlaces profundos**: `?comp=bop`, `?vp=piso-enganche`; botón "Copiar enlace a esta vista" en Exportar.
 - Los datos quedan en el navegador (localStorage de la app). Envío: el flujo recibe el cuerpo como texto; leerlo con `json(triggerBody())`.
+
+## Efectos y herramientas 3D (V2)
+
+Todo es presentación o herramienta de lectura del modelo: no cambia cotas ni datos, y nada se presenta como cálculo,
+umbral o zona aprobada.
+
+- **Calidad** (menú Vista): Auto / Celular / PC / Presentación (pixel ratio, sombras, mapa de sombra 1024–4096, efectos).
+- **Cielo** Día / Atardecer / Liso, **sombra de contacto** bajo las piezas apoyadas y **halos** de los proyectores en
+  vista nocturna (`96-ambiente.js`).
+- **Clima ilustrativo** (Capas): polvo, lluvia o nieve con viento 0–100 km/h; sobre 40 km/h avisa "consultar el
+  procedimiento aplicable" sin fijar umbrales (`97-clima.js`).
+- **Personas (escala)**: operarios genéricos con EPP apoyados sobre la superficie real del modelo (`98-personas.js`).
+- **Maniobra: sacar un tiro** (Animar) con **línea de fuego** = proyección vertical de la carga suspendida
+  (`99-maniobra.js`).
+- **Cortes Y y Z** y **Medir ángulo (3 puntos)** con desnivel (Medición) (`77-cortes.js`, `78-medicion-angulo.js`).
+- **Entrar en VR** (Vista) si el navegador ofrece WebXR `immersive-vr` (`74-vr.js`; requiere verificación con visor real).
+- Pendientes: LOD del equipo (depende de validar `docs/gltf-simplify.md` contra cotas) e instancing (el entorno ya está
+  fusionado en 9 mallas: la ganancia medida es marginal).

@@ -158,6 +158,7 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
         title="Visor Digital Rig V2 (modo compatibilidad)"
         src={src}
         sandbox="allow-scripts allow-downloads"
+        allow="xr-spatial-tracking; fullscreen"
         tabIndex={active ? 0 : -1}
         className="block h-full w-full border-0"
       />
