@@ -1032,7 +1032,7 @@ test('consola sin errores durante toda la sesión', (t) => {
 })
 
 // ─────────── efectos y herramientas 3D (74-78, 95-99) + capturas fijas de referencia en .tmp/e2e/vista-*.png ───────────
-test('efectos 3D: perfiles, cielo, halos de noche, clima, personas, maniobra, cortes Y/Z y ángulo', async (t) => {
+test('efectos 3D: perfiles, cielo, halos de noche, clima, maniobra, cortes Y/Z y ángulo', async (t) => {
   if (skip) return t.skip(skip)
   await hasta(() => !!(window.__rigFx && window.__rigFx.perfil()))
   try {
@@ -1075,16 +1075,6 @@ test('efectos 3D: perfiles, cielo, halos de noche, clima, personas, maniobra, co
     )
     await page.evaluate(() => window.__rigClima.set('despejado', 0))
 
-    const personas = await page.evaluate(
-      () => (window.__rigPersonas.set(true), window.__rigPersonas.lista()),
-    )
-    assert.ok(personas.length >= 4, `personas apoyadas: ${personas.length}`)
-    for (const p of personas)
-      assert.ok(
-        [0, 3.61, 20.63].some((c) => Math.abs(p.y - c) < 0.6),
-        `${p.id} y=${p.y}`,
-      )
-
     const man = await page.evaluate(() => {
       const M = window.__rigManiobra
       M.lineaFuego(true)
@@ -1125,7 +1115,6 @@ test('efectos 3D: perfiles, cielo, halos de noche, clima, personas, maniobra, co
     assert.ok(Math.abs(ang.ang - 90) < 1e-6 && Math.abs(ang.dy - 1) < 1e-9)
   } finally {
     await page.evaluate(() => {
-      window.__rigPersonas?.set(false)
       window.__rigClima?.set('despejado', 0)
       window.__rigManiobra?.reset()
       window.__rigManiobra?.lineaFuego(false)
@@ -1135,4 +1124,43 @@ test('efectos 3D: perfiles, cielo, halos de noche, clima, personas, maniobra, co
       return window.__rigFx?.elegir('pc')
     })
   }
+})
+
+test('una animación por vez: la maniobra y el montaje (secuencia, izamiento, aparejo) se excluyen', async (t) => {
+  if (skip) return t.skip(skip)
+  await hasta(() => !!(window.__rigManiobra && window.__rigSeq && window.__rigErect))
+  const r = await page.evaluate(async () => {
+    const M = window.__rigManiobra
+    const S = window.__rigSeq
+    const E = window.__rigErect
+    const R = window.__rig
+    const espera = (ms) => new Promise((ok) => setTimeout(ok, ms))
+    const out = {}
+    // montaje en curso → play de la maniobra lo cierra
+    S.go(6)
+    E.play()
+    await espera(200)
+    M.play()
+    await espera(200)
+    out.trasPlay = { paso: S.current(), erect: E.progress(), maniobra: M.estado().playing }
+    // arranca la secuencia de montaje → la maniobra se reinicia
+    S.go(3)
+    out.trasSeq = { maniobra: M.estado().playing, tiro: M.estado().tiro }
+    S.go(0)
+    // "Animar aparejo" durante la maniobra → la maniobra se reinicia
+    M.play()
+    await espera(200)
+    document.getElementById('c-play').click()
+    out.trasAparejo = { maniobra: M.estado().playing, aparejo: !!R.view.playing }
+    // y play de la maniobra frena "Animar aparejo"
+    M.play()
+    await espera(100)
+    out.trasPlay2 = { maniobra: M.estado().playing, aparejo: !!R.view.playing }
+    M.reset()
+    return out
+  })
+  assert.deepEqual(r.trasPlay, { paso: 0, erect: 1, maniobra: true })
+  assert.deepEqual(r.trasSeq, { maniobra: false, tiro: false })
+  assert.deepEqual(r.trasAparejo, { maniobra: false, aparejo: true })
+  assert.deepEqual(r.trasPlay2, { maniobra: true, aparejo: false })
 })

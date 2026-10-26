@@ -94,7 +94,6 @@ umbral o zona aprobada.
   vista nocturna (`96-ambiente.js`).
 - **Clima ilustrativo** (Capas): polvo, lluvia o nieve con viento 0–100 km/h; sobre 40 km/h avisa "consultar el
   procedimiento aplicable" sin fijar umbrales (`97-clima.js`).
-- **Personas (escala)**: operarios genéricos con EPP apoyados sobre la superficie real del modelo (`98-personas.js`).
 - **Maniobra: sacar un tiro** (Animar) con **línea de fuego** = proyección vertical de la carga suspendida
   (`99-maniobra.js`).
 - **Cortes Y y Z** y **Medir ángulo (3 puntos)** con desnivel (Medición) (`77-cortes.js`, `78-medicion-angulo.js`).

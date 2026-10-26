@@ -209,7 +209,20 @@ window.__rigExt.onPost((R) => {
     if (p >= 1) return stop(true)
     requestAnimationFrame(frame)
   }
+  // Una animación por vez: la maniobra necesita el equipo montado completo y el aparejo libre.
+  function frenarOtras() {
+    const E = window.__rigErect
+    if (E) {
+      E.pause()
+      if (E.progress() < 1) E.set(1)
+    }
+    const S = window.__rigSeq
+    if (S && S.current() !== 0) S.go(0)
+    if (R.view && R.view.playing) document.getElementById('c-play')?.click()
+  }
+  const activa = () => playing || tiro.visible
   function play() {
+    frenarOtras()
     if (p >= 1) p = 0
     playing = true
     tPrev = 0
@@ -296,6 +309,26 @@ window.__rigExt.onPost((R) => {
   ui.append(btnPlay, rango, fila, rotulo)
   if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
     window.__rigToolbar.add('animar', ui)
+
+  // y al revés: si arranca el montaje (secuencia o izamiento) o "Animar aparejo", la maniobra se reinicia
+  document.addEventListener('rig:seq-step', (e) => {
+    if (e.detail !== 0 && activa()) reset()
+  })
+  for (const id of ['er-play', 'er-range'])
+    document.getElementById(id)?.addEventListener(
+      id === 'er-play' ? 'click' : 'input',
+      () => {
+        if (activa()) reset()
+      },
+      true,
+    )
+  document.getElementById('c-play')?.addEventListener(
+    'click',
+    () => {
+      if (!(R.view && R.view.playing) && activa()) reset()
+    },
+    true,
+  )
 
   document.addEventListener('rig:mode', (e) => {
     if (e.detail === 'qhse' || e.detail === 'operation') lineaFuego(true)
