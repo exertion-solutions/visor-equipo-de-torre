@@ -22,6 +22,7 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 | `rig:setView`   | `view`: `iso` \| `front` \| `side` \| `top` \| `well`       | Mueve la cámara a la vista estándar.                                                      |
 | `rig:setLayers` | `layers`: `LayerId[]`                                       | Conjunto **exacto** de capas activas (las demás se apagan). Se aplica después del preset. |
 | `rig:ping`      | —                                                           | El visor responde otra vez `ready` + `state` (útil si la app montó después del visor).    |
+| `rig:kvInit` | `items`: `{ [clave]: string }` | Respuesta a `rig:kvGet`: almacén de campo guardado por la app (claves `campo:*`). |
 
 `LayerId`: `zonas` (zonas de riesgo ilustrativas) · `cotas` · `etiquetas` · `malla` · `despiece` · `drops`.
 
@@ -33,6 +34,9 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 | `rig:state`  | `mode`, `view`, `layers`                                                                               | Al arrancar y cada vez que cambia modo, vista o alguna capa.                 |
 | `rig:select` | `id`, `name`, `grade` (`A`\|`B`\|`C`), `status` — o `id: null` al deseleccionar                        | Al cambiar el componente seleccionado. Origen: tabla `META` del visor.       |
 | `rig:visitas` | `value` (entero ≥ 0) | Total del contador de visitas (`legacy-ext/89-visitas.js`, servicio externo). Solo en sitios http(s) no locales; se reenvía ante `rig:ping`. La app lo muestra en su barra de estado. |
+| `rig:kvGet` | — | Al arrancar `legacy-ext/90-almacen.js` dentro del iframe (sin localStorage propio). La app responde `rig:kvInit`. |
+| `rig:kvSet` | `key` (`campo:*`), `value` (string JSON o `null` para borrar) | Cada cambio del checklist DROPS (92) o de los registros de inducción (93). La app lo guarda en su localStorage. |
+| `rig:link` | `comp`, `vp` (ids o `null`) | Botón "Copiar enlace a esta vista" (91). La app escribe `?comp=` / `?vp=` en su URL y la copia al portapapeles. |
 
 `grade` es la confiabilidad geométrica de `CLAUDE.md`: **A confirmado · B parcial · C aproximado**
 (lo pendiente de relevamiento se trata como aproximado). Referencia digital, nunca as-built.
@@ -50,6 +54,9 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 Si `ready` no llega en 45 s (copia en caché sin el puente), el cartel de carga se retira igual.
 
 ## Estado en la URL
+
+Enlaces profundos: `?comp=<componente>` (selecciona y enfoca) o `?vp=<sector de "Ir a equipo">` (vuela a la vista). La app
+los pasa al `src` del iframe (`src/lib/deepLink.ts`) y `legacy-ext/91-enlaces.js` los aplica al arrancar; ids desconocidos se ignoran.
 
 `?mode=qhse&view=front&layers=zonas,cotas` (+ `dev=1` habilita el motor R3F nativo). Solo se escribe lo
 que difiere del valor por defecto (`explore`, `iso`, sin capas); `layers=` vacío fuera de EXPLORE conserva

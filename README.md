@@ -74,3 +74,12 @@ docs/           arquitectura, paridad, auditoría legacy, setup
 - `docs/legacy-audit-2026-09-25.md`: auditoría del visor V2 (patrones, inconsistencias, rendimiento).
 - `docs/setup-2026-09-25.md`: preparación del entorno, decisiones, MCP y unificación con el scaffold paralelo.
 - `reference/legacy/README.md`: evidencia legacy y verificación de hashes.
+
+## Herramientas de campo (V2)
+
+- **Checklist DROPS (campo)** (menú Capas): OK / NOK / N/A por punto desde el panel DROPS, resumen por sección, CSV para Excel y envío
+  opcional a un disparador HTTP (Power Automate). Es un registro de campo: el visor no evalúa ni aprueba.
+- **Evaluación de inducción** (modo Entrenamiento, recorrido guiado): 8 preguntas sobre las fichas de "Ir a equipo", registro con
+  nombre/empresa/puntaje, CSV y envío opcional. No es una habilitación.
+- **Enlaces profundos**: `?comp=bop`, `?vp=piso-enganche`; botón "Copiar enlace a esta vista" en Exportar.
+- Los datos quedan en el navegador (localStorage de la app). Envío: el flujo recibe el cuerpo como texto; leerlo con `json(triggerBody())`.

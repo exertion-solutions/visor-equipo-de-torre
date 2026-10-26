@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  KV_PREFIX,
+  isKvKey,
   parseLegacyMessage,
   type AppToLegacyMessage,
   type LegacySetModeMessage,
 } from '@/lib/legacyBridge'
 import { getInitialUrlState } from '@/lib/urlState'
+import { LINK_PARAMS, legacyViewerSrc } from '@/lib/deepLink'
 import { useModeStore, type AppMode } from '@/stores/modeStore'
 import { useViewerStore } from '@/stores/viewerStore'
 
@@ -15,6 +18,34 @@ export type { LegacySetModeMessage }
  * `?embedded` oculta su barra de modos propia: la app controla el modo por postMessage.
  */
 export const LEGACY_VIEWER_SRC = `${import.meta.env.BASE_URL}legacy/Digital_Rig_V2.html?embedded`
+
+/** Almacén de campo del visor en el localStorage de la app (el iframe sandbox no tiene storage propio). */
+function kvItems(): Record<string, string> {
+  const out: Record<string, string> = {}
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith(KV_PREFIX) && isKvKey(k)) out[k] = localStorage.getItem(k) ?? ''
+    }
+  } catch {
+    /* sin storage: el visor sigue en memoria */
+  }
+  return out
+}
+
+/** Escribe `comp`/`vp` en la URL de la app (sin historial) y la copia al portapapeles. */
+async function copyLink(comp: string | null, vp: string | null): Promise<void> {
+  const u = new URL(location.href)
+  for (const k of LINK_PARAMS) u.searchParams.delete(k)
+  if (vp) u.searchParams.set('vp', vp)
+  else if (comp) u.searchParams.set('comp', comp)
+  history.replaceState(history.state, '', u.toString())
+  try {
+    await navigator.clipboard.writeText(u.toString())
+  } catch {
+    /* sin permiso de portapapeles: queda en la barra de direcciones */
+  }
+}
 
 /** Si el visor no avisa `ready` (p. ej. una copia en caché sin el puente), se retira el cartel igual. */
 const READY_FALLBACK_MS = 45_000
@@ -81,6 +112,20 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
         case 'rig:visitas':
           store.setVisitas(msg.value)
           break
+        case 'rig:kvGet':
+          postRef.current({ type: 'rig:kvInit', items: kvItems() })
+          break
+        case 'rig:kvSet':
+          try {
+            if (msg.value === null) localStorage.removeItem(msg.key)
+            else localStorage.setItem(msg.key, msg.value)
+          } catch {
+            /* storage lleno o bloqueado */
+          }
+          break
+        case 'rig:link':
+          void copyLink(msg.comp, msg.vp)
+          break
       }
     }
     window.addEventListener('message', onMessage)
@@ -103,13 +148,15 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
   }, [ready])
 
   const loading = !ready && !giveUp
+  // Se calcula una sola vez: cambiar `src` recargaría el visor.
+  const [src] = useState(() => legacyViewerSrc(LEGACY_VIEWER_SRC, location.search))
 
   return (
     <div className={active ? 'absolute inset-0' : 'hidden'} aria-hidden={!active}>
       <iframe
         ref={frameRef}
         title="Visor Digital Rig V2 (modo compatibilidad)"
-        src={LEGACY_VIEWER_SRC}
+        src={src}
         sandbox="allow-scripts allow-downloads"
         tabIndex={active ? 0 : -1}
         className="block h-full w-full border-0"

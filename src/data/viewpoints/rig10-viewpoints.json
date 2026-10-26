@@ -5,7 +5,10 @@
   "aviso": "Recorrido visual en primera persona. Las posiciones de cámara son una elección visual (2–4 m del equipo), no puestos de trabajo ni distancias de seguridad. Altura de ojos = cota del piso + 1,70 m. No hay zonas de exclusión documentadas: no se representan.",
   "alturaOjos": 1.7,
   "pisos": {
-    "terreno": { "cota": 0, "fuente": "origen del marco (boca de pozo a nivel de terreno)" },
+    "terreno": {
+      "cota": 0,
+      "fuente": "origen del marco (boca de pozo a nivel de terreno)"
+    },
     "pisoTrabajo": {
       "cota": 3.61,
       "fuente": "src-plano-mastil (3.606 m, 12'); cara superior del piso del modelo SK-575"
@@ -20,8 +23,13 @@
     "max": [33.5, 30.5],
     "fuente": "vallado del entorno del V2 (layout de locación, ilustrativo)"
   },
-  "caminata": { "velocidad": 1.4, "radio": 0.35 },
-  "transicion": { "ms": 1800 },
+  "caminata": {
+    "velocidad": 1.4,
+    "radio": 0.35
+  },
+  "transicion": {
+    "ms": 1800
+  },
   "recorrido": {
     "paradas": ["acceso", "acumulador", "manifold", "bop", "piso-trabajo"],
     "segundosPorParada": 8
@@ -35,7 +43,12 @@
       "camPos": [-26, 1.7, -24],
       "target": [0, 8, 0],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Ingreso de personal y vehículos a la locación; punto de control de acceso, inducción y estacionamiento.",
+        "riesgos": "Atropellamiento por vehículos y equipos en movimiento; tránsito en marcha atrás; terreno irregular; ingreso sin autorización. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, calzado de seguridad, ropa ignífuga, anteojos de seguridad y chaleco reflectivo. (referencia genérica, pendiente de validación)",
+        "controles": "Control de ingreso y registro; señalización de circulación y velocidad; banderillero en maniobras; senda peatonal separada. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "acumulador",
@@ -45,7 +58,12 @@
       "camPos": [-20.5, 1.7, 0.8],
       "target": [-20.5, 0.9, 4.6],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Unidad de cierre del BOP (Koomey): almacena fluido hidráulico a presión en botellones para accionar el BOP desde el panel.",
+        "riesgos": "Liberación de energía hidráulica almacenada; proyección de fluido; golpe por mangueras a presión; activación involuntaria. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos o protector facial, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Bloqueo y descarga de energía antes de intervenir; prueba funcional del sistema; mangueras y conexiones inspeccionadas; acceso al panel despejado. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "manifold",
@@ -55,7 +73,12 @@
       "camPos": [6.2, 1.7, -6.8],
       "target": [6.2, 0.7, -11.2],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Conjunto de válvulas y chokes que controla y deriva el retorno del pozo durante una maniobra de control.",
+        "riesgos": "Fluido o gas a presión en conexiones; erosión del choke; presencia de gas en el retorno; golpe de ariete al maniobrar válvulas. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos o protector facial, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)",
+        "controles": "Prueba de presión según procedimiento aplicable; posición de válvulas identificada; líneas ancladas; monitoreo de gases. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "bop",
@@ -65,7 +88,12 @@
       "camPos": [0.2, 1.7, 4.3],
       "target": [0.2, 1.8, 0],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Preventor de reventones instalado en boca de pozo: cierra el pozo ante un influjo y permite controlarlo.",
+        "riesgos": "Pérdida de control de pozo; fluido a presión; aplastamiento de manos en el montaje; cargas suspendidas sobre la boca de pozo. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)",
+        "controles": "Prueba de presión y funcional del BOP según programa; simulacros de cierre; carga suspendida fuera de la línea de fuego; comunicación con el maquinista. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "piso-trabajo",
@@ -75,7 +103,12 @@
       "camPos": [3.2, 5.31, 1.2],
       "target": [0, 4.3, 0],
       "fov": 65,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Plataforma sobre la boca de pozo donde la cuadrilla maniobra la tubería con cuñas, llaves y elevador.",
+        "riesgos": "Atrapamiento de manos y dedos; golpe por tubería o elevador; caída al mismo nivel; caída de objetos desde el mástil. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco con barbijo, anteojos, guantes de impacto, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Manos fuera de puntos de atrapamiento; piso limpio y ordenado; comunicación con el maquinista; control DROPS del mástil. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "llave",
@@ -85,7 +118,12 @@
       "camPos": [3, 5.31, -1.2],
       "target": [0.6, 5.2, 0],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Llave hidráulica de tubing para enroscar y desenroscar uniones con torque controlado.",
+        "riesgos": "Atrapamiento en mordazas y puerta de la llave; latigazo por rotura del cable de retención; proyección de fluido hidráulico. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos, guantes de impacto, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Cable de retención (back-up) instalado e inspeccionado; puerta cerrada antes de girar; operador único de los mandos. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "piso-enganche",
@@ -95,7 +133,12 @@
       "camPos": [2, 22.33, 0],
       "target": [0, 21.3, 0],
       "fov": 65,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Plataforma del enganchador en el mástil, desde donde se estiban y entregan los tiros de tubería.",
+        "riesgos": "Caída de altura; caída de objetos al piso de trabajo; golpe por tiros de tubería; exposición a viento y frío. (referencia genérica, pendiente de validación)",
+        "EPP": "Arnés de cuerpo completo con línea de vida o dispositivo anticaída, casco con barbijo, guantes y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Amarre permanente en altura; herramientas con retención; dispositivo de escape inspeccionado; suspender tareas con viento fuerte según procedimiento aplicable. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "cuadro",
@@ -105,7 +148,12 @@
       "camPos": [-6.3, 1.7, -4.3],
       "target": [-6.3, 2.2, 0],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Puesto del maquinista: comando del malacate y del aparejo, frenos y control de las maniobras de izaje.",
+        "riesgos": "Choque del aparejo contra la corona; pérdida de control del freno; ruido; comunicación deficiente con la cuadrilla. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, protección auditiva, anteojos, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Dispositivo anti-choque de corona probado; inspección de frenos y cable; visibilidad del piso de trabajo; señales acordadas. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "planchada",
@@ -115,7 +163,12 @@
       "camPos": [10, 1.7, -6.5],
       "target": [8, 1.5, -1],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Rampa y caballetes donde se estiba la tubería y desde donde sube al piso de trabajo.",
+        "riesgos": "Rodadura y caída de tubos; atrapamiento entre tubos; golpe al subir o bajar tubería; tropiezos. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Tubería calzada y trabada; nadie en la línea de rodadura; uso de sogas guía; orden de la planchada. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "bomba",
@@ -125,7 +178,12 @@
       "camPos": [-16.2, 1.7, -11.2],
       "target": [-16.2, 1.2, -15.5],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Bomba triplex que impulsa el fluido de circulación hacia el pozo.",
+        "riesgos": "Fluido a alta presión; rotura de líneas; partes móviles; ruido; manipulación de químicos. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, protección auditiva, anteojos o protector facial, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Válvula de alivio probada; líneas ancladas; protecciones de partes móviles colocadas; bloqueo antes de intervenir. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "piletas",
@@ -135,7 +193,12 @@
       "camPos": [-0.5, 1.7, -11.2],
       "target": [-6.5, 1.5, -17.5],
       "fov": 70,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Piletas de fluido y trip tank para almacenar, acondicionar y medir el volumen de retorno del pozo.",
+        "riesgos": "Caída a pileta; resbalones; exposición a químicos y gases; derrames. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos, guantes resistentes a químicos, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)",
+        "controles": "Barandas y tapas colocadas; control de volúmenes; hojas de seguridad disponibles; contención de derrames. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "carrier",
@@ -145,7 +208,12 @@
       "camPos": [-13, 1.7, 4.6],
       "target": [-12.5, 2, 0.5],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Unidad autopropulsada que transporta el equipo y aloja motor, transmisión y cabina del maquinista.",
+        "riesgos": "Atropellamiento en traslados y posicionamiento; superficies calientes; partes móviles; derrames de combustible. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, protección auditiva, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Banderillero en el posicionamiento; nivelación y gatos verificados; protecciones colocadas; control de pérdidas. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "mastil",
@@ -155,7 +223,12 @@
       "camPos": [14, 1.7, 12],
       "target": [-1, 14, 0],
       "fov": 70,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Mástil telescópico con vientos que sostiene la corona y el aparejo para izar y bajar la tubería.",
+        "riesgos": "Colapso del mástil; caída de objetos; rotura de vientos; caída de altura durante el montaje. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, arnés en tareas en altura, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)",
+        "controles": "Inspección del mástil y vientos; anclajes verificados; control DROPS; zona despejada durante el izamiento; límites de viento según procedimiento aplicable. (referencia genérica, pendiente de validación)"
+      }
     },
     {
       "id": "pozo-vecino",
@@ -165,7 +238,12 @@
       "camPos": [11, 1.7, 8.3],
       "target": [11, 1.3, 5],
       "fov": 60,
-      "ficha": { "funcion": "", "riesgos": "", "EPP": "", "controles": "" }
+      "ficha": {
+        "funcion": "Árbol de producción de un pozo vecino en la misma locación (ilustrativo).",
+        "riesgos": "Golpe al árbol por vehículos o cargas; fuga de fluido o gas; presión remanente. (referencia genérica, pendiente de validación)",
+        "EPP": "Casco, anteojos, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)",
+        "controles": "Señalizar y proteger el árbol; mantener distancia en maniobras; permiso de trabajo para cualquier intervención. (referencia genérica, pendiente de validación)"
+      }
     }
   ]
 }

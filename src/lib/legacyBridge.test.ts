@@ -72,4 +72,20 @@ describe('normalizeLayers', () => {
   it('deduplica y ordena', () => {
     expect(normalizeLayers(['drops', 'zonas', 'drops', 'nope'])).toEqual(['zonas', 'drops'])
   })
+
+  it('almacén de campo y enlaces: valida claves, valores e ids', () => {
+    expect(parseLegacyMessage({ type: 'rig:kvGet' })).toEqual({ type: 'rig:kvGet' })
+    expect(parseLegacyMessage({ type: 'rig:kvSet', key: 'campo:x', value: '1' })).toEqual({
+      type: 'rig:kvSet',
+      key: 'campo:x',
+      value: '1',
+    })
+    expect(parseLegacyMessage({ type: 'rig:kvSet', key: 'otra', value: '1' })).toBeNull()
+    expect(parseLegacyMessage({ type: 'rig:kvSet', key: 'campo:x', value: 5 })).toBeNull()
+    expect(parseLegacyMessage({ type: 'rig:link', comp: 'bop', vp: 'X Y' })).toEqual({
+      type: 'rig:link',
+      comp: 'bop',
+      vp: null,
+    })
+  })
 })

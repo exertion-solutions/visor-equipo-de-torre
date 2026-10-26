@@ -226,7 +226,7 @@ window.__rigExt = (() => {
 /* datos DROPS (src/data/qhse/rig10-drops.json) */
 window.__RIG_DROPS={"schemaVersion":1,"meta":{"rigId":"RIG-10","title":"Puntos de control DROPS del equipo 10 (Libro DROPS 2024)","generated":"2026-09-25","assumptions":["Estatus 'procedure': se aplican los ítems del Libro DROPS 2024 como procedimiento de referencia del equipo. El Libro no nombra el equipo: su aplicabilidad al equipo 10 es una decisión interna y no está afirmada por el documento.","El Libro trae 66 puntos en 11 secciones; el anexo A3 trae 64 (Corona 9 en lugar de 11): el Libro (Rev.03, 04/01/24) agrega COR-10 y el soporte de banderas sin número. Los IDs son los del extracto (prefijos COR, DCO, PE, DPE, BP, SUB, CAS, PLA, PIL, PT, PRL); el Libro solo numera 'Art.' por sección.","Filas dudosas conservadas y marcadas flags:['dudoso']: COR-10 (columnas posiblemente desplazadas), COR-11 (sin número Art. impreso; ID asignado por este dataset) y PLA-1 (fila incompleta, 'BANDEJA HCA.'). Otras lecturas ambiguas llevan 'texto-ambiguo' (COR-5 '5/8 9/16' sin unidad; PRL-1/PRL-2 '8 por bulones'); BP-2 (power swivel) dice 'NA' en las tres columnas ('no-aplica').","primary/secondary/observation transcriben el Libro sin corregir errores de tipeo (salvo espacios perdidos por la maquetación). secondaryRequired:false cuando el Libro dice 'No requerida' o 'NA', o no declara retención (PLA-1). basis.page es la página donde comienza la fila; si cruza salto de página, basis.note lo indica. La pág. 25 del Libro lleva otro encabezado (Rev.01, 18/09/23).","Zona de cada sección tomada del layout A2: corona, debajo de corona, piso de enganche y debajo del piso de enganche = ALTO; boca de pozo, subestructura y carrier, casilla, plano inclinado = MEDIO; piletas = BAJO. El A2 es una planta con 3 anillos concéntricos SIN radio ni cota; sus acotaciones (2,4 a 20 m) son huellas de equipos en locación, no distancias de exclusión. Este dataset no contiene radios, alturas, pesos ni distancias.","Conflicto de nivel no resuelto: 'Área boca de pozo' es MEDIO en el A2 pero el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; y procedimiento DROPS 6.3.5 asigna 'la torre' a Riesgo Medio y 'piletas, bombas, acumuladores, carrier' a Riesgo Bajo, lo que no coincide con el A2 (mástil = Alto; subestructura y carrier = Medio). Se usa el A2; queda pendiente decidir cuál prevalece.","piso-trabajo y poste-llave NO figuran en el A2: zone:null con zoneBasis 'No clasificada en layout A2'. El RCCO (A3) los rotula por su cuenta ('Ligero' y 'Riesgo medio' en el piso de trabajo; Riesgo Medio en el poste), pero eso no es una clasificación de área del A2 y no se usa. Un punto sin zona no se presenta como zona Baja.","componentId es INFERIDO (componentIdBasis:'inferido'): los documentos no usan los ids del visor. Regla: corona, debajo de corona y debajo del piso de enganche = mastil salvo vientos, grilletes y riendas = vientos (DCO-4..8, DPE-4); piso de enganche = enganche salvo PE-10 y PE-13 = vientos; BP-1 = malacate; BP-2..4 = aparejo; subestructura y carrier = subestructura salvo SUB-1 (pistones y tensores) = camion; piso de trabajo = subestructura; casilla = cabina; poste = llave; plano inclinado = caballetes; piletas = circulacion.","Manual DROPS Rev.04 (©2017, genérico, offshore), Taller YPF y Alerta YPF INC18068 son guías o evidencia de incidente, no requisitos de la empresa: solo aparecen en 'references' y 'sources' (no son puntos). Como el enum de 'sources.kind' no tiene un tipo para guías/alertas, se los clasificó 'brochure'; ninguno respalda un punto.","Frecuencias (procedimiento DROPS, texto): A1 previo a cada montaje y desmontaje; RCCO mensual; deficiencias reportadas en el registro de deficiencias y corregidas 'inmediatamente' (sin plazo numérico). No definidos por los documentos: alturas, pesos, radios o distancias de caída, umbrales de la calculadora DROPS (anexo A4, ausente de los archivos) ni criterio numérico de aceptación."],"disclaimer":"Dataset cualitativo derivado de un procedimiento interno de prevención de caída de objetos (Libro DROPS 2024 y anexos). No contiene distancias, radios, alturas ni pesos, y no es un cálculo ni una validación de seguridad. Las zonas Alto/Medio/Bajo son clasificaciones de área del layout A2, sin dimensión. La aplicabilidad del Libro al equipo 10 es una decisión interna (el documento no nombra el equipo)."},"sources":[{"id":"libro-drops-2024","kind":"procedure","title":"Libro DROPS 2024 (Reporte de Control de Caídas de Objetos, RCCO)","ref":"docs/fuentes/drops/Libro DROPS 2024.pdf (25 págs)","revision":"Rev.03, 04/01/24 (págs. 1-24); pág. 25 con encabezado Rev.01, 18/09/23","verified":true},{"id":"proc-drops","kind":"procedure","title":"procedimiento DROPS Prevención de Caídas de Objetos desde Altura","ref":"docs/fuentes/drops/procedimiento DROPS Caída de Objetos desde Altura 02.pdf (7 págs)","revision":"Rev.02, 11/07/22","verified":true},{"id":"proc-drops-a1","kind":"procedure","title":"anexo A1 Check List de Caídas de Objetos","ref":"docs/fuentes/drops/anexo A1 Check List de Caídas de Objetos.pdf (1 pág; código impreso anexo A1)","revision":null,"verified":true},{"id":"proc-drops-a2","kind":"layout","title":"layout A2 Layout - Clasificación de Áreas sobre Caídas de Objetos","ref":"docs/fuentes/drops/layout A2 Layout Equipo Caida Objetos.pdf (1 pág; rótulo layout A2)","revision":null,"verified":true},{"id":"proc-drops-a3","kind":"procedure","title":"anexo A3 Reporte de Control de Caídas de Objetos (RCCO)","ref":"docs/fuentes/drops/anexo A3 Reporte de Control de Caidas de Objetos RCCO.pdf (25 págs; código impreso anexo A3)","revision":null,"verified":true},{"id":"manual-drops-rev04","kind":"brochure","title":"Manual DROPS Retención Confiable (DROPS Reliable Securing), guía genérica de la industria","ref":"docs/fuentes/drops/Manual Drops Rev. 04 en Español.pdf (67 págs)","revision":"Rev.04, septiembre 2017 (©2017)","verified":true},{"id":"taller-ypf-drops","kind":"brochure","title":"Taller de Aseguramiento de elementos en altura (DROPS), Equipos de Torre, YPF Regional Oeste","ref":"docs/fuentes/drops/Taller de Aseguramiento de elemtnos en altura DROPS - Equipos de Torre Regional Oeste.pdf (25 págs)","revision":null,"verified":true},{"id":"alerta-ypf-inc18068","kind":"brochure","title":"Advertencia de Seguridad YPF: caída de giratorio (destorcedor) de winche, SIGEO INC18068","ref":"docs/fuentes/drops/Upstream YPF - Advertencia de Seguridad - Caída de giratorio de Winche.pdf (1 pág)","revision":"07/10/2024","verified":true}],"zones":[{"id":"alto","label":"Riesgo ALTO","color":"#EF4444","areas":["Corona de equipo","Entre Corona y Piso de enganche","Piso de enganche","Entre Piso de enganche y Sección de mastil"],"sourceId":"proc-drops-a2","note":"Leyenda del layout A2 (anillo interior, rojo). Clasificación cualitativa de áreas: el A2 no trae radio ni cota de la zona."},{"id":"medio","label":"Riesgo MEDIO","color":"#F59E0B","areas":["Área boca de pozo","Sub estructura y Carrier","Casilla de Maquinista","Plano inclinado y Planchada"],"sourceId":"proc-drops-a2","note":"Leyenda del layout A2 (anillo intermedio, naranja). Sin radio ni cota. El RCCO (A3) marca 'Riesgo Alto' los 4 ítems del área de boca de pozo."},{"id":"bajo","label":"Riesgo BAJO","color":"#22C55E","areas":["Pileta","Bomba","Generador","Campamento","Depósito"],"sourceId":"proc-drops-a2","note":"Leyenda del layout A2 (anillo exterior, verde). Sin radio ni cota."}],"sections":[{"id":"corona","label":"Corona","order":1,"zone":"alto","zoneBasis":"layout A2: 'Corona de equipo' = Riesgo ALTO (RCCO A3, sección Corona: Riesgo Alto).","pageRange":"1-4","sourceId":"libro-drops-2024"},{"id":"debajo-corona","label":"Debajo de la Corona y Encima del Piso de Enganche","order":2,"zone":"alto","zoneBasis":"layout A2: 'Entre Corona y Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).","pageRange":"4-7","sourceId":"libro-drops-2024"},{"id":"piso-enganche","label":"Piso de Enganche","order":3,"zone":"alto","zoneBasis":"layout A2: 'Piso de enganche' = Riesgo ALTO (RCCO A3: Riesgo Alto).","pageRange":"7-11","sourceId":"libro-drops-2024"},{"id":"debajo-piso-enganche","label":"Debajo del Piso de Enganche y sobre la Primer Sección del Mástil","order":4,"zone":"alto","zoneBasis":"layout A2: 'Entre Piso de enganche y Sección de mastil' = Riesgo ALTO (RCCO A3: Riesgo Alto).","pageRange":"11-14","sourceId":"libro-drops-2024"},{"id":"boca-pozo","label":"Área de Boca de Pozo","order":5,"zone":"medio","zoneBasis":"layout A2: 'Área boca de pozo' = Riesgo MEDIO. Conflicto: el RCCO (A3, págs. 15-16) marca sus 4 ítems como Riesgo Alto; no se resuelve aquí.","pageRange":"14-15","sourceId":"libro-drops-2024"},{"id":"subestructura-carrier","label":"Subestructura y Carrier","order":6,"zone":"medio","zoneBasis":"layout A2: 'Sub estructura y Carrier' = Riesgo MEDIO (RCCO A3: Riesgo Medio). procedimiento DROPS 6.3.5 nombra 'carrier' junto a piletas y bombas bajo Riesgo Bajo: no coincide con el A2.","pageRange":"16-17","sourceId":"libro-drops-2024"},{"id":"casilla-maquinista","label":"Casilla de Maquinista","order":7,"zone":"medio","zoneBasis":"layout A2: 'Casilla de Maquinista' = Riesgo MEDIO.","pageRange":"18-19","sourceId":"libro-drops-2024"},{"id":"plano-inclinado","label":"Plano inclinado y Planchada","order":8,"zone":"medio","zoneBasis":"layout A2: 'Plano inclinado y Planchada' = Riesgo MEDIO.","pageRange":"20","sourceId":"libro-drops-2024"},{"id":"piletas","label":"Piletas · Bombas · Generador · Depósito · Trailer Campamento","order":9,"zone":"bajo","zoneBasis":"layout A2: 'Pileta; Bomba; Generador; Campamento; Depósito' = Riesgo BAJO.","pageRange":"21","sourceId":"libro-drops-2024"},{"id":"piso-trabajo","label":"Piso de trabajo · Escalera de acceso","order":10,"zone":null,"zoneBasis":"No clasificada en layout A2","pageRange":"22-24","sourceId":"libro-drops-2024"},{"id":"poste-llave","label":"Poste de retenida de llave hidráulica","order":11,"zone":null,"zoneBasis":"No clasificada en layout A2","pageRange":"24-25","sourceId":"libro-drops-2024"}],"points":[{"id":"COR-1","sectionId":"corona","order":1,"name":"Polea de pistón","componentId":"mastil","componentIdBasis":"inferido","primary":"3 topes guía cable con bulones tuercas auto frenantes o tuercas con chaveta partida.","secondary":"No requerida","secondaryRequired":false,"quantity":"3 topes guía cable","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":1,"note":null}},{"id":"COR-2","sectionId":"corona","order":2,"name":"Polea viajera","componentId":"mastil","componentIdBasis":"inferido","primary":"3 topes guía cable con bulones tuercas auto frenantes o tuercas con chaveta partida","secondary":"No requerida","secondaryRequired":false,"quantity":"3 topes guía cable","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":1,"note":null}},{"id":"COR-3","sectionId":"corona","order":3,"name":"Polea de punto muerto","componentId":"mastil","componentIdBasis":"inferido","primary":"3 topes guía cable con bulones tuercas auto frenantes o tuercas con chaveta partida","secondary":"No requerida","secondaryRequired":false,"quantity":"3 topes guía cable","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":1,"note":null}},{"id":"COR-4","sectionId":"corona","order":4,"name":"Polea de líneas 1, 2, y 3 de aparejo","componentId":"mastil","componentIdBasis":"inferido","primary":"3 topes guía cable con bulones tuercas auto frenantes o tuercas con chaveta partida","secondary":"No requerida","secondaryRequired":false,"quantity":"3 topes guía cable","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":2,"note":null}},{"id":"COR-5","sectionId":"corona","order":5,"name":"Poleas de izaje de cable de guinche","componentId":"mastil","componentIdBasis":"inferido","primary":"4 pastecas de pasaje 5/8 9/16 sujetas con bulones tuercas auto frenantes.","secondary":"No requerida","secondaryRequired":false,"quantity":"4 pastecas; pasaje 5/8 9/16 (el texto no indica unidad)","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":["texto-ambiguo"],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":2,"note":null}},{"id":"COR-6","sectionId":"corona","order":6,"name":"Placa certificada de sujeción para T-5","componentId":"mastil","componentIdBasis":"inferido","primary":"Placa soldada sujetas con 4 bulones tuercas auto frenantes y arandelas Norlock.","secondary":"No requerida","secondaryRequired":false,"quantity":"4 bulones","observation":"Verificar visualmente condición de soldaduras y verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":2,"note":null}},{"id":"COR-7","sectionId":"corona","order":7,"name":"Baliza de la corona","componentId":"mastil","componentIdBasis":"inferido","primary":"Baliza roscada y sujeta con eslinga de seguridad.","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de los cables de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":2,"note":"Fila entre págs. 2 y 3 (art. 7 impreso en p.3)."}},{"id":"COR-8","sectionId":"corona","order":8,"name":"Banderas en cajón de corona","componentId":"mastil","componentIdBasis":"inferido","primary":"Sujetas por medio de grampas ancladas a la estructura por medio de bulones, tuercas autofrenantes, arandelas Norlock, prisioneros y eslingas de seguridad","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de los cables de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":3,"note":null}},{"id":"COR-9","sectionId":"corona","order":9,"name":"Dispositivo retráctil T5","componentId":"mastil","componentIdBasis":"inferido","primary":"Dispositivo sujeto con Grillete (retención primaria) y eslinga (retención secundaria)","secondary":"Eslinga de seguridad 4 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 4 mm","observation":"Verificar condición grillete y cable de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":3,"note":null}},{"id":"COR-10","sectionId":"corona","order":10,"name":"Amortiguador Corona: Línea de vida T3","componentId":"mastil","componentIdBasis":"inferido","primary":"Sujetas por medio de grampas ancladas a la estructura por medio de bulones, tuercas autofrenantes, arandelas Norlock","secondary":"Sujetas por medio de grampas ancladas a la estructura por medio de bulones, tuercas autofrenantes, arandelas Norlock","secondaryRequired":false,"quantity":null,"observation":"Libro, columna Observaciones: «No requerida». DUDOSO: la columna «Retención de Seguridad» repite el texto de la sujeción y «No requerida» figura en la columna de observaciones; pueden estar desplazadas las columnas. Se toma secondaryRequired:false por el «No requerida» impreso en la fila. Confirmar con el original.","flags":["dudoso"],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":3,"note":null}},{"id":"COR-11","sectionId":"corona","order":11,"name":"Soporte de accesorios: banderas","componentId":"mastil","componentIdBasis":"inferido","primary":"Tintero soldado con mariposa sujeta con cadena, arandela Norlock y eslinga de seguridad","secondary":"Tintero soldado con mariposa sujeta con cadena, arandela Norlock y eslinga de seguridad","secondaryRequired":true,"quantity":"Eslinga de seguridad 6 mm","observation":"Libro, columna Observaciones: «Eslinga seguridad 6 mm». DUDOSO: la fila no tiene número Art. impreso (sigue al 10) y la cifra de la eslinga está en la columna de observaciones, no en la de retención (que repite la sujeción). Confirmar con el original.","flags":["dudoso"],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":3,"note":"Fila entre págs. 3 y 4."}},{"id":"DCO-1","sectionId":"debajo-corona","order":1,"name":"Luminarias/artefactos en mástil x 7 unidades","componentId":"mastil","componentIdBasis":"inferido","primary":"Fijación de luminarias con grampas bulones, tuercas auto frenaste, arandelas Norlock y eslingas de seguridad","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"7 unidades; eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de eslingas de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":4,"note":null}},{"id":"DCO-2","sectionId":"debajo-corona","order":2,"name":"Reflector led","componentId":"mastil","componentIdBasis":"inferido","primary":"Fijación de Reflector led con grampas bulones, tuercas autofrenantes y arandelas Norlock y eslingas de seguridad","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de eslingas de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":4,"note":null}},{"id":"DCO-3","sectionId":"debajo-corona","order":3,"name":"Depósito de purga","componentId":"mastil","componentIdBasis":"inferido","primary":"Fijado con grampa laterales sujetos a la estructura del mástil los cuales cuentan con bulones, tuercas auto frénate, arandelas Norlock y eslingas de seguridad.","secondary":"Eslingas de seguridad de 3mm.","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de cables de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":4,"note":"Fila entre págs. 4 y 5."}},{"id":"DCO-4","sectionId":"debajo-corona","order":4,"name":"Vientos posteriores del segundo tramo","componentId":"vientos","componentIdBasis":"inferido","primary":"Fijado con 2 grilletes de 4 elementos certificados que sirven como método de sujeción al anclaje, se encuentran posicionados en cáncamos de bloque de corona.","secondary":"No requerida","secondaryRequired":false,"quantity":"2 grilletes de 4 elementos certificados","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":5,"note":null}},{"id":"DCO-5","sectionId":"debajo-corona","order":5,"name":"Vientos de carga","componentId":"vientos","componentIdBasis":"inferido","primary":"Cuentan con 2 grilletes de 4 elementos certificados que son los encargados de realizar la sujeción y se encuentran posicionados en chasis","secondary":"No requerida","secondaryRequired":false,"quantity":"2 grilletes de 4 elementos certificados","observation":"Verificar condiciones de grilletes y condición de cables de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":5,"note":null}},{"id":"DCO-6","sectionId":"debajo-corona","order":6,"name":"Vientos carga trasero","componentId":"vientos","componentIdBasis":"inferido","primary":"Sujetas con grilletes a cáncamos soldados a la estructura. Cáncamo original con grillete 4 elementos con perno, tuerca, chaveta partida y arandelas Norlock","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar condiciones de grilletes y condición de cables de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":5,"note":"Fila entre págs. 5 y 6."}},{"id":"DCO-7","sectionId":"debajo-corona","order":7,"name":"Viento de anclaje terrestre trasero","componentId":"vientos","componentIdBasis":"inferido","primary":"Cuentan con 2 grilletes de 4 elementos certificados que son los encargados de realizar la sujeción y se encuentran posicionados en chasis","secondary":"No requerida","secondaryRequired":false,"quantity":"2 grilletes de 4 elementos certificados","observation":"Verificar condiciones de soldadura, estado de grilletes y condición de cables de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":6,"note":null}},{"id":"DCO-8","sectionId":"debajo-corona","order":8,"name":"Viento frontales de segundo tramo","componentId":"vientos","componentIdBasis":"inferido","primary":"Cuenta con 2 Cáncamos certificados con perno y chaveta Sujetas cada uno con grilletes de 4 elementos a cáncamos soldados a la estructura.","secondary":"No requerida","secondaryRequired":false,"quantity":"2 cáncamos certificados","observation":"Verificar condiciones de soldadura, estado de grilletes y condición de cables de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":6,"note":null}},{"id":"DCO-9","sectionId":"debajo-corona","order":9,"name":"Poleas superiores de piso de enganche","componentId":"mastil","componentIdBasis":"inferido","primary":"Cuenta con 2 poleas soldadas con pernos eje y tuerca castillas y chaveta partida.","secondary":"No requerida","secondaryRequired":false,"quantity":"2 poleas","observation":"Verificas estado de soldadura de pastecas y condición de gramas","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":6,"note":"Fila entre págs. 6 y 7."}},{"id":"PE-1","sectionId":"piso-enganche","order":1,"name":"Caran block Enganchador","componentId":"enganche","componentIdBasis":"inferido","primary":"Sujeto a cáncamo con grillete","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar condición de grilletes y condición de los cables de seguridad.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":7,"note":null}},{"id":"PE-2","sectionId":"piso-enganche","order":2,"name":"Sujeción del cable del pirosalva.","componentId":"enganche","componentIdBasis":"inferido","primary":"Sujeto a cáncamos y grilletes de cuatro elementos.","secondary":"No requerida.","secondaryRequired":false,"quantity":null,"observation":"Verificar condición de grilletes y condicion de los cables de seguridad.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":7,"note":null}},{"id":"PE-3","sectionId":"piso-enganche","order":3,"name":"Pirosalva","componentId":"enganche","componentIdBasis":"inferido","primary":"Elemento original abulanado con 7 bulones","secondary":"No requerida.","secondaryRequired":false,"quantity":"7 bulones","observation":"Verificar condición de pirosalva y sus bulones","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":7,"note":"Fila entre págs. 7 y 8."}},{"id":"PE-4","sectionId":"piso-enganche","order":4,"name":"Rejilla de material desplegable","componentId":"enganche","componentIdBasis":"inferido","primary":"Abulonada con seguros y tuerca autofrenante o tuercas con chaveta partida y arandelas Norlock","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":8,"note":null}},{"id":"PE-5","sectionId":"piso-enganche","order":5,"name":"Trampolín","componentId":"enganche","componentIdBasis":"inferido","primary":"Abulonada con tuercas auto frenantes, arandelas Norlock y sujeción de cables de seguridad","secondary":"Eslinga de seguridad de 3/8\" con 4 eslabones engrampados","secondaryRequired":true,"quantity":"Eslinga de seguridad 3/8\"; 4 eslabones engrampados","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Chequear estado de los eslabones de eslinga de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":8,"note":null}},{"id":"PE-6","sectionId":"piso-enganche","order":6,"name":"Peines de piso de enganche","componentId":"enganche","componentIdBasis":"inferido","primary":"Abulonados con tuerca autofrenantes o tuercas con chaveta partida y arandelas Norlock","secondary":"Eslinga de seguridad 3/8\"","secondaryRequired":true,"quantity":"Eslinga de seguridad 3/8\"","observation":"Verificar condición de peines. Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":8,"note":"Fila entre págs. 8 y 9."}},{"id":"PE-7","sectionId":"piso-enganche","order":7,"name":"Puerta de ingreso a piso de enganche","componentId":"enganche","componentIdBasis":"inferido","primary":"Bisagras soldadas","secondary":"Cadenas soldadas","secondaryRequired":true,"quantity":null,"observation":"Verificar, Chequear estado de los eslabones de cadenas de seguridad y estado de soldaduras","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":9,"note":null}},{"id":"PE-8","sectionId":"piso-enganche","order":8,"name":"Sujeción de piso de enganche","componentId":"enganche","componentIdBasis":"inferido","primary":"Cáncamo soldado","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar soldadura de cáncamo","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":9,"note":null}},{"id":"PE-9","sectionId":"piso-enganche","order":9,"name":"Cable de sujeción de seguridad de piso enganche","componentId":"enganche","componentIdBasis":"inferido","primary":"Cable certificado sujeta con greille a cáncamos a la estructura. Cable de seguridad con 4 grampas de sujeción","secondary":"Cable de seguridad","secondaryRequired":true,"quantity":"4 grampas de sujeción","observation":"Verificar estado de cables, grampas y grilletes","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":9,"note":"Fila entre págs. 9 y 10."}},{"id":"PE-10","sectionId":"piso-enganche","order":10,"name":"Viento de anclaje inferior","componentId":"vientos","componentIdBasis":"inferido","primary":"Sujetas con grilletes a cáncamos soldados a la estructura.","secondary":"No requerida.","secondaryRequired":false,"quantity":null,"observation":"Verificar condiciones de grilletes y condición de cables de seguridad. Verificar estado de soldadura.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":10,"note":null}},{"id":"PE-11","sectionId":"piso-enganche","order":11,"name":"Puerta de ingreso pirosalva","componentId":"enganche","componentIdBasis":"inferido","primary":"Bisagras soldadas. Perno pasador sujeta a cadena soldada","secondary":"Cadenas soldadas","secondaryRequired":true,"quantity":null,"observation":"Verificar, Chequear estado de los eslabones de cadenas de seguridad y estado de soldaduras","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":10,"note":null}},{"id":"PE-12","sectionId":"piso-enganche","order":12,"name":"Poleas de deslizamiento de piso de enganche","componentId":"enganche","componentIdBasis":"inferido","primary":"2 poleas viajeras abulonados con tuercas autofrenantes. Sujetas a cáncamos soldados a la estructura.","secondary":"No requerida.","secondaryRequired":false,"quantity":"2 poleas viajeras","observation":"Verificar condiciones de perno de seguridad y condición de cables. Verificar condición, ajuste de bulones y de las tuercas.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":10,"note":"Fila entre págs. 10 y 11."}},{"id":"PE-13","sectionId":"piso-enganche","order":13,"name":"Vientos de sujeción superior","componentId":"vientos","componentIdBasis":"inferido","primary":"Cuenta con 2 vientos sujetas con grilletes a cáncamos soldados a la estructura. Cable con grampa de sujeción","secondary":"cadena de seguridad.","secondaryRequired":true,"quantity":"2 vientos","observation":"Verificar condiciones de grilletes y condición de cables de seguridad. Verificar condiciones de grampa de sujeción","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":11,"note":null}},{"id":"DPE-1","sectionId":"debajo-piso-enganche","order":1,"name":"Luminarias de mástil x 5 pax","componentId":"mastil","componentIdBasis":"inferido","primary":"Fijación de luminarias con grampas bulones, tuercas auto frenaste y eslingas de seguridad","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"5 unidades; eslinga de seguridad 3 mm","observation":"Verificar condición y ajuste del bulón, de la tuerca y condición de eslingas de seguridad.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":11,"note":null}},{"id":"DPE-2","sectionId":"debajo-piso-enganche","order":2,"name":"Reflectores Led","componentId":"mastil","componentIdBasis":"inferido","primary":"Cuentas con 3 unidades la cual se encuentran en caballete de pivoteo de mástil, los mismos cuentan con grampas de seguridad, tornillos y tuercas autofrenantes , más eslingas de seguridad 3mm","secondary":"Eslingas de seguridad de 3mm.","secondaryRequired":true,"quantity":"3 unidades; eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de eslingas de seguridad","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":11,"note":"Fila entre págs. 11 y 12."}},{"id":"DPE-3","sectionId":"debajo-piso-enganche","order":3,"name":"Interruptor alimentación de luz del segundo tramo","componentId":"mastil","componentIdBasis":"inferido","primary":"El interruptor se encuentra sujeto con bulones, tuercas autofrenantes , arandelas Norlock y eslinga de seguridad.","secondary":"Eslinga de seguridad de 3mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida y condición de eslingas de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":12,"note":null}},{"id":"DPE-4","sectionId":"debajo-piso-enganche","order":4,"name":"Grillete de rienda de carga primer tramo","componentId":"vientos","componentIdBasis":"inferido","primary":"Cuenta con 2 grillete de 4 elementos de riendas de carga primer tramo. Estos son los encargados de realizar la sujeción y se encuentran posicionados en chasis","secondary":"No requerida","secondaryRequired":false,"quantity":"2 grilletes de 4 elementos","observation":"Verificar condición y ajuste del bulón, de la tuerca","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":12,"note":null}},{"id":"DPE-5","sectionId":"debajo-piso-enganche","order":5,"name":"Polea de deslizamiento interior de piso de enganche","componentId":"mastil","componentIdBasis":"inferido","primary":"2 poleas viajeras abulonados con tuercas autofrenantes. Sujetas a cáncamos soldados a la estructura.","secondary":"No requerida.","secondaryRequired":false,"quantity":"2 poleas viajeras","observation":"Verificar condiciones de perno de seguridad y condición de cables. Verificar condición, ajuste de bulones y de las tuercas.","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":13,"note":null}},{"id":"DPE-6","sectionId":"debajo-piso-enganche","order":6,"name":"Caja de conexión eléctrica de todo el mástil","componentId":"mastil","componentIdBasis":"inferido","primary":"Abulonado al mástil con tuercas auto frenantes y arandelas Norlock","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":13,"note":null}},{"id":"DPE-7","sectionId":"debajo-piso-enganche","order":7,"name":"Soporte de stand pipe","componentId":"mastil","componentIdBasis":"inferido","primary":"Sujetos con grampas cepo abulonados a estructura de mastil","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar el estado de las grampas y su correcto abulonado","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":13,"note":null}},{"id":"DPE-8","sectionId":"debajo-piso-enganche","order":8,"name":"Grampas en manguerote de cuello de cisne.","componentId":"mastil","componentIdBasis":"inferido","primary":"Abulonada con tuercas auto frenantes y arandelas Norlock","secondary":"Grilletes de cuatro elementos y eslinga de seguridad","secondaryRequired":true,"quantity":null,"observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta partida. Verificar estado de eslinga de seguridad y grilletes. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":14,"note":null}},{"id":"DPE-9","sectionId":"debajo-piso-enganche","order":9,"name":"Pulmón de Indicador de peso Martin Decker","componentId":"mastil","componentIdBasis":"inferido","primary":"Se encuentra mediante prensado a cable con cadena de seguridad con grampa de sujeción","secondary":"Cadena de seguridad sujetado en grampa","secondaryRequired":true,"quantity":null,"observation":"Verificar condición, ajuste de bulones y tuercas de grampa. Estado de eslabones de cadena. Ajuste de prensa de pulmón de indicador de peso","flags":[],"zone":"alto","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":14,"note":null}},{"id":"BP-1","sectionId":"boca-pozo","order":1,"name":"Guinche","componentId":"malacate","componentIdBasis":"inferido","primary":"Cable de 9/16\" Ojo /Ojo guardacabo sujeto con grillete de 4 cuerpo y giratorio.","secondary":"No requerida","secondaryRequired":false,"quantity":"Cable 9/16\"","observation":"Verificar estado grillete certificado y ajuste de perno","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":15,"note":null}},{"id":"BP-2","sectionId":"boca-pozo","order":2,"name":"Power swivel – Cabeza rotativa","componentId":"aparejo","componentIdBasis":"inferido","primary":"NA","secondary":"NA","secondaryRequired":false,"quantity":null,"observation":"NA","flags":["no-aplica"],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":15,"note":null}},{"id":"BP-3","sectionId":"boca-pozo","order":3,"name":"Aparejo","componentId":"aparejo","componentIdBasis":"inferido","primary":"Sostenido por 8 línea de cables 1 1/8\" torción derecha","secondary":"No requerida","secondaryRequired":false,"quantity":"8 líneas de cable 1 1/8\" (torción derecha)","observation":"Verificar estado de aparejo. Inspección y certificado vigente. Inspeccionar freno de aparejo y cable","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":15,"note":null}},{"id":"BP-4","sectionId":"boca-pozo","order":4,"name":"Eslinga de sujeción y anclaje","componentId":"aparejo","componentIdBasis":"inferido","primary":"Sujeto con grillete y eslinga de seguridad de 9/16\" + eslinga de seguridad de 1/2\"","secondary":"Eslinga De seguridad de 1/2\"","secondaryRequired":true,"quantity":"Eslinga de seguridad 9/16\" y 1/2\"","observation":"Verificar estado de eslinga de seguridad y grilletes. Verificar colocación de seguro en perno de grillete.","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":15,"note":null}},{"id":"SUB-1","sectionId":"subestructura-carrier","order":1,"name":"Pistones y tensores","componentId":"camion","componentIdBasis":"inferido","primary":"6 tensores abulonados con seguros y tuerca autofrenante y chaveta partida","secondary":"No requerida","secondaryRequired":false,"quantity":"6 tensores","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":16,"note":null}},{"id":"SUB-2","sectionId":"subestructura-carrier","order":2,"name":"Escaleras y plataformas de tránsito/trabajo","componentId":"subestructura","componentIdBasis":"inferido","primary":"Escalera con perno y seguro. Baranda colocadas en tinteros soldado sujeto con perno y seguro en cada baranda.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de perno y seguros en escalera y barandas","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":16,"note":null}},{"id":"SUB-3","sectionId":"subestructura-carrier","order":3,"name":"Barandas y rodapié","componentId":"subestructura","componentIdBasis":"inferido","primary":"Baranda colocada en tintero soldado sujeto a en perno y seguro","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar estado de soldadura de tintero y colocación de perno y seguro","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":16,"note":null}},{"id":"SUB-4","sectionId":"subestructura-carrier","order":4,"name":"Artefactos de iluminación","componentId":"subestructura","componentIdBasis":"inferido","primary":"Fijacion de Reflector led con grampas bulones, tuercas autofrenantes, arandelas Norlock y eslingas de seguridad","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta y condición de eslingas de seguridad. Verificar que estén colocadas las arandelas Norlock","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":17,"note":null}},{"id":"CAS-1","sectionId":"casilla-maquinista","order":1,"name":"Mangueras, comandos de izaje","componentId":"cabina","componentIdBasis":"inferido","primary":"Sujetos con grampas cepo abulonados a estructura de mástil","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar el estado de las grampas y su correcto abulonado","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":18,"note":null}},{"id":"CAS-2","sectionId":"casilla-maquinista","order":2,"name":"Soporte y pernos","componentId":"cabina","componentIdBasis":"inferido","primary":"Casilla Maquinista fijado en tinteros soldados sujetos con perno y seguro","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar estado de soldadura de tintero y colocación de perno y seguro","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":18,"note":null}},{"id":"CAS-3","sectionId":"casilla-maquinista","order":3,"name":"Escaleras y pasadores","componentId":"cabina","componentIdBasis":"inferido","primary":"Escalera con perno y seguro. Baranda colocadas en tinteros soldado sujeto con perno y seguro en cada baranda.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar estado de pasadores colocación de perno y seguros en escalera y barandas","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":19,"note":null}},{"id":"PLA-1","sectionId":"plano-inclinado","order":1,"name":"Plano inclinado y pernos","componentId":"caballetes","componentIdBasis":"inferido","primary":"BANDEJA HCA.","secondary":null,"secondaryRequired":false,"quantity":null,"observation":"Fila incompleta en el original: la sujeción dice solo «BANDEJA HCA.» y las columnas de retención de seguridad y observaciones están vacías (sin criterio de verificación). DUDOSO: no se puede afirmar si la retención secundaria es requerida (secondaryRequired:false = el Libro no la declara).","flags":["dudoso"],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":20,"note":null}},{"id":"PLA-2","sectionId":"plano-inclinado","order":2,"name":"Barandas","componentId":"caballetes","componentIdBasis":"inferido","primary":"Baranda colocada en tintero soldado sujeto con perno y seguro","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar estado de soldadura de tintero y colocación de perno y seguro","flags":[],"zone":"medio","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":20,"note":null}},{"id":"PIL-1","sectionId":"piletas","order":1,"name":"Luminarias","componentId":"circulacion","componentIdBasis":"inferido","primary":"Soporte abulonado en base soldado. Fijación de palmeras rebatibles con perno pasante y seguro bulones. Artefactos anclados con grampa cepo, abulonadas con tuercas auto frenaste y eslingas de seguridad doble","secondary":"Eslingas de Seguridad 3 mm","secondaryRequired":true,"quantity":"Eslinga de seguridad 3 mm","observation":"Verificar estado soldadura de soporte de fijación de mástil luminaria. Verificar visualmente que los elementos estén correctamente colocados, ya sea tuerca auto frenante o tuerca común con chaveta y condición de eslingas de seguridad.","flags":[],"zone":"bajo","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":21,"note":null}},{"id":"PIL-2","sectionId":"piletas","order":2,"name":"Barandas y rodapié","componentId":"circulacion","componentIdBasis":"inferido","primary":"Baranda colocada en tintero soldado sujeto a en perno y seguro","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar estado de soldadura de tintero y colocación de perno y seguro","flags":[],"zone":"bajo","basis":{"status":"procedure","sourceId":"libro-drops-2024","page":21,"note":null}},{"id":"PT-1","sectionId":"piso-trabajo","order":1,"name":"Escaleras y plataformas de tránsito/trabajo","componentId":"subestructura","componentIdBasis":"inferido","primary":"Escalera con perno y seguro. Barandas colocadas en tinteros soldado sujeto con perno y seguro en cada baranda.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de perno y seguros en escalera.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":22,"note":null}},{"id":"PT-2","sectionId":"piso-trabajo","order":2,"name":"Pernos de fijación a piso de trabajo","componentId":"subestructura","componentIdBasis":"inferido","primary":"Bujes de escalera colocados en cuna de piso de trabajo, con pernos y seguros.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar correcta colocación de bujes en cuna de apoyo y que se encuentren colocados los pernos y seguros de fijación.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":22,"note":null}},{"id":"PT-3","sectionId":"piso-trabajo","order":3,"name":"Barandas y rodapié","componentId":"subestructura","componentIdBasis":"inferido","primary":"Baranda colocada en tintero soldado a estructura de piso, con pernos pasantes y seguro de fijación.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de pernos pasantes y seguros de fijación.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":23,"note":null}},{"id":"PT-4","sectionId":"piso-trabajo","order":4,"name":"Baranda de plano inclinado","componentId":"subestructura","componentIdBasis":"inferido","primary":"Baranda colocada en tintero soldado a estructura de piso, con pernos pasantes y seguro de fijación.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de pernos pasantes y seguros de fijación.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":23,"note":null}},{"id":"PT-5","sectionId":"piso-trabajo","order":5,"name":"Patas de apoyo de piso de trabajo","componentId":"subestructura","componentIdBasis":"inferido","primary":"Patas de apoyo de piso con pernos pasantes y seguro de fijación.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de pernos pasantes y seguros de fijación.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":23,"note":null}},{"id":"PT-6","sectionId":"piso-trabajo","order":6,"name":"Pasadores de sujeción de aleros","componentId":"subestructura","componentIdBasis":"inferido","primary":"Pasadores de sujeción de aleros rebatibles de piso de trabajo con pernos y seguros de fijación.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar colocación de pernos pasantes y seguros de fijación en pasadores.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":24,"note":null}},{"id":"PRL-1","sectionId":"poste-llave","order":1,"name":"Grampa superior de sujeción.","componentId":"llave","componentIdBasis":"inferido","primary":"Grampa con 8 por bulones y tuercas autofrenantes.","secondary":"No requerida","secondaryRequired":false,"quantity":"8 bulones (el texto dice «8 por bulones»)","observation":"Verificar visualmente que los elementos estén correctamente colocados, (tuerca auto frenante).","flags":["texto-ambiguo"],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":24,"note":null}},{"id":"PRL-2","sectionId":"poste-llave","order":2,"name":"Grampa Inferior de sujeción.","componentId":"llave","componentIdBasis":"inferido","primary":"Grampa con 8 por bulones y tuercas autofrenantes.","secondary":"No requerida","secondaryRequired":false,"quantity":"8 bulones (el texto dice «8 por bulones»)","observation":"Verificar visualmente que los elementos estén correctamente colocados, (tuerca auto frenante)","flags":["texto-ambiguo"],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":25,"note":"La pág. 25 lleva otro encabezado: «REGISTRO DE CAÍDAS ELEMENTOS EN ALTURA (DROPS)», Rev.01, 18/09/23 (págs. 1-24: Rev.03, 04/01/24)."}},{"id":"PRL-3","sectionId":"poste-llave","order":3,"name":"Sujeción de brazo de llave a poste de retenida.","componentId":"llave","componentIdBasis":"inferido","primary":"Perno pasante con cadena soldada y seguro. Eslinga con grillete 4 elementos.","secondary":"No requerida","secondaryRequired":false,"quantity":null,"observation":"Verificar que se encuentre colocado el seguro en perno pasante y grillete cuete los 4 elementos.","flags":[],"zone":null,"basis":{"status":"procedure","sourceId":"libro-drops-2024","page":25,"note":"La pág. 25 lleva otro encabezado: «REGISTRO DE CAÍDAS ELEMENTOS EN ALTURA (DROPS)», Rev.01, 18/09/23 (págs. 1-24: Rev.03, 04/01/24)."}}],"references":[{"id":"ref-ypf-giratorio-winche","title":"Advertencia de Seguridad YPF: caída de giratorio (destorcedor) de winche (SIGEO INC18068)","date":"2024-10-07","summary":"Al montar la cuña hidráulica, previo a la sacada de tubería, se desprende el seguro del dispositivo giratorio (destorcedor) del cable del winche y este cae «desde una altura de 5,3 mts»; un operario en zona de boca de pozo recibe un golpe con la eslinga vinculada, en la parte posterior del casco. La alerta no declara la causa y dice no ser conclusión excluyente sobre las causas. Es un equipo de perforación de otra empresa: se cita como referencia del punto guinche/giratorio (BP-1, cuyo texto en el Libro incluye «y giratorio»), no como dato del equipo 10. El giratorio del winche no es el power swivel (BP-2).","relatedPointIds":["BP-1"],"sourceId":"alerta-ypf-inc18068"},{"id":"ref-proc-drops-bolsillo-roldanas","title":"procedimiento DROPS 6.3.4 (ítem 2): roldanas con protección por corte del eje (bolsillo contenedor)","date":"2022-07-11","summary":"El procedimiento dice: «Verificar que las roldanas posean un sistema de protección por corte del eje (Bolsillo contenedor) y eslinga de seguridad a las colgadas en los perfiles.» Los ítems de poleas del Libro (RCCO Rev.03) no listan ese bolsillo. Vinculación con los puntos de poleas por similitud de nombre (tentativa).","relatedPointIds":["COR-1","COR-2","COR-3","COR-4","COR-5","DCO-9","PE-12","DPE-5"],"sourceId":"proc-drops"},{"id":"ref-proc-drops-a1-checklist","title":"anexo A1 Check List de Caídas de Objetos (14 ítems, Si/No)","date":"2022-07-11","summary":"Check list previo a cada montaje y desmontaje (procedimiento DROPS p.3, rev.02, 11/07/22): baliza, aparejo, pistón principal, peines, grilletes y eslingas del piso de enganche, pirosalva, guinche, corona, elevadores, luminarias, stand pipe y manguerote, power swivel, poleas y eslingas sobre la corona. Vinculación por similitud de nombre (tentativa); el A1 no cita ids de punto.","relatedPointIds":["COR-1","COR-2","COR-3","COR-4","COR-5","COR-7","DCO-1","DCO-2","DPE-1","DPE-2","DPE-7","DPE-8","PE-3","PE-5","PE-6","BP-1","BP-2","BP-3","SUB-1"],"sourceId":"proc-drops-a1"},{"id":"ref-manual-drops-rev04","title":"Manual DROPS Retención Confiable, Rev.04 (guía genérica de la industria)","date":"2017-09","summary":"Guía de consenso del grupo de trabajo DROPS (recomendaciones, no requisitos legales; lenguaje orientado a offshore). Buena práctica: no se promueve a requisito ni se asocia a puntos del equipo 10.","relatedPointIds":[],"sourceId":"manual-drops-rev04"},{"id":"ref-taller-ypf-aseguramiento","title":"Taller de Aseguramiento de elementos en altura (DROPS), YPF Regional Oeste","date":"2024-10-13","summary":"Diapositivas de YPF sobre uniones atornilladas confiables y no confiables (fecha tomada de los metadatos del archivo; el taller no fecha sus diapositivas). Buena práctica genérica, no requisito de la empresa. Punto abierto: el taller califica la tuerca autoblocante con inserto de nailon como no confiable para conexiones críticas, mientras el Libro usa «tuerca auto frenante» como sujeción primaria; el Libro no especifica el tipo de tuerca.","relatedPointIds":[],"sourceId":"taller-ypf-drops"}]};
 /* viewpoints del recorrido en primera persona (src/data/viewpoints/rig10-viewpoints.json) */
-window.__RIG_VIEWPOINTS={"version":1,"unidades":"m","marco":"V2: origen en la boca de pozo a nivel de terreno, +X hacia el mástil, carrier hacia −X, Y arriba","aviso":"Recorrido visual en primera persona. Las posiciones de cámara son una elección visual (2–4 m del equipo), no puestos de trabajo ni distancias de seguridad. Altura de ojos = cota del piso + 1,70 m. No hay zonas de exclusión documentadas: no se representan.","alturaOjos":1.7,"pisos":{"terreno":{"cota":0,"fuente":"origen del marco (boca de pozo a nivel de terreno)"},"pisoTrabajo":{"cota":3.61,"fuente":"src-plano-mastil (3.606 m, 12'); cara superior del piso del modelo SK-575"},"pisoEnganche":{"cota":20.63,"fuente":"src-plano-mastil (20.629 m, 68'); solo visual, no implica acceso"}},"locacion":{"min":[-45,-30.5],"max":[33.5,30.5],"fuente":"vallado del entorno del V2 (layout de locación, ilustrativo)"},"caminata":{"velocidad":1.4,"radio":0.35},"transicion":{"ms":1800},"recorrido":{"paradas":["acceso","acumulador","manifold","bop","piso-trabajo"],"segundosPorParada":8},"viewpoints":[{"id":"acceso","nombre":"Acceso a la locación","objeto3D":[],"piso":"terreno","camPos":[-26,1.7,-24],"target":[0,8,0],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"acumulador","nombre":"Acumulador del BOP (Koomey)","objeto3D":["sk575_acumulador","sk575_acum"],"piso":"terreno","camPos":[-20.5,1.7,0.8],"target":[-20.5,0.9,4.6],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"manifold","nombre":"Manifold de ahogo / choke","objeto3D":["sk575_manifold"],"piso":"terreno","camPos":[6.2,1.7,-6.8],"target":[6.2,0.7,-11.2],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"bop","nombre":"BOP","objeto3D":["sk575_bop"],"piso":"terreno","camPos":[0.2,1.7,4.3],"target":[0.2,1.8,0],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"piso-trabajo","nombre":"Piso de trabajo","objeto3D":["sk575_piso"],"piso":"pisoTrabajo","camPos":[3.2,5.31,1.2],"target":[0,4.3,0],"fov":65,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"llave","nombre":"Llave hidráulica","objeto3D":["sk575_llave"],"piso":"pisoTrabajo","camPos":[3,5.31,-1.2],"target":[0.6,5.2,0],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"piso-enganche","nombre":"Piso de enganche","objeto3D":["sk575_enganche"],"piso":"pisoEnganche","camPos":[2,22.33,0],"target":[0,21.3,0],"fov":65,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"cuadro","nombre":"Cuadro de maniobras / malacate","objeto3D":["sk575_cuadro"],"piso":"terreno","camPos":[-6.3,1.7,-4.3],"target":[-6.3,2.2,0],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"planchada","nombre":"Planchada y caballetes","objeto3D":["sk575_planchada","sk575_tiros"],"piso":"terreno","camPos":[10,1.7,-6.5],"target":[8,1.5,-1],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"bomba","nombre":"Bomba triplex","objeto3D":["sk575_bomba"],"piso":"terreno","camPos":[-16.2,1.7,-11.2],"target":[-16.2,1.2,-15.5],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"piletas","nombre":"Piletas y trip tank","objeto3D":["sk575_piletas"],"piso":"terreno","camPos":[-0.5,1.7,-11.2],"target":[-6.5,1.5,-17.5],"fov":70,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"carrier","nombre":"Carrier, cabina y motor","objeto3D":["sk575_carrier","sk575_cabina","sk575_motor"],"piso":"terreno","camPos":[-13,1.7,4.6],"target":[-12.5,2,0.5],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"mastil","nombre":"Mástil y vientos","objeto3D":["sk575_mastil","sk575_izaje","sk575_vientos"],"piso":"terreno","camPos":[14,1.7,12],"target":[-1,14,0],"fov":70,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}},{"id":"pozo-vecino","nombre":"Árbol de pozo vecino (ilustrativo)","objeto3D":["sk575_pozo_vecino"],"piso":"terreno","camPos":[11,1.7,8.3],"target":[11,1.3,5],"fov":60,"ficha":{"funcion":"","riesgos":"","EPP":"","controles":""}}]};
+window.__RIG_VIEWPOINTS={"version":1,"unidades":"m","marco":"V2: origen en la boca de pozo a nivel de terreno, +X hacia el mástil, carrier hacia −X, Y arriba","aviso":"Recorrido visual en primera persona. Las posiciones de cámara son una elección visual (2–4 m del equipo), no puestos de trabajo ni distancias de seguridad. Altura de ojos = cota del piso + 1,70 m. No hay zonas de exclusión documentadas: no se representan.","alturaOjos":1.7,"pisos":{"terreno":{"cota":0,"fuente":"origen del marco (boca de pozo a nivel de terreno)"},"pisoTrabajo":{"cota":3.61,"fuente":"src-plano-mastil (3.606 m, 12'); cara superior del piso del modelo SK-575"},"pisoEnganche":{"cota":20.63,"fuente":"src-plano-mastil (20.629 m, 68'); solo visual, no implica acceso"}},"locacion":{"min":[-45,-30.5],"max":[33.5,30.5],"fuente":"vallado del entorno del V2 (layout de locación, ilustrativo)"},"caminata":{"velocidad":1.4,"radio":0.35},"transicion":{"ms":1800},"recorrido":{"paradas":["acceso","acumulador","manifold","bop","piso-trabajo"],"segundosPorParada":8},"viewpoints":[{"id":"acceso","nombre":"Acceso a la locación","objeto3D":[],"piso":"terreno","camPos":[-26,1.7,-24],"target":[0,8,0],"fov":60,"ficha":{"funcion":"Ingreso de personal y vehículos a la locación; punto de control de acceso, inducción y estacionamiento.","riesgos":"Atropellamiento por vehículos y equipos en movimiento; tránsito en marcha atrás; terreno irregular; ingreso sin autorización. (referencia genérica, pendiente de validación)","EPP":"Casco, calzado de seguridad, ropa ignífuga, anteojos de seguridad y chaleco reflectivo. (referencia genérica, pendiente de validación)","controles":"Control de ingreso y registro; señalización de circulación y velocidad; banderillero en maniobras; senda peatonal separada. (referencia genérica, pendiente de validación)"}},{"id":"acumulador","nombre":"Acumulador del BOP (Koomey)","objeto3D":["sk575_acumulador","sk575_acum"],"piso":"terreno","camPos":[-20.5,1.7,0.8],"target":[-20.5,0.9,4.6],"fov":60,"ficha":{"funcion":"Unidad de cierre del BOP (Koomey): almacena fluido hidráulico a presión en botellones para accionar el BOP desde el panel.","riesgos":"Liberación de energía hidráulica almacenada; proyección de fluido; golpe por mangueras a presión; activación involuntaria. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos o protector facial, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Bloqueo y descarga de energía antes de intervenir; prueba funcional del sistema; mangueras y conexiones inspeccionadas; acceso al panel despejado. (referencia genérica, pendiente de validación)"}},{"id":"manifold","nombre":"Manifold de ahogo / choke","objeto3D":["sk575_manifold"],"piso":"terreno","camPos":[6.2,1.7,-6.8],"target":[6.2,0.7,-11.2],"fov":60,"ficha":{"funcion":"Conjunto de válvulas y chokes que controla y deriva el retorno del pozo durante una maniobra de control.","riesgos":"Fluido o gas a presión en conexiones; erosión del choke; presencia de gas en el retorno; golpe de ariete al maniobrar válvulas. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos o protector facial, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)","controles":"Prueba de presión según procedimiento aplicable; posición de válvulas identificada; líneas ancladas; monitoreo de gases. (referencia genérica, pendiente de validación)"}},{"id":"bop","nombre":"BOP","objeto3D":["sk575_bop"],"piso":"terreno","camPos":[0.2,1.7,4.3],"target":[0.2,1.8,0],"fov":60,"ficha":{"funcion":"Preventor de reventones instalado en boca de pozo: cierra el pozo ante un influjo y permite controlarlo.","riesgos":"Pérdida de control de pozo; fluido a presión; aplastamiento de manos en el montaje; cargas suspendidas sobre la boca de pozo. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)","controles":"Prueba de presión y funcional del BOP según programa; simulacros de cierre; carga suspendida fuera de la línea de fuego; comunicación con el maquinista. (referencia genérica, pendiente de validación)"}},{"id":"piso-trabajo","nombre":"Piso de trabajo","objeto3D":["sk575_piso"],"piso":"pisoTrabajo","camPos":[3.2,5.31,1.2],"target":[0,4.3,0],"fov":65,"ficha":{"funcion":"Plataforma sobre la boca de pozo donde la cuadrilla maniobra la tubería con cuñas, llaves y elevador.","riesgos":"Atrapamiento de manos y dedos; golpe por tubería o elevador; caída al mismo nivel; caída de objetos desde el mástil. (referencia genérica, pendiente de validación)","EPP":"Casco con barbijo, anteojos, guantes de impacto, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Manos fuera de puntos de atrapamiento; piso limpio y ordenado; comunicación con el maquinista; control DROPS del mástil. (referencia genérica, pendiente de validación)"}},{"id":"llave","nombre":"Llave hidráulica","objeto3D":["sk575_llave"],"piso":"pisoTrabajo","camPos":[3,5.31,-1.2],"target":[0.6,5.2,0],"fov":60,"ficha":{"funcion":"Llave hidráulica de tubing para enroscar y desenroscar uniones con torque controlado.","riesgos":"Atrapamiento en mordazas y puerta de la llave; latigazo por rotura del cable de retención; proyección de fluido hidráulico. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos, guantes de impacto, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Cable de retención (back-up) instalado e inspeccionado; puerta cerrada antes de girar; operador único de los mandos. (referencia genérica, pendiente de validación)"}},{"id":"piso-enganche","nombre":"Piso de enganche","objeto3D":["sk575_enganche"],"piso":"pisoEnganche","camPos":[2,22.33,0],"target":[0,21.3,0],"fov":65,"ficha":{"funcion":"Plataforma del enganchador en el mástil, desde donde se estiban y entregan los tiros de tubería.","riesgos":"Caída de altura; caída de objetos al piso de trabajo; golpe por tiros de tubería; exposición a viento y frío. (referencia genérica, pendiente de validación)","EPP":"Arnés de cuerpo completo con línea de vida o dispositivo anticaída, casco con barbijo, guantes y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Amarre permanente en altura; herramientas con retención; dispositivo de escape inspeccionado; suspender tareas con viento fuerte según procedimiento aplicable. (referencia genérica, pendiente de validación)"}},{"id":"cuadro","nombre":"Cuadro de maniobras / malacate","objeto3D":["sk575_cuadro"],"piso":"terreno","camPos":[-6.3,1.7,-4.3],"target":[-6.3,2.2,0],"fov":60,"ficha":{"funcion":"Puesto del maquinista: comando del malacate y del aparejo, frenos y control de las maniobras de izaje.","riesgos":"Choque del aparejo contra la corona; pérdida de control del freno; ruido; comunicación deficiente con la cuadrilla. (referencia genérica, pendiente de validación)","EPP":"Casco, protección auditiva, anteojos, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Dispositivo anti-choque de corona probado; inspección de frenos y cable; visibilidad del piso de trabajo; señales acordadas. (referencia genérica, pendiente de validación)"}},{"id":"planchada","nombre":"Planchada y caballetes","objeto3D":["sk575_planchada","sk575_tiros"],"piso":"terreno","camPos":[10,1.7,-6.5],"target":[8,1.5,-1],"fov":60,"ficha":{"funcion":"Rampa y caballetes donde se estiba la tubería y desde donde sube al piso de trabajo.","riesgos":"Rodadura y caída de tubos; atrapamiento entre tubos; golpe al subir o bajar tubería; tropiezos. (referencia genérica, pendiente de validación)","EPP":"Casco, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Tubería calzada y trabada; nadie en la línea de rodadura; uso de sogas guía; orden de la planchada. (referencia genérica, pendiente de validación)"}},{"id":"bomba","nombre":"Bomba triplex","objeto3D":["sk575_bomba"],"piso":"terreno","camPos":[-16.2,1.7,-11.2],"target":[-16.2,1.2,-15.5],"fov":60,"ficha":{"funcion":"Bomba triplex que impulsa el fluido de circulación hacia el pozo.","riesgos":"Fluido a alta presión; rotura de líneas; partes móviles; ruido; manipulación de químicos. (referencia genérica, pendiente de validación)","EPP":"Casco, protección auditiva, anteojos o protector facial, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Válvula de alivio probada; líneas ancladas; protecciones de partes móviles colocadas; bloqueo antes de intervenir. (referencia genérica, pendiente de validación)"}},{"id":"piletas","nombre":"Piletas y trip tank","objeto3D":["sk575_piletas"],"piso":"terreno","camPos":[-0.5,1.7,-11.2],"target":[-6.5,1.5,-17.5],"fov":70,"ficha":{"funcion":"Piletas de fluido y trip tank para almacenar, acondicionar y medir el volumen de retorno del pozo.","riesgos":"Caída a pileta; resbalones; exposición a químicos y gases; derrames. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos, guantes resistentes a químicos, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)","controles":"Barandas y tapas colocadas; control de volúmenes; hojas de seguridad disponibles; contención de derrames. (referencia genérica, pendiente de validación)"}},{"id":"carrier","nombre":"Carrier, cabina y motor","objeto3D":["sk575_carrier","sk575_cabina","sk575_motor"],"piso":"terreno","camPos":[-13,1.7,4.6],"target":[-12.5,2,0.5],"fov":60,"ficha":{"funcion":"Unidad autopropulsada que transporta el equipo y aloja motor, transmisión y cabina del maquinista.","riesgos":"Atropellamiento en traslados y posicionamiento; superficies calientes; partes móviles; derrames de combustible. (referencia genérica, pendiente de validación)","EPP":"Casco, protección auditiva, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Banderillero en el posicionamiento; nivelación y gatos verificados; protecciones colocadas; control de pérdidas. (referencia genérica, pendiente de validación)"}},{"id":"mastil","nombre":"Mástil y vientos","objeto3D":["sk575_mastil","sk575_izaje","sk575_vientos"],"piso":"terreno","camPos":[14,1.7,12],"target":[-1,14,0],"fov":70,"ficha":{"funcion":"Mástil telescópico con vientos que sostiene la corona y el aparejo para izar y bajar la tubería.","riesgos":"Colapso del mástil; caída de objetos; rotura de vientos; caída de altura durante el montaje. (referencia genérica, pendiente de validación)","EPP":"Casco, arnés en tareas en altura, guantes, calzado de seguridad y ropa ignífuga. (referencia genérica, pendiente de validación)","controles":"Inspección del mástil y vientos; anclajes verificados; control DROPS; zona despejada durante el izamiento; límites de viento según procedimiento aplicable. (referencia genérica, pendiente de validación)"}},{"id":"pozo-vecino","nombre":"Árbol de pozo vecino (ilustrativo)","objeto3D":["sk575_pozo_vecino"],"piso":"terreno","camPos":[11,1.7,8.3],"target":[11,1.3,5],"fov":60,"ficha":{"funcion":"Árbol de producción de un pozo vecino en la misma locación (ilustrativo).","riesgos":"Golpe al árbol por vehículos o cargas; fuga de fluido o gas; presión remanente. (referencia genérica, pendiente de validación)","EPP":"Casco, anteojos, guantes, calzado de seguridad, ropa ignífuga y detector de gases cuando corresponda. (referencia genérica, pendiente de validación)","controles":"Señalizar y proteger el árbol; mantener distancia en maniobras; permiso de trabajo para cualquier intervención. (referencia genérica, pendiente de validación)"}}]};
 /* datos del izamiento del mástil (src/data/cad/izamiento.json) */
 window.__RIG_IZAMIENTO={"version":1,"estado":"pendingValidation","unidades":"m, grados","fuente":"secuencia y cinemática: usuario + imágenes de referencia de equipos similares (otras marcas); posiciones: medidas del V2 procedural previo (retirado 2026-10-11, hoy oculto). NO recalculado sobre el SK-575","elevacion_transporte":22.1,"elevacion_final":94.24,"margen_libre":0.16,"pistones":{"fijacion_chasis":[-5,1.45],"largo_min":2.639,"largo_max":5.997,"carrera":3.358,"relacion":2.27,"largo_camisa":2.639,"tabla":[{"elevacion":22.1,"longitud":2.639},{"elevacion":25.11,"longitud":2.768},{"elevacion":28.11,"longitud":2.902},{"elevacion":31.12,"longitud":3.041},{"elevacion":34.12,"longitud":3.183},{"elevacion":37.13,"longitud":3.329},{"elevacion":40.13,"longitud":3.476},{"elevacion":43.14,"longitud":3.624},{"elevacion":46.15,"longitud":3.773},{"elevacion":49.15,"longitud":3.923},{"elevacion":52.16,"longitud":4.073},{"elevacion":55.16,"longitud":4.222},{"elevacion":58.17,"longitud":4.37},{"elevacion":61.17,"longitud":4.517},{"elevacion":64.18,"longitud":4.663},{"elevacion":67.19,"longitud":4.807},{"elevacion":70.19,"longitud":4.95},{"elevacion":73.2,"longitud":5.09},{"elevacion":76.2,"longitud":5.228},{"elevacion":79.21,"longitud":5.363},{"elevacion":82.21,"longitud":5.496},{"elevacion":85.22,"longitud":5.626},{"elevacion":88.23,"longitud":5.753},{"elevacion":91.23,"longitud":5.877},{"elevacion":94.24,"longitud":5.997}]},"soporte_traslado":{"x":-14.49,"y0":3.28,"y1":6.13,"alto":2.85,"valido":true},"notas":["0° (mástil horizontal) no es posible en el V2: el motor y el malacate quedan bajo el mástil acostado; se parte del ángulo mínimo que libra el equipo","el pistón del 2.º tramo es interno al mástil y sus medidas son ilustrativas","cinemática calculada sobre el V2 procedural previo (carrier, cabina y mástil hoy ocultos): no coincide con la geometría SK-575 ni con el cilindro HYCO documentado (1,52–4,86 m). Regenerar cad/izamiento.py contra el SK-575 (pendiente)"],"conflicts":[{"sourceId":"src-plano-hyco","value":{"largo_min":1.524,"largo_max":4.864,"carrera":3.34},"unidades":"m","note":"Cilindro HYCO 50162-813-13150: 60\" cerrado, 191,5\" extendido, carrera 131,5\" (A, src/data/rigs/rig10.ts sk575_izaje). Los largos de esta cinemática (2,639–5,997 m) salen del V2 procedural y no coinciden: Fuente en conflicto, no se elige en silencio"}]};
 /* cilindros y vientos SK-575 (public/models/rig10/sk575_{izaje,vientos}.meta.json) */
@@ -7127,6 +7127,7 @@ body:not(.v2-mode-qhse) #qp-barreras{display:none}
 
     function pointCard(p) {
       const li = h('li', 'dp-pt')
+      li.dataset.pointId = p.id // 92-checklist-drops.js agrega los controles de campo
       const top = h('div', 'dp-pt-top')
       top.append(h('span', 'dp-id', p.id), h('strong', 'dp-pt-name', p.name || 'Sin nombre'))
       li.appendChild(top)
@@ -11787,6 +11788,883 @@ window.__rigExt.onPost(() => {
     .catch(() => {
       estado = 'error' // silencioso: el contador queda oculto
     })
+})
+
+/* 90-almacen.js */
+/*
+ * 90-almacen.js · servicios comunes de los módulos de campo (checklist DROPS, inducción):
+ *
+ *  1. Almacén clave/valor `window.__rigKv` { ready, get, set }. Abierto directo (no embebido) usa localStorage.
+ *     Embebido en la app (iframe sandbox, origen opaco: localStorage no existe), delega en la app por postMessage:
+ *       visor → app  rig:kvSet  { key, value }        (value = string JSON; null borra)
+ *       app → visor  rig:kvInit { items: {key: value} }  (respuesta a rig:kvGet al arrancar)
+ *     Solo claves con prefijo `campo:`. Si nada persiste (modo privado), el estado vive en memoria y se exporta.
+ *  2. Webhook (p. ej. disparador HTTP de Power Automate): URL guardada en el almacén (`campo:webhook`).
+ *     Se envía con fetch `no-cors` y cuerpo JSON como text/plain (desde un origen opaco no hay CORS posible): la
+ *     respuesta no es legible, así que el envío se informa como "enviado, sin confirmación". En el flujo, usar
+ *     json(triggerBody()) para leer el cuerpo.
+ *  3. CSV (separador `;`, BOM UTF-8: abre bien en Excel es-AR) y descarga por blob.
+ *  4. Diálogo modal reutilizable con el estilo del visor (`window.__rigUi.dialog`).
+ */
+;(() => {
+  'use strict'
+  const PREFIX = 'campo:'
+  const inFrame = window.parent && window.parent !== window
+  const mem = new Map()
+  let ls = null
+  try {
+    ls = window.localStorage
+    ls.setItem('campo:__t', '1')
+    ls.removeItem('campo:__t')
+  } catch {
+    ls = null
+  }
+
+  let resolveReady
+  const ready = new Promise((r) => (resolveReady = r))
+  if (ls || !inFrame) resolveReady()
+  else {
+    window.addEventListener('message', (e) => {
+      if (e.source !== window.parent) return
+      const d = e.data
+      if (!d || d.type !== 'rig:kvInit' || typeof d.items !== 'object' || !d.items) return
+      for (const [k, v] of Object.entries(d.items))
+        if (typeof k === 'string' && k.startsWith(PREFIX) && typeof v === 'string') mem.set(k, v)
+      resolveReady()
+    })
+    try {
+      window.parent.postMessage({ type: 'rig:kvGet' }, '*')
+    } catch {
+      /* sin padre accesible */
+    }
+    setTimeout(resolveReady, 3000) // app vieja sin soporte: se sigue en memoria
+  }
+
+  const ok = (k) => typeof k === 'string' && k.startsWith(PREFIX)
+  function get(key, fallback = null) {
+    if (!ok(key)) return fallback
+    let raw = null
+    try {
+      raw = ls ? ls.getItem(key) : (mem.get(key) ?? null)
+    } catch {
+      raw = mem.get(key) ?? null
+    }
+    if (raw == null) return fallback
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return fallback
+    }
+  }
+  function set(key, value) {
+    if (!ok(key)) return
+    const raw = value == null ? null : JSON.stringify(value)
+    if (raw == null) mem.delete(key)
+    else mem.set(key, raw)
+    try {
+      if (ls) raw == null ? ls.removeItem(key) : ls.setItem(key, raw)
+      else if (inFrame) window.parent.postMessage({ type: 'rig:kvSet', key, value: raw }, '*')
+    } catch {
+      /* queda en memoria */
+    }
+  }
+  window.__rigKv = { ready, get, set }
+
+  // ───────── webhook ─────────
+  const WEBHOOK_KEY = 'campo:webhook'
+  const webhookUrl = () => {
+    const u = get(WEBHOOK_KEY, '')
+    return typeof u === 'string' && /^https:\/\/\S+$/.test(u) ? u : ''
+  }
+  async function enviar(tipo, datos) {
+    const url = webhookUrl()
+    if (!url) return { ok: false, motivo: 'Sin URL de envío configurada.' }
+    const body = JSON.stringify({
+      tipo,
+      enviado: new Date().toISOString(),
+      equipo: 'Equipo 10',
+      datos,
+    })
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body,
+      })
+      return { ok: true, motivo: 'Enviado (sin confirmación del destino).' }
+    } catch (e) {
+      return {
+        ok: false,
+        motivo: 'No se pudo enviar: ' + (e && e.message ? e.message : 'error de red'),
+      }
+    }
+  }
+
+  // ───────── CSV ─────────
+  const celda = (v) => {
+    const s = v == null ? '' : String(v)
+    return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  }
+  const csv = (filas) => '﻿' + filas.map((f) => f.map(celda).join(';')).join('\r\n')
+  function descargar(nombre, texto, tipo = 'text/csv;charset=utf-8') {
+    const url = URL.createObjectURL(new Blob([texto], { type: tipo }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = nombre
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 2000)
+  }
+  const fechaArchivo = () => new Date().toISOString().slice(0, 10)
+
+  // ───────── diálogo ─────────
+  const style = document.createElement('style')
+  style.textContent = `
+    .cp-dlg{max-width:min(760px,94vw);width:100%;padding:0;border:1px solid #303B4B;border-radius:12px;background:#141B26;color:#DDE3EC}
+    .cp-dlg::backdrop{background:rgba(5,8,12,.6)}
+    .cp-dlg .cp-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .cp-dlg .cp-head h2{margin:0;font-size:15px;color:#F3E2B4;flex:1}
+    .cp-dlg .cp-body{padding:14px 16px;max-height:72vh;overflow:auto;font-size:13px;line-height:1.5}
+    .cp-dlg .cp-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+    .cp-dlg input[type=text],.cp-dlg input[type=url]{flex:1;min-width:180px;font:inherit;color:inherit;background:#0E1420;border:1px solid #354254;border-radius:6px;padding:6px 8px}
+    .cp-dlg button{font:inherit;color:inherit;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:5px 10px;cursor:pointer}
+    .cp-dlg button:hover{background:rgba(255,255,255,.1)}
+    .cp-dlg button.cp-pri{background:#DDBB65;color:#1A1305;border-color:#DDBB65;font-weight:700}
+    .cp-dlg .cp-note{opacity:.7;font-size:11.5px}
+    .cp-dlg .cp-msg{min-height:18px;color:#E8C978;font-size:12px}
+  `
+  document.head.appendChild(style)
+
+  function dialog(titulo) {
+    const d = document.createElement('dialog')
+    d.className = 'cp-dlg'
+    d.innerHTML = `<div class="cp-head"><h2></h2><button type="button" data-cerrar>Cerrar</button></div><div class="cp-body"></div>`
+    d.querySelector('h2').textContent = titulo
+    d.querySelector('[data-cerrar]').addEventListener('click', () => d.close())
+    document.body.appendChild(d)
+    return { el: d, body: d.querySelector('.cp-body') }
+  }
+
+  /** Fila para configurar la URL de envío (compartida por checklist e inducción). */
+  function filaWebhook(onMsg) {
+    const row = document.createElement('div')
+    row.className = 'cp-row'
+    row.innerHTML =
+      '<input type="url" placeholder="URL del disparador HTTP (Power Automate), opcional" aria-label="URL de envío"><button type="button">Guardar URL</button>'
+    const input = row.querySelector('input')
+    input.value = webhookUrl()
+    row.querySelector('button').addEventListener('click', () => {
+      const v = input.value.trim()
+      if (v && !/^https:\/\/\S+$/.test(v)) return onMsg('La URL debe empezar con https://')
+      set(WEBHOOK_KEY, v || null)
+      onMsg(v ? 'URL guardada.' : 'URL borrada.')
+    })
+    return row
+  }
+
+  window.__rigUi = { dialog, filaWebhook, csv, descargar, fechaArchivo, enviar, webhookUrl }
+})()
+
+/* 91-enlaces.js */
+/*
+ * 91-enlaces.js · enlaces que abren el visor en un componente o en un sector.
+ *
+ *   ?comp=<id>  selecciona y enfoca el componente (ids de window.__rig.COMPONENTS: bop, mastil, llave…)
+ *   ?vp=<id>    vuela a la vista "Ir a equipo" (ids de window.__RIG_VIEWPOINTS: piso-enganche, bomba…)
+ * Con los dos, manda `vp`. Ids desconocidos se ignoran. La app pasa estos parámetros al iframe.
+ *
+ * Botón "Copiar enlace a esta vista" (menú Exportar): arma el enlace con el componente seleccionado y/o el sector actual.
+ *   - Embebido: envía `rig:link { comp, vp }` a la app, que actualiza su URL y la copia.
+ *   - Directo: copia la URL de esta página con los parámetros.
+ * API para pruebas: window.__rigLink = { aplicar(params), actual() }.
+ */
+window.__rigExt.onPost((R) => {
+  const ID = /^[a-z0-9-]{1,40}$/
+  const inFrame = window.parent && window.parent !== window
+  const vpApi = () => window.__rigVp
+  const esComp = (id) => !!(id && ID.test(id) && R.COMPONENTS && R.COMPONENTS[id])
+  const esVp = (id) =>
+    !!(
+      id &&
+      ID.test(id) &&
+      vpApi() &&
+      vpApi()
+        .list()
+        .some((v) => v.id === id)
+    )
+
+  function aplicar(params) {
+    const comp = params.get('comp')
+    const vp = params.get('vp')
+    if (esVp(vp)) return vpApi().go(vp) ? 'vp' : null
+    if (esComp(comp)) {
+      R.selectComponent(comp)
+      if (typeof R.focusOn === 'function') R.focusOn(comp)
+      return 'comp'
+    }
+    return null
+  }
+
+  function actual() {
+    const comp = R.state && R.state.selected
+    const vp = vpApi() && vpApi().current()
+    return { comp: esComp(comp) ? comp : null, vp: esVp(vp) ? vp : null }
+  }
+
+  const params = new URLSearchParams(location.search)
+  const arrancar = () =>
+    // después de los presets de modo (75) y de que la app aplique modo/vista/capas
+    setTimeout(() => {
+      try {
+        aplicar(params)
+      } catch (e) {
+        console.error('[91-enlaces]', e)
+      }
+    }, 600)
+  if (params.has('comp') || params.has('vp')) {
+    if (window.__rigBooted) arrancar()
+    else document.addEventListener('rig:boot', arrancar, { once: true })
+  }
+
+  const btn = document.createElement('button')
+  btn.className = 'btn'
+  btn.id = 'c-link'
+  btn.type = 'button'
+  btn.textContent = 'Copiar enlace a esta vista'
+  btn.title =
+    'Enlace que abre el visor en el componente seleccionado o en el sector actual de "Ir a equipo"'
+  const avisar = (t) => {
+    btn.textContent = t
+    setTimeout(() => (btn.textContent = 'Copiar enlace a esta vista'), 2200)
+  }
+  btn.addEventListener('click', async () => {
+    const a = actual()
+    if (inFrame) {
+      window.parent.postMessage({ type: 'rig:link', comp: a.comp, vp: a.vp }, '*')
+      return avisar('Enlace copiado')
+    }
+    const u = new URL(location.href)
+    for (const k of ['comp', 'vp', 'embedded']) u.searchParams.delete(k)
+    if (a.vp) u.searchParams.set('vp', a.vp)
+    else if (a.comp) u.searchParams.set('comp', a.comp)
+    try {
+      await navigator.clipboard.writeText(u.toString())
+      avisar('Enlace copiado')
+    } catch {
+      window.prompt('Copiá el enlace:', u.toString())
+    }
+  })
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('exportar', btn)
+  else document.querySelector('header')?.appendChild(btn)
+
+  window.__rigLink = { aplicar: (p) => aplicar(new URLSearchParams(p)), actual }
+})
+
+/* 92-checklist-drops.js */
+/*
+ * 92-checklist-drops.js · checklist DROPS de campo sobre los 66 puntos de window.__RIG_DROPS.
+ *
+ * - Cada tarjeta de punto del panel DROPS (50-drops-layer.js, `li[data-point-id]`) suma tres botones OK / NOK / N/A y,
+ *   con NOK, un campo de observación. El estado se guarda en el almacén de 90-almacen.js (`campo:drops-checklist`):
+ *   persiste entre sesiones en el mismo navegador y funciona sin conexión.
+ * - Botón "Checklist DROPS (campo)" en el menú Capas: resumen por sección, lista de NOK, inspector y lugar,
+ *   exportación CSV (Excel), envío opcional al disparador HTTP configurado y "Nueva inspección".
+ * - El resultado es un REGISTRO DE CAMPO del usuario: el visor no evalúa ni aprueba nada.
+ * API para pruebas: window.__rigChecklist = { marcar(id, estado, obs?), estado(), resumen(), abrir() }.
+ */
+window.__rigExt.onPost(() => {
+  const DATA = window.__RIG_DROPS
+  const KV = window.__rigKv
+  const UI = window.__rigUi
+  if (!DATA || !Array.isArray(DATA.points) || !KV || !UI) return
+  const KEY = 'campo:drops-checklist'
+  const ESTADOS = { ok: 'OK', nok: 'NOK', na: 'N/A' }
+  const puntos = [...DATA.points]
+  const porId = new Map(puntos.map((p) => [p.id, p]))
+  const secciones = new Map((DATA.sections || []).map((s) => [s.id, s]))
+
+  const nuevo = () => ({ inicio: new Date().toISOString(), inspector: '', lugar: '', puntos: {} })
+  let st = nuevo()
+  const guardar = () => KV.set(KEY, st)
+
+  const style = document.createElement('style')
+  style.textContent = `
+    .ck-row{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:7px}
+    .ck-row button{font:inherit;font-size:11px;font-weight:700;color:#cfd8e3;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:3px 9px;cursor:pointer}
+    .ck-row button[aria-pressed="true"][data-e="ok"]{background:#22C55E;border-color:#22C55E;color:#06210f}
+    .ck-row button[aria-pressed="true"][data-e="nok"]{background:#EF4444;border-color:#EF4444;color:#fff}
+    .ck-row button[aria-pressed="true"][data-e="na"]{background:#64748B;border-color:#64748B;color:#fff}
+    .ck-row input{flex:1 1 100%;font:inherit;font-size:11.5px;color:#dfe6ee;background:#0E1420;border:1px solid #354254;border-radius:6px;padding:4px 7px}
+    .ck-row .ck-lbl{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#78899d;margin-right:2px}
+    .cp-dlg table{border-collapse:collapse;width:100%;font-size:12px;margin:6px 0}
+    .cp-dlg th,.cp-dlg td{border-bottom:1px solid rgba(255,255,255,.08);padding:4px 6px;text-align:left;vertical-align:top}
+    .cp-dlg .ck-bar{height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+    .cp-dlg .ck-bar > i{display:block;height:100%;background:#DDBB65}
+  `
+  document.head.appendChild(style)
+
+  function marcar(id, estado, obs) {
+    if (!porId.has(id)) return false
+    if (estado === null || estado === undefined) delete st.puntos[id]
+    else if (ESTADOS[estado]) {
+      const prev = st.puntos[id] || {}
+      st.puntos[id] = {
+        estado,
+        obs: estado === 'nok' ? (obs ?? prev.obs ?? '') : '',
+        t: new Date().toISOString(),
+      }
+    } else return false
+    guardar()
+    refrescar()
+    return true
+  }
+
+  function decorar(li) {
+    const id = li.dataset.pointId
+    if (!id || li.querySelector('.ck-row')) return
+    const row = document.createElement('div')
+    row.className = 'ck-row'
+    row.innerHTML =
+      '<span class="ck-lbl">Campo</span>' +
+      Object.entries(ESTADOS)
+        .map(([e, l]) => `<button type="button" data-e="${e}" aria-pressed="false">${l}</button>`)
+        .join('') +
+      '<input type="text" placeholder="Observación del NOK" aria-label="Observación" hidden>'
+    const input = row.querySelector('input')
+    row.addEventListener('click', (ev) => {
+      const b = ev.target.closest('button[data-e]')
+      if (!b) return
+      const actual = st.puntos[id] && st.puntos[id].estado
+      marcar(id, actual === b.dataset.e ? null : b.dataset.e)
+    })
+    input.addEventListener('change', () => {
+      if (st.puntos[id] && st.puntos[id].estado === 'nok') {
+        st.puntos[id].obs = input.value.trim()
+        guardar()
+      }
+    })
+    li.appendChild(row)
+    pintar(li)
+  }
+
+  function pintar(li) {
+    const row = li.querySelector('.ck-row')
+    if (!row) return
+    const r = st.puntos[li.dataset.pointId]
+    for (const b of row.querySelectorAll('button[data-e]'))
+      b.setAttribute('aria-pressed', String(!!r && r.estado === b.dataset.e))
+    const input = row.querySelector('input')
+    input.hidden = !(r && r.estado === 'nok')
+    if (r && r.estado === 'nok' && document.activeElement !== input) input.value = r.obs || ''
+  }
+
+  const refrescar = () => {
+    for (const li of document.querySelectorAll('li.dp-pt[data-point-id]')) pintar(li)
+    if (dlg && dlg.el.open) render()
+  }
+
+  new MutationObserver(() => {
+    for (const li of document.querySelectorAll('li.dp-pt[data-point-id]:not(:has(.ck-row))'))
+      decorar(li)
+  }).observe(document.body, { childList: true, subtree: true })
+
+  function resumen() {
+    const vals = Object.values(st.puntos)
+    const n = (e) => vals.filter((v) => v.estado === e).length
+    return {
+      total: puntos.length,
+      ok: n('ok'),
+      nok: n('nok'),
+      na: n('na'),
+      pendientes: puntos.length - vals.length,
+    }
+  }
+
+  function filasCsv() {
+    const f = [
+      ['Inspector', st.inspector],
+      ['Lugar / equipo', st.lugar],
+      ['Inicio', st.inicio],
+      ['Exportado', new Date().toISOString()],
+      [],
+    ]
+    f.push(['Punto', 'Sección', 'Nombre', 'Zona', 'Estado', 'Observación', 'Fecha marca'])
+    for (const p of puntos) {
+      const r = st.puntos[p.id]
+      f.push([
+        p.id,
+        (secciones.get(p.sectionId) || {}).label || p.sectionId,
+        p.name,
+        p.zone || (secciones.get(p.sectionId) || {}).zone || 'sin clasificar',
+        r ? ESTADOS[r.estado] : 'Pendiente',
+        r ? r.obs : '',
+        r ? r.t : '',
+      ])
+    }
+    return f
+  }
+
+  let dlg = null
+  const msg = (t) => {
+    const m = dlg && dlg.body.querySelector('.cp-msg')
+    if (m) m.textContent = t
+  }
+  function render() {
+    const s = resumen()
+    const hechos = s.total - s.pendientes
+    const b = dlg.body
+    b.innerHTML = ''
+    const intro = document.createElement('p')
+    intro.className = 'cp-note'
+    intro.textContent =
+      'Registro de campo sobre los 66 puntos DROPS. Marcá cada punto desde el panel DROPS (modo QHSE → clic en una sección). Se guarda en este navegador; el visor no evalúa ni aprueba.'
+    b.appendChild(intro)
+    const datos = document.createElement('div')
+    datos.className = 'cp-row'
+    datos.innerHTML =
+      '<input type="text" data-k="inspector" placeholder="Inspector" aria-label="Inspector"><input type="text" data-k="lugar" placeholder="Lugar / equipo / pozo" aria-label="Lugar">'
+    for (const i of datos.querySelectorAll('input')) {
+      i.value = st[i.dataset.k] || ''
+      i.addEventListener('change', () => {
+        st[i.dataset.k] = i.value.trim()
+        guardar()
+      })
+    }
+    b.appendChild(datos)
+    const prog = document.createElement('div')
+    prog.innerHTML = `<p><b>${hechos}/${s.total}</b> puntos revisados · <b style="color:#22C55E">${s.ok} OK</b> · <b style="color:#EF4444">${s.nok} NOK</b> · ${s.na} N/A · ${s.pendientes} pendientes</p><div class="ck-bar"><i style="width:${Math.round((hechos / s.total) * 100)}%"></i></div>`
+    b.appendChild(prog)
+
+    const t = document.createElement('table')
+    t.innerHTML =
+      '<thead><tr><th>Sección</th><th>Puntos</th><th>OK</th><th>NOK</th><th>N/A</th><th>Pend.</th></tr></thead>'
+    const tb = document.createElement('tbody')
+    for (const sec of secciones.values()) {
+      const ps = puntos.filter((p) => p.sectionId === sec.id)
+      const c = (e) => ps.filter((p) => st.puntos[p.id] && st.puntos[p.id].estado === e).length
+      const tr = document.createElement('tr')
+      const pend = ps.length - c('ok') - c('nok') - c('na')
+      for (const v of [sec.label, ps.length, c('ok'), c('nok'), c('na'), pend]) {
+        const td = document.createElement('td')
+        td.textContent = String(v)
+        tr.appendChild(td)
+      }
+      tr.style.cursor = 'pointer'
+      tr.title = 'Abrir la sección en el panel DROPS'
+      tr.addEventListener('click', () => abrirSeccion(sec.id))
+      tb.appendChild(tr)
+    }
+    t.appendChild(tb)
+    b.appendChild(t)
+
+    const noks = puntos.filter((p) => st.puntos[p.id] && st.puntos[p.id].estado === 'nok')
+    if (noks.length) {
+      const h = document.createElement('h3')
+      h.textContent = 'Puntos NOK'
+      h.style.cssText = 'font-size:13px;color:#EF4444;margin:12px 0 4px'
+      b.appendChild(h)
+      const ul = document.createElement('ul')
+      for (const p of noks) {
+        const li = document.createElement('li')
+        li.textContent = `${p.id} · ${p.name}${st.puntos[p.id].obs ? ' — ' + st.puntos[p.id].obs : ''}`
+        ul.appendChild(li)
+      }
+      b.appendChild(ul)
+    }
+
+    const acc = document.createElement('div')
+    acc.className = 'cp-row'
+    acc.innerHTML =
+      '<button type="button" class="cp-pri" data-a="csv">Exportar CSV (Excel)</button><button type="button" data-a="enviar">Enviar</button><button type="button" data-a="nueva">Nueva inspección</button>'
+    acc.addEventListener('click', async (ev) => {
+      const a = ev.target.closest('button[data-a]')
+      if (!a) return
+      if (a.dataset.a === 'csv') {
+        UI.descargar(`checklist-drops-${UI.fechaArchivo()}.csv`, UI.csv(filasCsv()))
+        msg('CSV descargado.')
+      } else if (a.dataset.a === 'enviar') {
+        const r = await UI.enviar('checklist-drops', { ...st, resumen: resumen() })
+        msg(r.motivo)
+      } else if (a.dataset.a === 'nueva') {
+        if (
+          hechos &&
+          !window.confirm(
+            '¿Borrar las marcas actuales y empezar una inspección nueva? Exportá antes si las necesitás.',
+          )
+        )
+          return
+        st = nuevo()
+        guardar()
+        refrescar()
+        msg('Inspección nueva iniciada.')
+      }
+    })
+    b.appendChild(acc)
+    const m = document.createElement('div')
+    m.className = 'cp-msg'
+    b.appendChild(m)
+    b.appendChild(UI.filaWebhook(msg))
+  }
+
+  function abrirSeccion(id) {
+    if (window.__rigMode && window.__rigMode.get() !== 'qhse') window.__rigMode.set('qhse')
+    const d = window.__rig && window.__rig.drops
+    if (d) {
+      if (!d.isActive()) d.setActive(true)
+      d.openSection(id)
+    }
+    dlg.el.close()
+  }
+
+  function abrir() {
+    if (!dlg) dlg = UI.dialog('Checklist DROPS (campo)')
+    render()
+    if (!dlg.el.open) dlg.el.showModal()
+  }
+
+  const btn = document.createElement('button')
+  btn.className = 'btn'
+  btn.id = 'c-checklist'
+  btn.type = 'button'
+  btn.textContent = 'Checklist DROPS (campo)'
+  btn.addEventListener('click', () => {
+    window.__rigToolbar && window.__rigToolbar.closeAll()
+    abrir()
+  })
+  if (window.__rigToolbar && typeof window.__rigToolbar.add === 'function')
+    window.__rigToolbar.add('capas', btn)
+  else document.querySelector('header')?.appendChild(btn)
+
+  KV.ready.then(() => {
+    const g = KV.get(KEY, null)
+    if (g && typeof g === 'object' && g.puntos && typeof g.puntos === 'object') {
+      st = { ...nuevo(), ...g }
+      for (const id of Object.keys(st.puntos)) if (!porId.has(id)) delete st.puntos[id]
+    }
+    refrescar()
+  })
+
+  window.__rigChecklist = { marcar, estado: () => st, resumen, abrir }
+})
+
+/* 93-induccion.js */
+/*
+ * 93-induccion.js · evaluación corta de inducción con registro (modo Entrenamiento).
+ *
+ * - Botón "Evaluación de inducción" en el recorrido guiado (#vp-tour, visible en TRAINING).
+ * - 8 preguntas de opción múltiple armadas con las fichas de "Ir a equipo" (window.__RIG_VIEWPOINTS):
+ *   "¿A qué sector corresponde esta función?". Aprueba con 6/8 o más (75 %).
+ * - Registro: nombre, empresa, fecha, puntaje y resultado. Se guarda en el almacén (90-almacen.js,
+ *   `campo:induccion-registros`), se exporta a CSV y se puede enviar al disparador HTTP configurado.
+ * - Es una verificación de conocimientos del recorrido, no una habilitación ni una certificación.
+ * API para pruebas: window.__rigInduccion = { abrir(), preguntas(n), corregir(preguntas, respuestas), registros() }.
+ */
+window.__rigExt.onPost(() => {
+  const D = window.__RIG_VIEWPOINTS
+  const KV = window.__rigKv
+  const UI = window.__rigUi
+  if (!D || !Array.isArray(D.viewpoints) || !KV || !UI) return
+  const KEY = 'campo:induccion-registros'
+  const N = 8
+  const APRUEBA = 0.75
+  const base = D.viewpoints.filter(
+    (v) => v.ficha && v.ficha.funcion && !/ilustrativo/i.test(v.nombre),
+  )
+  if (base.length < 4) return
+
+  const mezclar = (a) => {
+    const r = [...a]
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[r[i], r[j]] = [r[j], r[i]]
+    }
+    return r
+  }
+
+  function preguntas(n = N) {
+    return mezclar(base)
+      .slice(0, Math.min(n, base.length))
+      .map((v) => {
+        const otros = mezclar(base.filter((o) => o.id !== v.id)).slice(0, 3)
+        return {
+          id: v.id,
+          texto: v.ficha.funcion,
+          opciones: mezclar([v, ...otros]).map((o) => ({ id: o.id, nombre: o.nombre })),
+        }
+      })
+  }
+  function corregir(qs, resp) {
+    const bien = qs.filter((q, i) => resp[i] === q.id).length
+    return { bien, total: qs.length, aprobado: bien / qs.length >= APRUEBA }
+  }
+  const registros = () => {
+    const r = KV.get(KEY, [])
+    return Array.isArray(r) ? r : []
+  }
+
+  let dlg = null
+  let qs = []
+  const msg = (t) => {
+    const m = dlg && dlg.body.querySelector('.cp-msg')
+    if (m) m.textContent = t
+  }
+
+  function pantallaInicio() {
+    const b = dlg.body
+    b.innerHTML = ''
+    const p = document.createElement('p')
+    p.className = 'cp-note'
+    p.textContent = `${N} preguntas sobre la función de cada sector del recorrido "Ir a equipo". Se aprueba con ${Math.ceil(N * APRUEBA)} respuestas correctas. Es una verificación del recorrido, no una habilitación.`
+    b.appendChild(p)
+    const datos = document.createElement('div')
+    datos.className = 'cp-row'
+    datos.innerHTML =
+      '<input type="text" data-k="nombre" placeholder="Nombre y apellido" aria-label="Nombre y apellido"><input type="text" data-k="empresa" placeholder="Empresa / puesto" aria-label="Empresa o puesto">'
+    b.appendChild(datos)
+    const acc = document.createElement('div')
+    acc.className = 'cp-row'
+    acc.innerHTML =
+      '<button type="button" class="cp-pri" data-a="empezar">Empezar</button><button type="button" data-a="registros">Ver registros</button>'
+    b.appendChild(acc)
+    const m = document.createElement('div')
+    m.className = 'cp-msg'
+    b.appendChild(m)
+    acc.addEventListener('click', (ev) => {
+      const a = ev.target.closest('button[data-a]')
+      if (!a) return
+      if (a.dataset.a === 'registros') return pantallaRegistros()
+      const nombre = datos.querySelector('[data-k=nombre]').value.trim()
+      const empresa = datos.querySelector('[data-k=empresa]').value.trim()
+      if (nombre.length < 3) return msg('Completá nombre y apellido.')
+      pantallaPreguntas({ nombre, empresa })
+    })
+  }
+
+  function pantallaPreguntas(persona) {
+    qs = preguntas()
+    const b = dlg.body
+    b.innerHTML = ''
+    const form = document.createElement('form')
+    qs.forEach((q, i) => {
+      const fs = document.createElement('fieldset')
+      fs.style.cssText =
+        'border:1px solid rgba(255,255,255,.1);border-radius:8px;margin:0 0 10px;padding:8px 10px'
+      const lg = document.createElement('legend')
+      lg.textContent = `${i + 1}. ¿A qué sector corresponde?`
+      lg.style.cssText = 'font-weight:700;color:#F3E2B4;padding:0 4px'
+      const t = document.createElement('p')
+      t.textContent = q.texto
+      t.style.margin = '2px 0 6px'
+      fs.append(lg, t)
+      for (const o of q.opciones) {
+        const l = document.createElement('label')
+        l.style.cssText = 'display:block;margin:3px 0;cursor:pointer'
+        const r = document.createElement('input')
+        r.type = 'radio'
+        r.name = 'q' + i
+        r.value = o.id
+        l.append(r, ' ' + o.nombre)
+        fs.appendChild(l)
+      }
+      form.appendChild(fs)
+    })
+    const acc = document.createElement('div')
+    acc.className = 'cp-row'
+    acc.innerHTML = '<button type="submit" class="cp-pri">Corregir</button>'
+    form.appendChild(acc)
+    const m = document.createElement('div')
+    m.className = 'cp-msg'
+    form.appendChild(m)
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault()
+      const resp = qs.map(
+        (_, i) => (form.querySelector(`input[name=q${i}]:checked`) || {}).value || null,
+      )
+      if (resp.some((r) => !r)) return msg('Respondé todas las preguntas.')
+      const c = corregir(qs, resp)
+      const reg = {
+        fecha: new Date().toISOString(),
+        ...persona,
+        correctas: c.bien,
+        total: c.total,
+        resultado: c.aprobado ? 'Aprobado' : 'No aprobado',
+      }
+      KV.set(KEY, [...registros(), reg].slice(-500))
+      pantallaResultado(reg, resp)
+    })
+    b.appendChild(form)
+    b.scrollTop = 0
+  }
+
+  function pantallaResultado(reg, resp) {
+    const b = dlg.body
+    b.innerHTML = ''
+    const h = document.createElement('p')
+    h.innerHTML = `<b style="font-size:16px;color:${reg.resultado === 'Aprobado' ? '#22C55E' : '#EF4444'}">${reg.resultado}</b> · ${reg.correctas}/${reg.total} correctas`
+    b.appendChild(h)
+    const ul = document.createElement('ul')
+    qs.forEach((q, i) => {
+      if (resp[i] === q.id) return
+      const correcta = q.opciones.find((o) => o.id === q.id)
+      const li = document.createElement('li')
+      li.textContent = `${q.texto} → ${correcta ? correcta.nombre : q.id}`
+      ul.appendChild(li)
+    })
+    if (ul.children.length) {
+      const t = document.createElement('p')
+      t.textContent = 'Respuestas a repasar:'
+      b.append(t, ul)
+    }
+    const acc = document.createElement('div')
+    acc.className = 'cp-row'
+    acc.innerHTML =
+      '<button type="button" class="cp-pri" data-a="enviar">Enviar registro</button><button type="button" data-a="otra">Nueva evaluación</button><button type="button" data-a="registros">Ver registros</button>'
+    const m = document.createElement('div')
+    m.className = 'cp-msg'
+    acc.addEventListener('click', async (ev) => {
+      const a = ev.target.closest('button[data-a]')
+      if (!a) return
+      if (a.dataset.a === 'enviar') msg((await UI.enviar('induccion', reg)).motivo)
+      else if (a.dataset.a === 'otra') pantallaInicio()
+      else pantallaRegistros()
+    })
+    b.append(acc, m, UI.filaWebhook(msg))
+  }
+
+  function pantallaRegistros() {
+    const b = dlg.body
+    b.innerHTML = ''
+    const rs = registros()
+    const t = document.createElement('table')
+    t.innerHTML =
+      '<thead><tr><th>Fecha</th><th>Nombre</th><th>Empresa / puesto</th><th>Puntaje</th><th>Resultado</th></tr></thead>'
+    const tb = document.createElement('tbody')
+    for (const r of [...rs].reverse()) {
+      const tr = document.createElement('tr')
+      for (const v of [
+        new Date(r.fecha).toLocaleString('es-AR'),
+        r.nombre,
+        r.empresa,
+        `${r.correctas}/${r.total}`,
+        r.resultado,
+      ]) {
+        const td = document.createElement('td')
+        td.textContent = v == null ? '' : String(v)
+        tr.appendChild(td)
+      }
+      tb.appendChild(tr)
+    }
+    t.appendChild(tb)
+    const p = document.createElement('p')
+    p.className = 'cp-note'
+    p.textContent = rs.length
+      ? `${rs.length} registro(s) guardados en este navegador.`
+      : 'Sin registros todavía.'
+    const acc = document.createElement('div')
+    acc.className = 'cp-row'
+    acc.innerHTML =
+      '<button type="button" class="cp-pri" data-a="csv">Exportar CSV (Excel)</button><button type="button" data-a="volver">Volver</button><button type="button" data-a="borrar">Borrar registros</button>'
+    const m = document.createElement('div')
+    m.className = 'cp-msg'
+    acc.addEventListener('click', (ev) => {
+      const a = ev.target.closest('button[data-a]')
+      if (!a) return
+      if (a.dataset.a === 'csv') {
+        const f = [['Fecha', 'Nombre', 'Empresa / puesto', 'Correctas', 'Total', 'Resultado']]
+        for (const r of rs)
+          f.push([r.fecha, r.nombre, r.empresa, r.correctas, r.total, r.resultado])
+        UI.descargar(`registro-induccion-${UI.fechaArchivo()}.csv`, UI.csv(f))
+        msg('CSV descargado.')
+      } else if (a.dataset.a === 'borrar') {
+        if (
+          rs.length &&
+          window.confirm(
+            '¿Borrar todos los registros de este navegador? Exportá antes si los necesitás.',
+          )
+        ) {
+          KV.set(KEY, null)
+          pantallaRegistros()
+        }
+      } else pantallaInicio()
+    })
+    b.append(p, t, acc, m)
+  }
+
+  function abrir() {
+    if (!dlg) dlg = UI.dialog('Evaluación de inducción')
+    KV.ready.then(() => {
+      pantallaInicio()
+      if (!dlg.el.open) dlg.el.showModal()
+    })
+  }
+
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.id = 'vp-eval'
+  btn.textContent = 'Evaluación de inducción'
+  btn.addEventListener('click', abrir)
+  const tour = document.getElementById('vp-tour')
+  if (tour) {
+    const row = document.createElement('div')
+    row.className = 'vp-row'
+    row.appendChild(btn)
+    tour.appendChild(row)
+  }
+
+  window.__rigInduccion = { abrir, preguntas, corregir, registros }
+})
+
+/* 94-ui-movil.js */
+/*
+ * 94-ui-movil.js · ajustes de legibilidad en pantallas chicas.
+ *
+ *  1. La etiqueta de "Medir 2 puntos" (#cad-measure-label) queda por encima de las cotas (antes podía quedar tapada).
+ *  2. Barra de menús desplazable (≤ 1050 px, ver 60-ui-controls.js): la barra de scroll está oculta, así que se marca con un
+ *     degradado y una flecha el borde que tiene más menús fuera de pantalla. Son indicadores aparte (position:fixed,
+ *     sin eventos): una máscara sobre la barra recortaría también los menús desplegables, que viven dentro de ella.
+ */
+window.__rigExt.onPost(() => {
+  const style = document.createElement('style')
+  style.textContent = `
+    #cad-measure-label{z-index:3;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+    .tm-mas{position:fixed;z-index:39;width:34px;pointer-events:none;display:none;align-items:center;color:#DDBB65;font:700 16px/1 sans-serif}
+    .tm-mas.der{justify-content:flex-end;padding-right:2px;background:linear-gradient(to right,transparent,#0f141c 70%)}
+    .tm-mas.izq{justify-content:flex-start;padding-left:2px;background:linear-gradient(to left,transparent,#0f141c 70%)}
+  `
+  document.head.appendChild(style)
+
+  const bar = document.getElementById('v2-toolbar')
+  if (!bar) return
+  const ind = (lado, txt) => {
+    const el = document.createElement('div')
+    el.className = 'tm-mas ' + lado
+    el.setAttribute('aria-hidden', 'true')
+    el.textContent = txt
+    document.body.appendChild(el)
+    return el
+  }
+  const der = ind('der', '›')
+  const izq = ind('izq', '‹')
+  const marcar = () => {
+    const r = bar.getBoundingClientRect()
+    const resto = bar.scrollWidth - bar.clientWidth - bar.scrollLeft
+    const visible = r.width > 0 && r.height > 0
+    for (const [el, on, x] of [
+      [der, visible && resto > 4, r.right - 34],
+      [izq, visible && bar.scrollLeft > 4, r.left],
+    ]) {
+      el.style.display = on ? 'flex' : 'none'
+      if (on)
+        Object.assign(el.style, { left: x + 'px', top: r.top + 'px', height: r.height + 'px' })
+    }
+  }
+  bar.addEventListener('scroll', marcar, { passive: true })
+  window.addEventListener('resize', marcar)
+  new ResizeObserver(marcar).observe(bar)
+  marcar()
 })
 
 </script>

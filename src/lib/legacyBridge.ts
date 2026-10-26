@@ -50,6 +50,8 @@ export type AppToLegacyMessage =
   | { type: 'rig:setView'; view: LegacyView }
   | { type: 'rig:setLayers'; layers: LegacyLayer[] }
   | { type: 'rig:ping' }
+  /** Respuesta a `rig:kvGet`: el almacén de campo del visor (legacy-ext/90-almacen.js) guardado por la app. */
+  | { type: 'rig:kvInit'; items: Record<string, string> }
 
 /** Compat: nombre histórico del mensaje de modo. */
 export type LegacySetModeMessage = Extract<AppToLegacyMessage, { type: 'rig:setMode' }>
@@ -68,6 +70,19 @@ export type LegacyToAppMessage =
   | { type: 'rig:select'; selection: LegacySelection | null }
   /** Total del contador de visitas (legacy-ext/89-visitas.js); solo se publica en sitios http(s) no locales. */
   | { type: 'rig:visitas'; value: number }
+  /** Almacén de campo (checklist DROPS, inducción): el iframe sandbox no tiene localStorage propio. */
+  | { type: 'rig:kvGet' }
+  | { type: 'rig:kvSet'; key: string; value: string | null }
+  /** "Copiar enlace a esta vista" (legacy-ext/91-enlaces.js). */
+  | { type: 'rig:link'; comp: string | null; vp: string | null }
+
+/** Prefijo y tope de las claves del almacén de campo (las únicas que la app guarda por pedido del visor). */
+export const KV_PREFIX = 'campo:'
+const KV_MAX_CHARS = 1_000_000
+const LINK_ID = /^[a-z0-9-]{1,40}$/
+const linkId = (v: unknown): string | null => (typeof v === 'string' && LINK_ID.test(v) ? v : null)
+export const isKvKey = (v: unknown): v is string =>
+  typeof v === 'string' && v.startsWith(KV_PREFIX) && v.length <= 80 && /^[a-z0-9:-]+$/.test(v)
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 const strOrNull = (v: unknown): string | null => (typeof v === 'string' && v ? v : null)
@@ -102,6 +117,16 @@ export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
       return typeof data.value === 'number' && Number.isInteger(data.value) && data.value >= 0
         ? { type: 'rig:visitas', value: data.value }
         : null
+    case 'rig:kvGet':
+      return { type: 'rig:kvGet' }
+    case 'rig:kvSet':
+      if (!isKvKey(data.key)) return null
+      if (data.value === null) return { type: 'rig:kvSet', key: data.key, value: null }
+      return typeof data.value === 'string' && data.value.length <= KV_MAX_CHARS
+        ? { type: 'rig:kvSet', key: data.key, value: data.value }
+        : null
+    case 'rig:link':
+      return { type: 'rig:link', comp: linkId(data.comp), vp: linkId(data.vp) }
     default:
       return null
   }

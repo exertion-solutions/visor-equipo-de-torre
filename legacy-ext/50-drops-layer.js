@@ -433,6 +433,7 @@
 
     function pointCard(p) {
       const li = h('li', 'dp-pt')
+      li.dataset.pointId = p.id // 92-checklist-drops.js agrega los controles de campo
       const top = h('div', 'dp-pt-top')
       top.append(h('span', 'dp-id', p.id), h('strong', 'dp-pt-name', p.name || 'Sin nombre'))
       li.appendChild(top)

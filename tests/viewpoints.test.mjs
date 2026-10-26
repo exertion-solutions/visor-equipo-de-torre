@@ -32,8 +32,12 @@ test('cada viewpoint: id único, campos completos, ojos = cota del piso + 1,70 m
   }
 })
 
-test('fichas QHSE vacías: no se inventan funciones, riesgos, EPP ni controles', () => {
-  for (const v of D.viewpoints) for (const [k, t] of Object.entries(v.ficha)) assert.equal(t, '', `${v.id}.${k}`)
+test('fichas QHSE: completas y riesgos/EPP/controles rotulados como referencia genérica pendiente de validación', () => {
+  for (const v of D.viewpoints) {
+    for (const [k, t] of Object.entries(v.ficha)) assert.ok(t.trim().length > 20, `${v.id}.${k}`)
+    for (const k of ['riesgos', 'EPP', 'controles'])
+      assert.ok(v.ficha[k].endsWith('(referencia genérica, pendiente de validación)'), `${v.id}.${k}`)
+  }
 })
 
 test('recorrido guiado: paradas existentes y tiempo por parada', () => {
