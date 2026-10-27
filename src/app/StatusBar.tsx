@@ -19,7 +19,6 @@ export function StatusBar() {
   const engine = useViewerStore((s) => s.engine)
   const selection = useViewerStore((s) => (s.engine === 'legacy' ? s.selection : null))
   const edges = useViewerStore((s) => s.edges)
-  const visitas = useViewerStore((s) => s.visitas)
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
 
   return (
@@ -85,20 +84,7 @@ export function StatusBar() {
           Aristas
         </Button>
       )}
-      {visitas !== null && (
-        <span
-          data-testid="visitas"
-          className={engine === 'native' ? 'shrink-0' : 'ml-auto shrink-0'}
-          title="Contador de visitas (servicio externo). Una por sesión del navegador; orientativo, no auditable."
-        >
-          Visitas:{' '}
-          <span className="text-foreground font-medium">{visitas.toLocaleString('es-AR')}</span>
-        </span>
-      )}
-      <Badge
-        variant="outline"
-        className={engine !== 'native' && visitas === null ? 'ml-auto shrink-0' : 'shrink-0'}
-      >
+      <Badge variant="outline" className={engine !== 'native' ? 'ml-auto shrink-0' : 'shrink-0'}>
         Motor: {ENGINE_LABELS[engine]}
       </Badge>
     </footer>

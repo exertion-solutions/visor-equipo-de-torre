@@ -84,6 +84,20 @@ docs/           arquitectura, paridad, auditoría legacy, setup
 - **Enlaces profundos**: `?comp=bop`, `?vp=piso-enganche`; botón "Copiar enlace a esta vista" en Exportar.
 - Los datos quedan en el navegador (localStorage de la app). Envío: el flujo recibe el cuerpo como texto; leerlo con `json(triggerBody())`.
 
+## Sitio publicado: sin conexión, compartir y envío de registros
+
+- **Sin conexión (PWA)**: `public/sw.js` + `public/manifest.webmanifest`. Después de la primera visita la app abre sin señal
+  con el modelo completo (el iframe le pide los GLB a la app: `rig:glbGet`, ver `docs/LEGACY_BRIDGE.md`). Se puede instalar
+  en el celular desde el navegador ("Agregar a pantalla de inicio"). Al cambiar archivos precargados, subir `VERSION` en `sw.js`.
+- **Compartir**: tarjeta Open Graph en `index.html` con `public/og.jpg` (1200 × 630). Compartir el link de la app (raíz),
+  no el del visor V2 directo.
+- **Envío de checklist DROPS e inducción**: crear la variable de repositorio `RIG_WEBHOOK_URL` (Settings → Secrets and
+  variables → Actions → Variables) con la URL del disparador HTTP de Power Automate; el deploy la escribe en el visor
+  (`scripts/inject-webhook.mjs`). Un dispositivo puede seguir usando una URL propia. La URL queda visible en la página: el
+  flujo tiene que validar el cuerpo (`tipo` = `checklist-drops` o `induccion`) y descartar lo demás.
+- **Teclado**: con foco en el modelo (clic o Tab), flechas giran e inclinan, Mayús + flechas desplazan, + / − zoom, `?` atajos.
+- three.js (≈ 470 KB comprimidos) solo se descarga con el motor nativo (`?dev=1`): React y zustand van en su propio chunk.
+
 ## Efectos y herramientas 3D (V2)
 
 Todo es presentación o herramienta de lectura del modelo: no cambia cotas ni datos, y nada se presenta como cálculo,

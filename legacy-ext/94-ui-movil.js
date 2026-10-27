@@ -5,6 +5,11 @@
  *  2. Barra de menús desplazable (≤ 1050 px, ver 60-ui-controls.js): la barra de scroll está oculta, así que se marca con un
  *     degradado y una flecha el borde que tiene más menús fuera de pantalla. Son indicadores aparte (position:fixed,
  *     sin eventos): una máscara sobre la barra recortaría también los menús desplegables, que viven dentro de ella.
+ *  3. Celular (≤ 700 px): la barra pasa a 2 filas en vez de desplazarse. Antes Medición, Exportar y Paneles quedaban fuera
+ *     de pantalla y solo los delataba una flecha chica. Con 2 filas todos los menús quedan a la vista (los indicadores de 2.
+ *     no aparecen porque ya no hay desplazamiento).
+ *  4. Pantallas táctiles (pointer:coarse): botones de la barra de 40 px y controles de los menús de 44 px, para usar con
+ *     guantes o al sol.
  */
 window.__rigExt.onPost(() => {
   const style = document.createElement('style')
@@ -13,6 +18,14 @@ window.__rigExt.onPost(() => {
     .tm-mas{position:fixed;z-index:39;width:34px;pointer-events:none;display:none;align-items:center;color:#DDBB65;font:700 16px/1 sans-serif}
     .tm-mas.der{justify-content:flex-end;padding-right:2px;background:linear-gradient(to right,transparent,#0f141c 70%)}
     .tm-mas.izq{justify-content:flex-start;padding-left:2px;background:linear-gradient(to left,transparent,#0f141c 70%)}
+    @media (max-width:700px){
+      #v2-toolbar{flex-wrap:wrap!important;overflow-x:visible!important;row-gap:6px}
+      #v2-toolbar > .tm-sep{display:none}
+    }
+    @media (pointer:coarse){
+      #v2-toolbar .tm-btn,#v2-toolbar > .btn,#v2-modebar button{min-height:40px}
+      .tm-pop .btn,.tm-pop select,.tm-pop input[type=range]{min-height:44px}
+    }
   `
   document.head.appendChild(style)
 

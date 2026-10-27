@@ -43,6 +43,13 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+      # URL fija de envío del checklist DROPS e inducción (disparador HTTP de Power Automate). Variable de repositorio
+      # RIG_WEBHOOK_URL; si no existe, el placeholder queda y el visor no envía nada (ver legacy-ext/90-almacen.js).
+      - name: URL de envío del sitio
+        if: ${{ vars.RIG_WEBHOOK_URL != '' }}
+        env:
+          RIG_WEBHOOK_URL: ${{ vars.RIG_WEBHOOK_URL }}
+        run: node scripts/inject-webhook.mjs dist/legacy/Digital_Rig_V2.html
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

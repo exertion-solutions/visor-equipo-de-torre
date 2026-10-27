@@ -52,6 +52,8 @@ export type AppToLegacyMessage =
   | { type: 'rig:ping' }
   /** Respuesta a `rig:kvGet`: el almacén de campo del visor (legacy-ext/90-almacen.js) guardado por la app. */
   | { type: 'rig:kvInit'; items: Record<string, string> }
+  /** Respuesta a `rig:glbGet`: los GLB del modelo SK-575 leídos por la app (que sí pasa por el modo sin conexión). */
+  | { type: 'rig:glbs'; bufs: Record<string, ArrayBuffer> }
 
 /** Compat: nombre histórico del mensaje de modo. */
 export type LegacySetModeMessage = Extract<AppToLegacyMessage, { type: 'rig:setMode' }>
@@ -68,18 +70,21 @@ export type LegacyToAppMessage =
   | { type: 'rig:ready'; version: number }
   | { type: 'rig:state'; mode: AppMode | null; view: LegacyView | null; layers: LegacyLayer[] }
   | { type: 'rig:select'; selection: LegacySelection | null }
-  /** Total del contador de visitas (legacy-ext/89-visitas.js); solo se publica en sitios http(s) no locales. */
-  | { type: 'rig:visitas'; value: number }
   /** Almacén de campo (checklist DROPS, inducción): el iframe sandbox no tiene localStorage propio. */
   | { type: 'rig:kvGet' }
   | { type: 'rig:kvSet'; key: string; value: string | null }
   /** "Copiar enlace a esta vista" (legacy-ext/91-enlaces.js). */
   | { type: 'rig:link'; comp: string | null; vp: string | null }
+  /** El visor no pudo bajar los GLB (sin conexión en el iframe sandbox): se los pide a la app. */
+  | { type: 'rig:glbGet'; ids: string[] }
 
 /** Prefijo y tope de las claves del almacén de campo (las únicas que la app guarda por pedido del visor). */
 export const KV_PREFIX = 'campo:'
 const KV_MAX_CHARS = 1_000_000
 const LINK_ID = /^[a-z0-9-]{1,40}$/
+/** Solo modelos del SK-575 de la carpeta del sitio (sin rutas): `sk575_<pieza>`. */
+const GLB_ID = /^sk575_[a-z_]{1,30}$/
+const GLB_MAX = 40
 const linkId = (v: unknown): string | null => (typeof v === 'string' && LINK_ID.test(v) ? v : null)
 export const isKvKey = (v: unknown): v is string =>
   typeof v === 'string' && v.startsWith(KV_PREFIX) && v.length <= 80 && /^[a-z0-9:-]+$/.test(v)
@@ -113,10 +118,6 @@ export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
         },
       }
     }
-    case 'rig:visitas':
-      return typeof data.value === 'number' && Number.isInteger(data.value) && data.value >= 0
-        ? { type: 'rig:visitas', value: data.value }
-        : null
     case 'rig:kvGet':
       return { type: 'rig:kvGet' }
     case 'rig:kvSet':
@@ -127,6 +128,13 @@ export function parseLegacyMessage(data: unknown): LegacyToAppMessage | null {
         : null
     case 'rig:link':
       return { type: 'rig:link', comp: linkId(data.comp), vp: linkId(data.vp) }
+    case 'rig:glbGet':
+      return Array.isArray(data.ids) &&
+        data.ids.length > 0 &&
+        data.ids.length <= GLB_MAX &&
+        data.ids.every((id) => typeof id === 'string' && GLB_ID.test(id))
+        ? { type: 'rig:glbGet', ids: [...new Set(data.ids as string[])] }
+        : null
     default:
       return null
   }

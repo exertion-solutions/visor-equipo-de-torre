@@ -9,15 +9,13 @@ test('RIG10 HTML is self-contained (opens by double-click, no server or network)
   assert.doesNotMatch(html, /<link[^>]+href=["']https?:/i);
   assert.doesNotMatch(html, /XMLHttpRequest|import\(/);
   // Cargas por red admitidas: (1) los GLB del SK-575 de su propio sitio (fetch relativo, ver 84-modelo-sk575.js) con respaldo en el
-  // sk575-glb.js de al lado (un <script> clásico: carga también por file://); (2) el contador de visitas (89-visitas.js), un único
-  // pedido a un servicio declarado que NO corre en file:// ni en localhost, así que abrir el HTML con doble clic sigue siendo offline;
-  // (3) el envío opcional de checklist/inducción (90-almacen.js) a una URL https que configura el usuario: sin URL no hay pedido.
+  // sk575-glb.js de al lado (un <script> clásico: carga también por file://); (2) el envío opcional de checklist/inducción (90-almacen.js) a una URL https que configura el usuario: sin URL no hay pedido.
   assert.deepEqual(
     [...html.matchAll(/\bfetch\(([^)]*)\)/g)].map((m) => m[1].split(',')[0]),
-    ["new URL('../models/rig10/' + id + '.glb'", 'urlContador', 'url'],
+    ["new URL('../models/rig10/' + id + '.glb'", 'url'],
   );
   assert.match(html, /const url = webhookUrl\(\)\n\s+if \(!url\) return/);
-  assert.equal(html.split("const BASE = 'https://abacus.jasoncameron.dev'").length - 1, 1);
+  assert.doesNotMatch(html, /abacus\.jasoncameron\.dev/);
   assert.match(html, /s\.src = 'sk575-glb\.js'/);
   assert.doesNotMatch(html, /\bsrc\s*=\s*['"]https?:/);
 });

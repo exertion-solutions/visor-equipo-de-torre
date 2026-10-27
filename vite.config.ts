@@ -20,7 +20,16 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         codeSplitting: {
-          groups: [{ name: 'three', test: /node_modules[/\\](three|@react-three)[/\\]/ }],
+          // React, zustand y sus dependencias van aparte: si caen en el grupo `three` (las comparte @react-three),
+          // el arranque importa ese chunk y se bajan ~470 KB de three.js aunque el motor nativo esté apagado.
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[/\\](react|react-dom|scheduler|zustand|use-sync-external-store)[/\\]/,
+              priority: 20,
+            },
+            { name: 'three', test: /node_modules[/\\](three|@react-three)[/\\]/, priority: 10 },
+          ],
         },
       },
     },

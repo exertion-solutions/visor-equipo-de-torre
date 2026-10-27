@@ -62,6 +62,18 @@ const READY_FALLBACK_MS = 45_000
  * El iframe NO se desmonta al cambiar de motor (`active=false` solo lo oculta): así se conservan cámara,
  * capas y mediciones y no se vuelve a bajar el HTML (≈7 MB).
  */
+/** GLB del modelo SK-575 desde la carpeta del sitio (ids ya validados por `parseLegacyMessage`). */
+async function fetchGlbs(ids: string[]): Promise<Record<string, ArrayBuffer>> {
+  const pares = await Promise.all(
+    ids.map(async (id) => {
+      const r = await fetch(`${import.meta.env.BASE_URL}models/rig10/${id}.glb`)
+      if (!r.ok) throw new Error(`${id}: HTTP ${r.status}`)
+      return [id, await r.arrayBuffer()] as const
+    }),
+  )
+  return Object.fromEntries(pares)
+}
+
 export function LegacyRigViewer({ active = true }: { active?: boolean }) {
   const frameRef = useRef<HTMLIFrameElement>(null)
   const mode = useModeStore((s) => s.mode)
@@ -109,9 +121,6 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
         case 'rig:select':
           store.setSelection(msg.selection)
           break
-        case 'rig:visitas':
-          store.setVisitas(msg.value)
-          break
         case 'rig:kvGet':
           postRef.current({ type: 'rig:kvInit', items: kvItems() })
           break
@@ -126,6 +135,17 @@ export function LegacyRigViewer({ active = true }: { active?: boolean }) {
         case 'rig:link':
           void copyLink(msg.comp, msg.vp)
           break
+        case 'rig:glbGet': {
+          // Sin conexión el iframe sandbox no llega al caché del sitio; la app sí (public/sw.js). Si falla, responde
+          // vacío para que el visor pase enseguida a su respaldo en vez de esperar.
+          const target = frameRef.current?.contentWindow
+          void fetchGlbs(msg.ids)
+            .then((bufs) =>
+              target?.postMessage({ type: 'rig:glbs', bufs }, '*', Object.values(bufs)),
+            )
+            .catch(() => target?.postMessage({ type: 'rig:glbs', bufs: {} }, '*'))
+          break
+        }
       }
     }
     window.addEventListener('message', onMessage)

@@ -137,6 +137,28 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
           s.onerror = () => mal(new Error('no se pudo cargar sk575-glb.js'))
           document.head.appendChild(s)
         })
+  // Embebido en la app sin conexión: el iframe sandbox (origen opaco) no pasa por el modo sin conexión del sitio
+  // (public/sw.js), la app sí. Si el fetch propio falla, se le piden los GLB a la app (rig:glbGet → rig:glbs, con los
+  // ArrayBuffer transferidos, sin copia). 8 s de espera; si no responde, sigue el respaldo base64.
+  const porApp = () =>
+    new Promise((ok, mal) => {
+      if (window.parent === window) return mal(new Error('no embebido'))
+      const fin = setTimeout(() => {
+        removeEventListener('message', oir)
+        mal(new Error('la app no respondió'))
+      }, 8000)
+      function oir(e) {
+        const d = e.data
+        if (e.source !== window.parent || !d || d.type !== 'rig:glbs' || !d.bufs) return
+        clearTimeout(fin)
+        removeEventListener('message', oir)
+        if (!FILES.every((id) => d.bufs[id] instanceof ArrayBuffer && d.bufs[id].byteLength > 20))
+          return mal(new Error('la app no tiene todos los GLB'))
+        ok(Object.fromEntries(FILES.map((id) => [id, new Uint8Array(d.bufs[id])])))
+      }
+      addEventListener('message', oir)
+      window.parent.postMessage({ type: 'rig:glbGet', ids: FILES }, '*')
+    })
   async function bytesGlb() {
     const t0 = performance.now()
     let out = null
@@ -153,10 +175,17 @@ roughnessFactor=clamp(roughnessFactor+(n-.5)*.18+sucio*.35,0.,1.);`,
         out = Object.fromEntries(FILES.map((id, i) => [id, new Uint8Array(bufs[i])]))
         stats.fuente = 'fetch'
       } catch (e) {
-        console.warn(
-          '[modelo SK-575] fetch de los GLB falló, se usa el respaldo base64:',
-          e.message,
-        )
+        try {
+          out = await porApp()
+          stats.fuente = 'app'
+        } catch (e2) {
+          console.warn(
+            '[modelo SK-575] fetch de los GLB falló, se usa el respaldo base64:',
+            e.message,
+            '·',
+            e2.message,
+          )
+        }
       }
     }
     if (!out) {

@@ -2,6 +2,7 @@
  * 96-ambiente.js · presentación de la escena (sin tocar geometría ni datos):
  *
  *  1. Cielo: domo con degradé (Día / Atardecer) o fondo liso original. Se oculta en vista nocturna y en Vista CAD.
+ *     En vista ortográfica no hay horizonte y el domo no se ve: ahí el suelo lejano toma el tono del horizonte.
  *  2. Sombra de contacto: manchas suaves bajo las piezas apoyadas en el terreno (carrier, piletas, acumulador, BOP…),
  *     calculadas con la caja de cada componente SK-575. Es el "asentado" que da la oclusión ambiental, sin post-proceso.
  *  3. Halos de noche: resplandor aditivo en los proyectores de las torres de iluminación y las luces del equipo, solo con
@@ -53,6 +54,26 @@ window.__rigExt.onPost((R) => {
   sky.raycast = () => {}
   sky.onBeforeRender = (r, s, cam) => sky.position.copy(cam.position)
   sc.add(sky)
+  // Vista ortográfica: no hay horizonte y el plano de suelo de la base (260 m, oscuro) llena la pantalla, así que el domo
+  // no se ve. Con cielo activo, el suelo lejano toma un tono entre su color y el horizonte (perspectiva aérea): la periferia
+  // se funde con el cielo en perspectiva y en ortográfica deja de ser una banda oscura. Noche, CAD o "Liso": color original.
+  const suelo = sc.getObjectByName('suelo')
+  const sueloColor0 =
+    suelo && suelo.material && suelo.material.color ? suelo.material.color.clone() : null
+  let cieloOn = false
+  let sueloTenido = false
+  // grillas del visor: sobre el suelo claro se ven muy cargadas; con cielo activo bajan su opacidad
+  const grillas = []
+  sc.traverse((o) => {
+    if (o.type === 'GridHelper' && o.material)
+      grillas.push([o.material, o.material.transparent, o.material.opacity])
+  })
+  const previoBR = sc.onBeforeRender
+  sc.onBeforeRender = function (r, s, cam, ...rest) {
+    sky.visible = cieloOn && !(cam && cam.isOrthographicCamera)
+    if (previoBR) return previoBR.call(this, r, s, cam, ...rest)
+  }
+
   let preset = 'dia'
   let fondo0 = null
 
@@ -215,11 +236,22 @@ window.__rigExt.onPost((R) => {
     if (!armado) return
     const noche = nocheActiva()
     const cad = cadActiva()
-    sky.visible = !noche && !cad && preset !== 'liso'
+    cieloOn = !noche && !cad && preset !== 'liso'
+    sky.visible = cieloOn && !R.camera().isOrthographicCamera
+    // la vista nocturna de la base pone su propio color de suelo: solo se restaura el de día si lo teñimos nosotros
+    if (sueloColor0 && cieloOn) {
+      suelo.material.color.copy(sueloColor0).lerp(skyMat.uniforms.horizonte.value, 0.62)
+      for (const [m] of grillas) Object.assign(m, { transparent: true, opacity: 0.3 })
+      sueloTenido = true
+    } else if (sueloColor0 && sueloTenido) {
+      if (!noche) suelo.material.color.copy(sueloColor0)
+      for (const [m, tr, op] of grillas) Object.assign(m, { transparent: tr, opacity: op })
+      sueloTenido = false
+    }
     // la niebla de distancia toma el color del horizonte para que el terreno se funda con el cielo
     if (sc.fog && sc.fog.color) {
       if (fondo0 === null) fondo0 = sc.fog.color.getHex()
-      if (sky.visible) sc.fog.color.copy(skyMat.uniforms.horizonte.value)
+      if (cieloOn) sc.fog.color.copy(skyMat.uniforms.horizonte.value)
       else if (!noche && !cad) sc.fog.color.setHex(fondo0)
     }
     halos.visible = noche && perfil !== 'movil'
@@ -264,7 +296,8 @@ window.__rigExt.onPost((R) => {
     cielo,
     estado: () => ({
       preset,
-      cielo: sky.visible,
+      cielo: cieloOn,
+      suelo: sueloColor0 ? '#' + suelo.material.color.getHexString() : null,
       halos: halos.visible ? halos.children.length : 0,
       ao: ao.visible ? ao.children.length : 0,
     }),

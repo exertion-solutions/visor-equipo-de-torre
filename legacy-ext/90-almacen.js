@@ -6,7 +6,10 @@
  *       visor → app  rig:kvSet  { key, value }        (value = string JSON; null borra)
  *       app → visor  rig:kvInit { items: {key: value} }  (respuesta a rig:kvGet al arrancar)
  *     Solo claves con prefijo `campo:`. Si nada persiste (modo privado), el estado vive en memoria y se exporta.
- *  2. Webhook (p. ej. disparador HTTP de Power Automate): URL guardada en el almacén (`campo:webhook`).
+ *  2. Webhook (p. ej. disparador HTTP de Power Automate): URL guardada en el almacén (`campo:webhook`). Si el dispositivo no
+ *     tiene una propia, se usa la URL del sitio: el workflow de deploy completa WEBHOOK_SITIO con la variable de
+ *     repositorio RIG_WEBHOOK_URL (Settings → Secrets and variables → Actions → Variables). Sin variable no hay envío.
+ *     La URL queda visible en el HTML publicado: el flujo debe validar el cuerpo (campo `tipo`) y descartar lo demás.
  *     Se envía con fetch `no-cors` y cuerpo JSON como text/plain (desde un origen opaco no hay CORS posible): la
  *     respuesta no es legible, así que el envío se informa como "enviado, sin confirmación". En el flujo, usar
  *     json(triggerBody()) para leer el cuerpo.
@@ -79,9 +82,12 @@
 
   // ───────── webhook ─────────
   const WEBHOOK_KEY = 'campo:webhook'
+  const esHttps = (u) => typeof u === 'string' && /^https:\/\/\S+$/.test(u)
+  const WEBHOOK_SITIO = '%%RIG_WEBHOOK_URL%%' // lo completa el deploy; sin reemplazar no es https y no se usa
+  const webhookSitio = () => (esHttps(WEBHOOK_SITIO) ? WEBHOOK_SITIO : '')
   const webhookUrl = () => {
     const u = get(WEBHOOK_KEY, '')
-    return typeof u === 'string' && /^https:\/\/\S+$/.test(u) ? u : ''
+    return esHttps(u) ? u : webhookSitio()
   }
   async function enviar(tipo, datos) {
     const url = webhookUrl()
@@ -161,7 +167,11 @@
     row.innerHTML =
       '<input type="url" placeholder="URL del disparador HTTP (Power Automate), opcional" aria-label="URL de envío"><button type="button">Guardar URL</button>'
     const input = row.querySelector('input')
-    input.value = webhookUrl()
+    const propia = get(WEBHOOK_KEY, '')
+    input.value = esHttps(propia) ? propia : ''
+    if (webhookSitio())
+      input.placeholder =
+        'Usando la URL del sitio. Cargá otra solo si este equipo envía a otro flujo.'
     row.querySelector('button').addEventListener('click', () => {
       const v = input.value.trim()
       if (v && !/^https:\/\/\S+$/.test(v)) return onMsg('La URL debe empezar con https://')

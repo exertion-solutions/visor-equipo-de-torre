@@ -52,22 +52,6 @@ describe('parseLegacyMessage', () => {
   })
 })
 
-describe('parseLegacyMessage · visitas', () => {
-  it('acepta un total entero no negativo y rechaza el resto', () => {
-    expect(parseLegacyMessage({ type: 'rig:visitas', value: 1234 })).toEqual({
-      type: 'rig:visitas',
-      value: 1234,
-    })
-    expect(parseLegacyMessage({ type: 'rig:visitas', value: 0 })).toEqual({
-      type: 'rig:visitas',
-      value: 0,
-    })
-    for (const value of [-1, 1.5, NaN, '12', null, undefined]) {
-      expect(parseLegacyMessage({ type: 'rig:visitas', value })).toBeNull()
-    }
-  })
-})
-
 describe('normalizeLayers', () => {
   it('deduplica y ordena', () => {
     expect(normalizeLayers(['drops', 'zonas', 'drops', 'nope'])).toEqual(['zonas', 'drops'])
@@ -87,5 +71,19 @@ describe('normalizeLayers', () => {
       comp: 'bop',
       vp: null,
     })
+  })
+})
+
+describe('parseLegacyMessage · glbGet', () => {
+  it('acepta solo ids sk575_<pieza> (sin rutas) y descarta duplicados', () => {
+    expect(
+      parseLegacyMessage({
+        type: 'rig:glbGet',
+        ids: ['sk575_bop', 'sk575_pozo_vecino', 'sk575_bop'],
+      }),
+    ).toEqual({ type: 'rig:glbGet', ids: ['sk575_bop', 'sk575_pozo_vecino'] })
+    for (const ids of [[], ['../secreto'], ['sk575_bop.glb'], ['otro'], 'sk575_bop', [1]]) {
+      expect(parseLegacyMessage({ type: 'rig:glbGet', ids })).toBeNull()
+    }
   })
 })

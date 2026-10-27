@@ -23,6 +23,7 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 | `rig:setLayers` | `layers`: `LayerId[]`                                       | Conjunto **exacto** de capas activas (las demás se apagan). Se aplica después del preset. |
 | `rig:ping`      | —                                                           | El visor responde otra vez `ready` + `state` (útil si la app montó después del visor).    |
 | `rig:kvInit` | `items`: `{ [clave]: string }` | Respuesta a `rig:kvGet`: almacén de campo guardado por la app (claves `campo:*`). |
+| `rig:glbs` | `bufs`: `{ [id]: ArrayBuffer }` (transferidos) | Respuesta a `rig:glbGet`. Vacío si la app tampoco pudo leerlos: el visor pasa a su respaldo base64. |
 
 `LayerId`: `zonas` (zonas de riesgo ilustrativas) · `cotas` · `etiquetas` · `malla` · `despiece` · `drops`.
 
@@ -33,10 +34,10 @@ R3F nativo cuando alcance paridad, por lo que sirve también para **medir la par
 | `rig:ready`  | `version: 1`                                                                                           | Al terminar de arrancar (`window.__rig` listo) y en respuesta a `ping`.      |
 | `rig:state`  | `mode`, `view`, `layers`                                                                               | Al arrancar y cada vez que cambia modo, vista o alguna capa.                 |
 | `rig:select` | `id`, `name`, `grade` (`A`\|`B`\|`C`), `status` — o `id: null` al deseleccionar                        | Al cambiar el componente seleccionado. Origen: tabla `META` del visor.       |
-| `rig:visitas` | `value` (entero ≥ 0) | Total del contador de visitas (`legacy-ext/89-visitas.js`, servicio externo). Solo en sitios http(s) no locales; se reenvía ante `rig:ping`. La app lo muestra en su barra de estado. |
 | `rig:kvGet` | — | Al arrancar `legacy-ext/90-almacen.js` dentro del iframe (sin localStorage propio). La app responde `rig:kvInit`. |
 | `rig:kvSet` | `key` (`campo:*`), `value` (string JSON o `null` para borrar) | Cada cambio del checklist DROPS (92) o de los registros de inducción (93). La app lo guarda en su localStorage. |
 | `rig:link` | `comp`, `vp` (ids o `null`) | Botón "Copiar enlace a esta vista" (91). La app escribe `?comp=` / `?vp=` en su URL y la copia al portapapeles. |
+| `rig:glbGet` | `ids` (`sk575_<pieza>`, ≤ 40) | El fetch de los GLB falló dentro del iframe (84), típicamente sin conexión: el iframe sandbox no pasa por `public/sw.js`, la app sí. La app los lee de `models/rig10/` y responde `rig:glbs`. |
 
 `grade` es la confiabilidad geométrica de `CLAUDE.md`: **A confirmado · B parcial · C aproximado**
 (lo pendiente de relevamiento se trata como aproximado). Referencia digital, nunca as-built.

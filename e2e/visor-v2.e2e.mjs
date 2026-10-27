@@ -1164,3 +1164,53 @@ test('una animación por vez: la maniobra y el montaje (secuencia, izamiento, ap
   assert.deepEqual(r.trasAparejo, { maniobra: false, aparejo: true })
   assert.deepEqual(r.trasPlay2, { maniobra: true, aparejo: false })
 })
+
+test('sitio: cielo en ortográfica (suelo lejano al horizonte), teclado en el lienzo y barra en 2 filas en celular', async (t) => {
+  if (skip) return t.skip(skip)
+  await hasta(() => !!(window.__rigAmbiente && window.__rigTeclado))
+  const r = await page.evaluate(async () => {
+    const A = window.__rigAmbiente
+    const espera = (ms) => new Promise((ok) => setTimeout(ok, ms))
+    A.cielo('dia')
+    await espera(50)
+    const dia = A.estado()
+    document.getElementById('c-night').click()
+    await espera(50)
+    const noche = A.estado()
+    document.getElementById('c-night').click()
+    await espera(50)
+    const cam = window.__rig.camera()
+    const p0 = cam.position.clone()
+    const cv = document.querySelector('canvas')
+    cv.focus()
+    cv.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+    const giro = cam.position.distanceTo(p0) > 0.01
+    cv.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true }))
+    const ayuda = !document.getElementById('rig-atajos').hidden
+    window.__rigTeclado.ayuda(false)
+    cv.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }))
+    return { dia, noche, despues: A.estado(), giro, ayuda, tab: cv.tabIndex }
+  })
+  assert.equal(r.dia.cielo, true)
+  assert.notEqual(r.dia.suelo, '#43484a', 'con cielo, el suelo lejano toma tono de horizonte')
+  assert.equal(r.noche.suelo, '#20232c', 'la noche conserva el suelo de la base')
+  assert.equal(r.despues.suelo, r.dia.suelo)
+  assert.ok(r.giro && r.ayuda && r.tab === 0)
+
+  // celular: misma página a 390 px (las media queries se reevalúan al cambiar el tamaño)
+  const vp0 = page.viewportSize()
+  await page.setViewportSize({ width: 390, height: 844 })
+  try {
+    await page.waitForTimeout(300)
+    const fuera = await page.evaluate(
+      () =>
+        [...document.querySelectorAll('#v2-toolbar button')].filter((b) => {
+          const q = b.getBoundingClientRect()
+          return q.width && (q.right > innerWidth + 1 || q.left < -1)
+        }).length,
+    )
+    assert.equal(fuera, 0, 'ningún menú fuera de pantalla en 390 px')
+  } finally {
+    await page.setViewportSize(vp0)
+  }
+})
