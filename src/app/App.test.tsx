@@ -21,6 +21,8 @@ afterEach(() => {
     view: null,
     layers: null,
     selection: null,
+    cameraCommand: null,
+    canGoBack: false,
   })
 })
 
@@ -79,6 +81,30 @@ describe('App', () => {
     const bar = screen.getByRole('contentinfo', { name: 'Barra de estado' })
     expect(bar.textContent).toContain('Modo: EXPLORE')
     expect(bar.textContent).toContain('(sin efecto visual aún)')
+  })
+
+  it('en motor nativo, "Enfocar" exige selección y "Volver" exige una vista guardada', async () => {
+    render(<App />)
+    // Con el motor V2 los botones del motor nativo no existen.
+    expect(screen.queryByRole('button', { name: 'Enfocar' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /R3F nativo/ }))
+    await screen.findByTestId('native-viewport')
+    const enfocar = screen.getByRole('button', { name: 'Enfocar' }) as HTMLButtonElement
+    const volver = screen.getByRole('button', { name: 'Volver' }) as HTMLButtonElement
+    expect(enfocar.disabled).toBe(true)
+    expect(volver.disabled).toBe(true)
+
+    act(() => useViewerStore.getState().selectComponent('bop'))
+    expect(enfocar.disabled).toBe(false)
+    fireEvent.click(enfocar)
+    expect(useViewerStore.getState().cameraCommand).toMatchObject({
+      type: 'focus',
+      componentId: 'bop',
+    })
+
+    act(() => useViewerStore.getState().setCanGoBack(true))
+    expect(volver.disabled).toBe(false)
   })
 
   it('el modo de la app se reenvía al visor V2 embebido por postMessage una vez que está listo', () => {

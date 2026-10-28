@@ -16,6 +16,13 @@ export function isViewerEngine(value: unknown): value is ViewerEngine {
   return typeof value === 'string' && (VIEWER_ENGINES as readonly string[]).includes(value)
 }
 
+/**
+ * Orden de cámara para el motor nativo. `seq` crece en cada orden, así repetir "enfocar" sobre el mismo
+ * componente vuelve a disparar la transición.
+ */
+export type CameraCommand =
+  { type: 'focus'; componentId: string; seq: number } | { type: 'back'; seq: number }
+
 interface ViewerState {
   engine: ViewerEngine
   selectedComponentId: string | null
@@ -30,6 +37,10 @@ interface ViewerState {
   selection: LegacySelection | null
   /** Motor nativo: aristas vivas sobre los GLB ("sombreado con aristas" de un CAD). */
   edges: boolean
+  /** Última orden de cámara (la ejecuta `CameraRig`); `null` = ninguna. */
+  cameraCommand: CameraCommand | null
+  /** Hay una vista guardada por un foco: "Volver" la restaura. Lo mantiene `CameraRig`. */
+  canGoBack: boolean
   setEngine: (engine: ViewerEngine) => void
   selectComponent: (id: string | null) => void
   hoverComponent: (id: string | null) => void
@@ -37,9 +48,14 @@ interface ViewerState {
   setLegacyState: (state: { view: LegacyView | null; layers: LegacyLayer[] }) => void
   setSelection: (selection: LegacySelection | null) => void
   toggleEdges: () => void
+  /** Encuadra el componente seleccionado (no hace nada sin selección). */
+  focusSelected: () => void
+  /** Restaura la vista previa al primer foco (no hace nada si no hay vista guardada). */
+  goBack: () => void
+  setCanGoBack: (canGoBack: boolean) => void
 }
 
-export const useViewerStore = create<ViewerState>()((set) => ({
+export const useViewerStore = create<ViewerState>()((set, get) => ({
   engine: DEFAULT_ENGINE,
   selectedComponentId: null,
   hoveredComponentId: null,
@@ -48,6 +64,8 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   layers: null,
   selection: null,
   edges: true,
+  cameraCommand: null,
+  canGoBack: false,
   setEngine: (engine) => set({ engine }),
   selectComponent: (selectedComponentId) => set({ selectedComponentId }),
   hoverComponent: (hoveredComponentId) => set({ hoveredComponentId }),
@@ -55,4 +73,21 @@ export const useViewerStore = create<ViewerState>()((set) => ({
   setLegacyState: ({ view, layers }) => set({ view, layers }),
   setSelection: (selection) => set({ selection, selectedComponentId: selection?.id ?? null }),
   toggleEdges: () => set((s) => ({ edges: !s.edges })),
+  focusSelected: () => {
+    const { selectedComponentId, cameraCommand } = get()
+    if (!selectedComponentId) return
+    set({
+      cameraCommand: {
+        type: 'focus',
+        componentId: selectedComponentId,
+        seq: (cameraCommand?.seq ?? 0) + 1,
+      },
+    })
+  },
+  goBack: () => {
+    const { canGoBack, cameraCommand } = get()
+    if (!canGoBack) return
+    set({ cameraCommand: { type: 'back', seq: (cameraCommand?.seq ?? 0) + 1 } })
+  },
+  setCanGoBack: (canGoBack) => set({ canGoBack }),
 }))
