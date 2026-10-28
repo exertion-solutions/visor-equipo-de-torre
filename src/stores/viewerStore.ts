@@ -41,6 +41,10 @@ interface ViewerState {
   cameraCommand: CameraCommand | null
   /** Hay una vista guardada por un foco: "Volver" la restaura. Lo mantiene `CameraRig`. */
   canGoBack: boolean
+  /** Componentes ocultos en la escena nativa: ni se dibujan ni reciben hover ni clic. */
+  hiddenComponentIds: readonly string[]
+  /** Ocultos previos al aislamiento; `null` = no hay aislamiento activo ("Aislar selección"). */
+  isolationSnapshot: readonly string[] | null
   setEngine: (engine: ViewerEngine) => void
   selectComponent: (id: string | null) => void
   hoverComponent: (id: string | null) => void
@@ -53,6 +57,11 @@ interface ViewerState {
   /** Restaura la vista previa al primer foco (no hace nada si no hay vista guardada). */
   goBack: () => void
   setCanGoBack: (canGoBack: boolean) => void
+  /**
+   * "Aislar selección": oculta todos los componentes de `allIds` salvo el seleccionado; si ya está aislado,
+   * restaura lo que estaba oculto antes. Sin selección (o con una que no está en `allIds`) no hace nada.
+   */
+  toggleIsolation: (allIds: readonly string[]) => void
 }
 
 export const useViewerStore = create<ViewerState>()((set, get) => ({
@@ -66,6 +75,8 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   edges: true,
   cameraCommand: null,
   canGoBack: false,
+  hiddenComponentIds: [],
+  isolationSnapshot: null,
   setEngine: (engine) => set({ engine }),
   selectComponent: (selectedComponentId) => set({ selectedComponentId }),
   hoverComponent: (hoveredComponentId) => set({ hoveredComponentId }),
@@ -90,4 +101,20 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
     set({ cameraCommand: { type: 'back', seq: (cameraCommand?.seq ?? 0) + 1 } })
   },
   setCanGoBack: (canGoBack) => set({ canGoBack }),
+  toggleIsolation: (allIds) => {
+    const { isolationSnapshot, hiddenComponentIds, selectedComponentId, hoveredComponentId } = get()
+    if (isolationSnapshot) {
+      set({ hiddenComponentIds: isolationSnapshot, isolationSnapshot: null })
+      return
+    }
+    if (!selectedComponentId || !allIds.includes(selectedComponentId)) return
+    const hidden = allIds.filter((id) => id !== selectedComponentId)
+    set({
+      hiddenComponentIds: hidden,
+      isolationSnapshot: hiddenComponentIds,
+      // Un componente que se oculta no puede quedar con el contorno de hover.
+      hoveredComponentId:
+        hoveredComponentId && hidden.includes(hoveredComponentId) ? null : hoveredComponentId,
+    })
+  },
 }))

@@ -9,10 +9,15 @@ interface SelectableModelProps {
   children: ReactNode
 }
 
-/** Envuelve un componente: hover, clic y registro del objeto para el contorno. */
+/**
+ * Envuelve un componente: hover, clic y registro del objeto para el contorno.
+ * Oculto (aislamiento): no se dibuja y se le quitan los handlers. No alcanza con `visible = false`: three y
+ * r3f lanzan el raycast también contra objetos invisibles, y sin handlers el grupo sale de la lista de interacción.
+ */
 export function SelectableModel({ componentId, position, children }: SelectableModelProps) {
   const hoverComponent = useViewerStore((s) => s.hoverComponent)
   const selectComponent = useViewerStore((s) => s.selectComponent)
+  const hidden = useViewerStore((s) => s.hiddenComponentIds.includes(componentId))
 
   const over = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
@@ -35,9 +40,10 @@ export function SelectableModel({ componentId, position, children }: SelectableM
       }}
       name={`sel_${componentId}`}
       position={position ? [...position] : undefined}
-      onPointerOver={over}
-      onPointerOut={out}
-      onClick={click}
+      visible={!hidden}
+      onPointerOver={hidden ? undefined : over}
+      onPointerOut={hidden ? undefined : out}
+      onClick={hidden ? undefined : click}
     >
       {children}
     </group>

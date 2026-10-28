@@ -11,6 +11,11 @@ export function registerComponentObject(id: string, object: Object3D | null): vo
   else objects.delete(id)
 }
 
+/** Ids de los componentes montados en la escena (visibles u ocultos); base del aislamiento. */
+export function registeredComponentIds(): string[] {
+  return [...objects.keys()]
+}
+
 export function getComponentObject(id: string | null): Object3D | undefined {
   return id ? objects.get(id) : undefined
 }

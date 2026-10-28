@@ -23,6 +23,8 @@ afterEach(() => {
     selection: null,
     cameraCommand: null,
     canGoBack: false,
+    hiddenComponentIds: [],
+    isolationSnapshot: null,
   })
 })
 
@@ -105,6 +107,26 @@ describe('App', () => {
 
     act(() => useViewerStore.getState().setCanGoBack(true))
     expect(volver.disabled).toBe(false)
+  })
+
+  it('en motor nativo, "Aislar selección" exige selección y refleja el aislamiento con aria-pressed', async () => {
+    render(<App />)
+    expect(screen.queryByRole('button', { name: 'Aislar selección' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /R3F nativo/ }))
+    await screen.findByTestId('native-viewport')
+    const aislar = screen.getByRole('button', { name: 'Aislar selección' }) as HTMLButtonElement
+    expect(aislar.disabled).toBe(true)
+    expect(aislar.getAttribute('aria-pressed')).toBe('false')
+
+    act(() => useViewerStore.getState().selectComponent('bop'))
+    expect(aislar.disabled).toBe(false)
+
+    // Aislado: el botón queda habilitado y activo aunque se deseleccione (para poder restaurar).
+    act(() => useViewerStore.setState({ isolationSnapshot: [] }))
+    act(() => useViewerStore.getState().selectComponent(null))
+    expect(aislar.disabled).toBe(false)
+    expect(aislar.getAttribute('aria-pressed')).toBe('true')
   })
 
   it('el modo de la app se reenvía al visor V2 embebido por postMessage una vez que está listo', () => {

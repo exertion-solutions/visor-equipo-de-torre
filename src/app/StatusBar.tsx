@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { GRADE_LABELS, type GeometryGrade } from '@/lib/legacyBridge'
+import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
@@ -24,6 +25,8 @@ export function StatusBar() {
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
   const goBack = useViewerStore((s) => s.goBack)
+  const isolated = useViewerStore((s) => s.isolationSnapshot !== null)
+  const toggleIsolation = useViewerStore((s) => s.toggleIsolation)
 
   return (
     <footer
@@ -98,6 +101,18 @@ export function StatusBar() {
             className="shrink-0"
           >
             Volver
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={isolated ? 'secondary' : 'ghost'}
+            aria-pressed={isolated}
+            disabled={!hasNativeSelection && !isolated}
+            onClick={() => toggleIsolation(registeredComponentIds())}
+            title="Oculta todo salvo el componente seleccionado; otro clic restaura"
+            className="shrink-0"
+          >
+            Aislar selección
           </Button>
           <Button
             type="button"

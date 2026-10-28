@@ -2,6 +2,7 @@ import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from 'three'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   getComponentObject,
+  registeredComponentIds,
   registerComponentObject,
   resolveMeshes,
   resolveObjects,
@@ -19,6 +20,14 @@ describe('registro de objetos por componente', () => {
     expect(getComponentObject('a')).toBe(g)
     registerComponentObject('a', null)
     expect(getComponentObject('a')).toBeUndefined()
+  })
+
+  it('registeredComponentIds lista los ids montados', () => {
+    registerComponentObject('a', new Group())
+    registerComponentObject('b', new Group())
+    expect(registeredComponentIds().sort()).toEqual(['a', 'b'])
+    registerComponentObject('a', null)
+    expect(registeredComponentIds()).toEqual(['b'])
   })
 
   it('resolveObjects ignora null, ids desconocidos y repetidos', () => {
