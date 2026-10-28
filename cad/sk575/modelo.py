@@ -440,6 +440,45 @@ for y in (-0.87, 0.87):
     add("acero", bar((XTS, y, 0.34), M(XTS, y, ZB), 0.089))                                # gato de tornillo Ø7"
     add("acero_oscuro", Pos(XTS, y, 0.75) * Box(0.3, 0.3, 0.05))
 
+# casilla del maquinista: caja de chapa roja con techo plano, elevada a la altura del piso de trabajo en su extremo del lado del carrier,
+# junto a la base del mástil, con escalera de baranda amarilla que sube desde la cubierta del carrier. GEOMETRÍA C, aproximada, no
+# as-built: posición, alto y medidas leídos de fotos del equipo (escala por barandas, ruedas y personas), sin cotas de plano.
+comp("sk575_carrier/sk575_casilla")
+CX, YCAS, FLC, TOPC = -1.3, -1.8, 3.55, 5.9                             # centro X, centro Y, piso y techo (sobre el terreno)
+LC, WC = 1.4, 1.6                                                        # largo (X) y ancho (Y)
+shell = box(CX - LC / 2, CX + LC / 2, YCAS - WC / 2, YCAS + WC / 2, FLC, TOPC, f=0.02)
+shell -= box(CX - LC / 2 + 0.06, CX + LC / 2 - 0.06, YCAS - WC / 2 + 0.06, YCAS + WC / 2 - 0.06, FLC - 0.01, TOPC - 0.06)
+ventanas = [                                                                           # (plano del muro, eje, desde, hasta, z0, z1)
+    (YCAS - WC / 2, "y", CX - 0.4, CX + 0.4, FLC + 1.2, FLC + 2.0),                    # lado −Y (al exterior)
+    (YCAS + WC / 2, "y", CX - 0.4, CX + 0.4, FLC + 1.2, FLC + 2.0),                    # lado +Y (hacia el mástil)
+    (CX + LC / 2, "x", YCAS - 0.4, YCAS + 0.4, FLC + 1.2, FLC + 2.0),                  # lado +X (hacia el piso)
+]
+for pos, eje, a0, a1, z0, z1 in ventanas:
+    if eje == "x":
+        shell -= box(pos - 0.07, pos + 0.03, a0, a1, z0, z1)
+        add("vidrio", box(pos - 0.045, pos - 0.025, a0 + 0.01, a1 - 0.01, z0 + 0.01, z1 - 0.01))
+    else:
+        shell -= box(a0, a1, pos - 0.07, pos + 0.03, z0, z1)
+        add("vidrio", box(a0 + 0.01, a1 - 0.01, pos - 0.045, pos - 0.025, z0 + 0.01, z1 - 0.01))
+shell -= box(CX - LC / 2 - 0.03, CX - LC / 2 + 0.1, YCAS - 0.4, YCAS + 0.4, FLC, FLC + 1.8)    # puerta (lado −X, sobre el descanso)
+add("rojo", shell)
+add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, FLC - 0.14, FLC, f=0.02))   # piso
+add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, TOPC, TOPC + 0.08, f=0.02))  # techo
+add("luz", Pos(CX, YCAS, TOPC + 0.1) * Box(0.1, 0.12, 0.05))
+# patas al terreno (detrás del extremo del bastidor, fuera de los cilindros de izaje en y ±0,6) con un travesaño por lado, sin diagonales
+YI, YO = YCAS + WC / 2 - 0.3, YCAS - WC / 2 + 0.1
+for x in (CX - LC / 2 + 0.1, CX + LC / 2 - 0.1):
+    for y in (YI, YO):
+        add("rojo", bar((x, y, 0.0), (x, y, FLC - 0.14), 0.06, sq=True))
+        add("rojo", box(x - 0.2, x + 0.2, y - 0.2, y + 0.2, 0.0, 0.04))
+    add("rojo", bar((x, YI, FLC / 2), (x, YO, FLC / 2), 0.04, sq=True))
+# descanso frente a la puerta y escalera de baranda amarilla que sube desde la cubierta del carrier
+YE = -0.95
+add("grating", box(CX - LC / 2 - 0.6, CX - LC / 2, YCAS - 0.5, YE + 0.35, FLC - 0.04, FLC))
+railing([(CX - LC / 2 - 0.6, YCAS - 0.5, FLC), (CX - LC / 2 - 0.6, YE + 0.35, FLC)], h=0.95, step=1.2)
+railing([(CX - LC / 2, YCAS - 0.5, FLC), (CX - LC / 2 - 0.6, YCAS - 0.5, FLC)], h=0.95, step=1.2)
+stair((CX - LC / 2 - 0.6, YE, FLC), (CX - LC / 2 - 0.6 - 1.6, YE, ZK), 0.7, mat_str="rojo", paso=0.2)
+comp("sk575_carrier")
 comp("sk575_cuadro")
 # ───────────────────────── cuadro de maniobras DWA575-01 (X 226–376, hasta H 110") ─────────────────────────
 # Principal 42 × 12 (barril 16" × 38,75", eje 6,6", embrague Wichita ATD-324-H, 2 discos Kobelt 48" a aire),
@@ -1018,16 +1057,15 @@ for s in (-1, 1):                                                 # pisos latera
     for x in (X0 + 0.35, X0 + 1.3, X0 + 2.25):
         add("rojo", Pos(x, s * (YC + 0.03), ZP - 0.24) * (Box(0.1, 0.06, 0.1) - Rot(90, 0, 0) * Cylinder(0.013, 1)))
         add("acero", Pos(x, s * (YC + 0.03), ZP - 0.24) * Rot(90, 0, 0) * Cylinder(0.012, 0.11))   # perno
-# subestructura (layout: 5 m; altura 12'): columnas, patines y cruces en los laterales
+# subestructura (layout: 5 m; altura 12'): columnas, patines y travesaño en los laterales. SIN diagonales en X: se
+# dibujaban unos cruces entre las columnas (estimados, sin plano) y el responsable del proyecto indicó que no existen
+# en el equipo real. No se reemplazan por otra cosa: la subestructura sigue siendo una estimación (confianza C).
 for y in (-1.5, 1.5):
     add("rojo", Pos(0, 0, 0) * fillet(box(X0 - 0.2, X1 + 0.2, y - 0.15, y + 0.15, 0, 0.2).edges().filter_by(Axis.Y), 0.03))   # patín
     for x in (X0 + 0.08, X1 - 0.08):
         add("rojo", bar((x, y, 0.2), (x, y, ZP - 0.2), 0.075, sq=True))
-    for z0, z1 in ((0.25, ZP / 2), (ZP / 2, ZP - 0.25)):
-        add("rojo", bar((X0 + 0.15, y, z0), (X1 - 0.15, y, z1), 0.04, ang=(0, -y, 0)))
-        add("rojo", bar((X1 - 0.15, y, z0), (X0 + 0.15, y, z1), 0.04, ang=(0, -y, 0)))
     add("rojo", bar((X0 + 0.08, y, ZP / 2), (X1 - 0.08, y, ZP / 2), 0.05, ang=(0, 0, -1)))
-# pasarela lateral (−Y) que une las dos escaleras
+# pasarela lateral (−Y) a lo largo del piso, hacia la escalera
 add("acero", box(X0, X1, -2.5, -YL, ZP - 0.0048, ZP))
 add("rojo", upn((X0, -2.5, ZU), (X1, -2.5, ZU), (0, 1, 0)))
 for x in (X0, X1):
@@ -1036,7 +1074,7 @@ for x in (X0, X1):
 railing([(X1, 0.6, ZP), (X1, YL, ZP), (X0, YL, ZP), (X0, 0.95, ZP)])
 railing([(X1, -0.6, ZP), (X1, -YL, ZP)])
 railing([(X0, -2.5, ZP), (X1, -2.5, ZP)])
-stair((X1, -2.1, ZP), (X1 + ZP, -2.1, 0.0), 0.8, paso=0.18)                      # 45°, ancho 800 (plano escalera)
+# escalera del lado del carrier: sube desde la cubierta del carrier a la casilla (sub-nodo sk575_casilla)
 add("acero_oscuro", bar((WXP + LL_R + 0.055, 0, ZL + 0.31), (X1, 1.55, ZP + 1.1), 0.03))  # brazo de torque a la baranda
 manguera((WXP + 1.1, -0.15, ZL + 0.6), (WXP + 1.4, -1.2, ZP + 0.2), (X1 - 0.2, -1.5, ZP + 0.05), r=0.022)
 
@@ -1080,7 +1118,6 @@ rd = rb - ra
 add("grating", Plane(origin=(ra + rb) * 0.5, x_dir=rd, z_dir=Vector(-rd.Z, 0, rd.X)) * Box(rd.length, 1.2, 0.04))
 for y in (-0.6, 0.6):
     add("rojo", upn(tuple(ra + Vector(0, y, -0.1)), tuple(rb + Vector(0, y, -0.1)), (0, -1 if y > 0 else 1, 0), h=0.16))
-stair((X0, -2.1, ZP), (X0 - ZP, -2.1, 0.0), 0.8, paso=0.18)                         # lado carrier, 45°
 
 comp("sk575_tiros")
 # tiros dobles de tubing (2 × R2 ≈ 18,8 m) en el piso, entre los peines del piso de enganche

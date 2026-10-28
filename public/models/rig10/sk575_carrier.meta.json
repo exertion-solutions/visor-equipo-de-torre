@@ -2,7 +2,7 @@
   "id": "sk575_carrier",
   "confianza": "C",
   "alcance": "Carrier SK-575: bastidor 40 ft, 5 ejes, cabina, motor, tanques, gatos y T-sill",
-  "triangulos": 268486,
+  "triangulos": 276786,
   "materiales": [
     "acero",
     "acero_oscuro",
@@ -20,7 +20,7 @@
   "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
-    "segmentos": 26133,
+    "segmentos": 28182,
     "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
     "umbral_grados": 28,
     "excluye": [
@@ -40,6 +40,16 @@
       "alcance": "Cabina de manejo (one-man cab), vidrios, espejo, escalones y luces de techo (geometría C)"
     },
     {
+      "nombre": "sk575_casilla",
+      "origen": [
+        0,
+        0,
+        0
+      ],
+      "triangulos": 8300,
+      "alcance": "Casilla del maquinista: caja de chapa con techo plano y ventanas, elevada a la altura del piso de trabajo junto a la base del mástil, con patas y escalera con baranda desde la cubierta del carrier; geometría C aproximada, leída de fotos del equipo, no as-built"
+    },
+    {
       "nombre": "sk575_motor",
       "origen": [
         0,
@@ -53,9 +63,9 @@
   "publicado": {
     "archivo": "public/models/rig10/sk575_carrier.glb",
     "optimize": "npm run gltf:optimize -- sk575_carrier.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 268486,
-    "triangulos_publicados": 124260,
-    "segmentos_aristas": 26131,
+    "triangulos_origen": 276786,
+    "triangulos_publicados": 129716,
+    "segmentos_aristas": 28180,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }
 }
