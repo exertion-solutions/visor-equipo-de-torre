@@ -20,6 +20,10 @@ export function StatusBar() {
   const selection = useViewerStore((s) => (s.engine === 'legacy' ? s.selection : null))
   const edges = useViewerStore((s) => s.edges)
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
+  const hasNativeSelection = useViewerStore((s) => s.selectedComponentId !== null)
+  const canGoBack = useViewerStore((s) => s.canGoBack)
+  const focusSelected = useViewerStore((s) => s.focusSelected)
+  const goBack = useViewerStore((s) => s.goBack)
 
   return (
     <footer
@@ -72,17 +76,41 @@ export function StatusBar() {
       </span>
       <span className="hidden shrink-0 md:inline">Escala: 1 unidad = 1 m</span>
       {engine === 'native' && (
-        <Button
-          type="button"
-          size="xs"
-          variant={edges ? 'secondary' : 'ghost'}
-          aria-pressed={edges}
-          onClick={toggleEdges}
-          title="Sombreado con aristas (estilo CAD)"
-          className="ml-auto shrink-0"
-        >
-          Aristas
-        </Button>
+        <>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            disabled={!hasNativeSelection}
+            onClick={focusSelected}
+            title="Encuadra el componente seleccionado"
+            className="ml-auto shrink-0"
+          >
+            Enfocar
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            disabled={!canGoBack}
+            onClick={goBack}
+            title="Vuelve a la vista previa al enfoque"
+            className="shrink-0"
+          >
+            Volver
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={edges ? 'secondary' : 'ghost'}
+            aria-pressed={edges}
+            onClick={toggleEdges}
+            title="Sombreado con aristas (estilo CAD)"
+            className="shrink-0"
+          >
+            Aristas
+          </Button>
+        </>
       )}
       <Badge variant="outline" className={engine !== 'native' ? 'ml-auto shrink-0' : 'shrink-0'}>
         Motor: {ENGINE_LABELS[engine]}
