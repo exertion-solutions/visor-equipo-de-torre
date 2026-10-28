@@ -32,6 +32,16 @@ describe('RIG10_RIG', () => {
     expect(RIG10_SCENE.map((m) => m.componentId)).not.toContain('mastil')
   })
 
+  it('el piso de trabajo se dibuja una sola vez: lo dibuja sk575_piso, no la envolvente vieja piso_trabajo', () => {
+    const enEscena = RIG10_SCENE.map((m) => m.componentId)
+    expect(enEscena).toContain('sk575_piso')
+    expect(enEscena).not.toContain('piso_trabajo')
+    // Los datos de la envolvente (medidas del folleto y fuentes en conflicto) se conservan en el componente.
+    expect(
+      RIG10_RIG.components.find((c) => c.id === 'piso_trabajo')?.specifications.length,
+    ).toBeGreaterThan(0)
+  })
+
   it('cada GLB de la escena existe en public/', () => {
     for (const m of RIG10_SCENE) expect(GLBS_EN_PUBLIC.has(m.url), m.url).toBe(true)
   })

@@ -965,8 +965,10 @@ export interface SceneModel {
 
 /**
  * Componentes que se dibujan. `carrier_huella` y `layout_locacion` ya vienen en el marco de la boca de pozo.
- * `piso_trabajo` se centra en el origen del GLB: se ubica con la posición medida del layout (C).
  * `mastil` (envolvente vieja) NO se dibuja: su base no está documentada y no se inventa (ver cad/README.md).
+ * `piso_trabajo` (envolvente vieja: una placa de 2,6 × 3,3 m) NO se dibuja: el piso de trabajo es uno solo y lo dibuja
+ * `sk575_piso`. La placa quedaba como un segundo piso, más bajo y corrido ~1,5 m del real (su ubicación salía del
+ * layout, con el signo lateral sin confirmar). Sus datos y fuentes en conflicto siguen en el componente.
  * Los `sk575_*` (modelo de referencia, C) ya vienen en el marco de la boca de pozo, sin `position`.
  * `sk575_mastil` SÍ se dibuja: su base ahora está documentada (pozo a 76" del pie delantero, manual
  * derrick; inclinación 3,5° y base a 4 ft, placa API).
@@ -974,11 +976,5 @@ export interface SceneModel {
 export const RIG10_SCENE: readonly SceneModel[] = [
   { componentId: 'carrier_huella', url: '/models/rig10/carrier_huella.glb' },
   { componentId: 'layout_locacion', url: '/models/rig10/layout_locacion.glb' },
-  // CAD (x, y) = (1,95; −1,95) → glTF (x, z, −y): posición medida del layout, confianza C.
-  {
-    componentId: 'piso_trabajo',
-    url: '/models/rig10/piso_trabajo.glb',
-    position: [1.95, 0, 1.95],
-  },
   ...SK575_IDS.map((id) => ({ componentId: id, url: `/models/rig10/${id}.glb` })),
 ]
