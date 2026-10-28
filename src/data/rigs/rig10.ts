@@ -129,7 +129,7 @@ const SK575_COMPONENTS: Component[] = [
     'Carrier Service King SK-575',
     'carrier',
     ['src-sk575-spec', 'src-parts-sk575', 'src-manual-rigup', 'src-layout-2019'],
-    'Bastidor, 5 ejes, cabina, motor, tanques, gatos y T-sill a partir de cotas medidas sobre la vista CAD del Parts Manual (sin contrastar); detalles estimados.',
+    'Bastidor, 5 ejes, cabina, motor, tanques, gatos y T-sill a partir de cotas medidas sobre la vista CAD del Parts Manual (sin contrastar); detalles estimados. La casilla del maquinista (desmontable, fuera del carrier) es geometría aproximada con medidas y posición del visor V2, pendiente de validación; no es as-built.',
     [
       spec('model', 'Modelo', 'Service King SK-575', 'A', 'src-sk575-spec'),
       spec('axles', 'Ejes', 5, 'A', 'src-sk575-spec'),
