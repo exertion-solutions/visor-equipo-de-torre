@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { GRADE_LABELS, type GeometryGrade } from '@/lib/legacyBridge'
+import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
@@ -25,6 +26,8 @@ export function StatusBar() {
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
   const goBack = useViewerStore((s) => s.goBack)
+  const orthographic = useViewerStore((s) => s.projection === 'orthographic')
+  const toggleProjection = useViewerStore((s) => s.toggleProjection)
   const isolated = useViewerStore((s) => s.isolationSnapshot !== null)
   const toggleIsolation = useViewerStore((s) => s.toggleIsolation)
 
@@ -113,6 +116,17 @@ export function StatusBar() {
             className="shrink-0"
           >
             Aislar selección
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={orthographic ? 'secondary' : 'ghost'}
+            aria-pressed={orthographic}
+            onClick={toggleProjection}
+            title="Alterna entre proyección ortográfica y perspectiva (mismo encuadre)"
+            className="shrink-0"
+          >
+            {PROJECTION_LABELS.orthographic}
           </Button>
           <Button
             type="button"

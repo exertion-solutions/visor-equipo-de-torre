@@ -25,6 +25,7 @@ afterEach(() => {
     canGoBack: false,
     hiddenComponentIds: [],
     isolationSnapshot: null,
+    projection: 'perspective',
   })
 })
 
@@ -127,6 +128,24 @@ describe('App', () => {
     act(() => useViewerStore.getState().selectComponent(null))
     expect(aislar.disabled).toBe(false)
     expect(aislar.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('en motor nativo, "Ortográfica" alterna la proyección y refleja el estado con aria-pressed', async () => {
+    render(<App />)
+    expect(screen.queryByRole('button', { name: 'Ortográfica' })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /R3F nativo/ }))
+    await screen.findByTestId('native-viewport')
+    const ortografica = screen.getByRole('button', { name: 'Ortográfica' })
+    expect(ortografica.getAttribute('aria-pressed')).toBe('false')
+
+    fireEvent.click(ortografica)
+    expect(useViewerStore.getState().projection).toBe('orthographic')
+    expect(ortografica.getAttribute('aria-pressed')).toBe('true')
+
+    fireEvent.click(ortografica)
+    expect(useViewerStore.getState().projection).toBe('perspective')
+    expect(ortografica.getAttribute('aria-pressed')).toBe('false')
   })
 
   it('el modo de la app se reenvía al visor V2 embebido por postMessage una vez que está listo', () => {

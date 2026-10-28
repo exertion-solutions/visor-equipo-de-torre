@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { DEFAULT_PROJECTION } from '@/scene/cameras/projection'
 import {
   DEFAULT_ENGINE,
   ENGINE_LABELS,
@@ -83,6 +84,35 @@ describe('viewerStore', () => {
       useViewerStore.getState().setCanGoBack(true)
       useViewerStore.getState().goBack()
       expect(useViewerStore.getState().cameraCommand).toEqual({ type: 'back', seq: 2 })
+    })
+  })
+
+  describe('proyección', () => {
+    beforeEach(() => useViewerStore.setState({ projection: DEFAULT_PROJECTION }))
+
+    it('arranca en la proyección por defecto del nativo (perspectiva)', () => {
+      expect(DEFAULT_PROJECTION).toBe('perspective')
+      expect(useViewerStore.getState().projection).toBe('perspective')
+    })
+
+    it('alterna entre perspectiva y ortográfica', () => {
+      useViewerStore.getState().toggleProjection()
+      expect(useViewerStore.getState().projection).toBe('orthographic')
+      useViewerStore.getState().toggleProjection()
+      expect(useViewerStore.getState().projection).toBe('perspective')
+    })
+
+    it('setProjection fija la proyección pedida (lo usa "Volver" para restaurar la de antes del foco)', () => {
+      useViewerStore.getState().setProjection('orthographic')
+      useViewerStore.getState().setProjection('orthographic')
+      expect(useViewerStore.getState().projection).toBe('orthographic')
+    })
+
+    it('alternar no toca la selección ni el aislamiento', () => {
+      useViewerStore.setState({ selectedComponentId: 'bop', hiddenComponentIds: ['x'] })
+      useViewerStore.getState().toggleProjection()
+      expect(useViewerStore.getState().selectedComponentId).toBe('bop')
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual(['x'])
     })
   })
 
