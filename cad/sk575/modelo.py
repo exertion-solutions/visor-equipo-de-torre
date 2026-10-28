@@ -1018,14 +1018,13 @@ for s in (-1, 1):                                                 # pisos latera
     for x in (X0 + 0.35, X0 + 1.3, X0 + 2.25):
         add("rojo", Pos(x, s * (YC + 0.03), ZP - 0.24) * (Box(0.1, 0.06, 0.1) - Rot(90, 0, 0) * Cylinder(0.013, 1)))
         add("acero", Pos(x, s * (YC + 0.03), ZP - 0.24) * Rot(90, 0, 0) * Cylinder(0.012, 0.11))   # perno
-# subestructura (layout: 5 m; altura 12'): columnas, patines y cruces en los laterales
+# subestructura (layout: 5 m; altura 12'): columnas, patines y travesaño en los laterales. SIN diagonales en X: se
+# dibujaban unos cruces entre las columnas (estimados, sin plano) y el responsable del proyecto indicó que no existen
+# en el equipo real. No se reemplazan por otra cosa: la subestructura sigue siendo una estimación (confianza C).
 for y in (-1.5, 1.5):
     add("rojo", Pos(0, 0, 0) * fillet(box(X0 - 0.2, X1 + 0.2, y - 0.15, y + 0.15, 0, 0.2).edges().filter_by(Axis.Y), 0.03))   # patín
     for x in (X0 + 0.08, X1 - 0.08):
         add("rojo", bar((x, y, 0.2), (x, y, ZP - 0.2), 0.075, sq=True))
-    for z0, z1 in ((0.25, ZP / 2), (ZP / 2, ZP - 0.25)):
-        add("rojo", bar((X0 + 0.15, y, z0), (X1 - 0.15, y, z1), 0.04, ang=(0, -y, 0)))
-        add("rojo", bar((X1 - 0.15, y, z0), (X0 + 0.15, y, z1), 0.04, ang=(0, -y, 0)))
     add("rojo", bar((X0 + 0.08, y, ZP / 2), (X1 - 0.08, y, ZP / 2), 0.05, ang=(0, 0, -1)))
 # pasarela lateral (−Y) que une las dos escaleras
 add("acero", box(X0, X1, -2.5, -YL, ZP - 0.0048, ZP))
