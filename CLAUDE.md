@@ -64,6 +64,7 @@ Tailwind 4 · shadcn/ui (radix, estilo nova) · Vitest 5 · ESLint 10 · Prettie
 ```
 npm run dev | build | preview | typecheck | lint | format
 npm test              # legacy (node --test tests/) + unit (vitest, src/**)
+npm run test:e2e      # e2e del V2 y del motor nativo (Chrome instalado; E2E_CHROME=/ruta usa otro Chrome/Chromium)
 npm run gltf:inspect -- assets/source/x.glb
 npm run gltf:optimize -- x.glb        # → public/models/rig10/x.glb, original intacto
 npm run assets:decoders               # refresca public/decoders desde three
