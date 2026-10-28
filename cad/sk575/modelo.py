@@ -440,18 +440,18 @@ for y in (-0.87, 0.87):
     add("acero", bar((XTS, y, 0.34), M(XTS, y, ZB), 0.089))                                # gato de tornillo Ø7"
     add("acero_oscuro", Pos(XTS, y, 0.75) * Box(0.3, 0.3, 0.05))
 
-# casilla del maquinista: caja de chapa roja, techo plano y ventanas rectangulares, elevada sobre la cubierta trasera del carrier, junto
-# a la base del mástil, con escalera de baranda amarilla desde la cubierta. GEOMETRÍA C, aproximada, no as-built: posición, alto y
-# medidas leídos de fotos de referencia (equipos de la misma familia, escala por ruedas y personas), sin cotas de plano.
+# casilla del maquinista: caja de chapa roja con techo plano, elevada a la altura del piso de trabajo en su extremo del lado del carrier,
+# junto a la base del mástil, con escalera de baranda amarilla que sube desde la cubierta del carrier. GEOMETRÍA C, aproximada, no
+# as-built: posición, alto y medidas leídos de fotos del equipo (escala por barandas, ruedas y personas), sin cotas de plano.
 comp("sk575_carrier/sk575_casilla")
-CX, YCAS, FLC, TOPC = -5.2, -2.1, 3.5, 5.9                              # centro X, centro Y, piso y techo (sobre el terreno)
-LC, WC = 2.0, 1.6                                                        # largo (X) y ancho (Y)
+CX, YCAS, FLC, TOPC = -1.3, -1.8, 3.55, 5.9                             # centro X, centro Y, piso y techo (sobre el terreno)
+LC, WC = 1.4, 1.6                                                        # largo (X) y ancho (Y)
 shell = box(CX - LC / 2, CX + LC / 2, YCAS - WC / 2, YCAS + WC / 2, FLC, TOPC, f=0.02)
 shell -= box(CX - LC / 2 + 0.06, CX + LC / 2 - 0.06, YCAS - WC / 2 + 0.06, YCAS + WC / 2 - 0.06, FLC - 0.01, TOPC - 0.06)
 ventanas = [                                                                           # (plano del muro, eje, desde, hasta, z0, z1)
-    (CX + LC / 2, "x", YCAS - 0.55, YCAS + 0.55, FLC + 0.85, FLC + 1.75),             # frente (mira al mástil)
-    (YCAS - WC / 2, "y", CX - 0.85, CX - 0.1, FLC + 0.85, FLC + 1.75),                # lado −Y (junto a la puerta)
-    (YCAS + WC / 2, "y", CX - 0.6, CX + 0.6, FLC + 0.85, FLC + 1.75),                  # lado +Y (hacia el carrier)
+    (YCAS - WC / 2, "y", CX - 0.4, CX + 0.4, FLC + 1.2, FLC + 2.0),                    # lado −Y (al exterior)
+    (YCAS + WC / 2, "y", CX - 0.4, CX + 0.4, FLC + 1.2, FLC + 2.0),                    # lado +Y (hacia el mástil)
+    (CX + LC / 2, "x", YCAS - 0.4, YCAS + 0.4, FLC + 1.2, FLC + 2.0),                  # lado +X (hacia el piso)
 ]
 for pos, eje, a0, a1, z0, z1 in ventanas:
     if eje == "x":
@@ -460,24 +460,24 @@ for pos, eje, a0, a1, z0, z1 in ventanas:
     else:
         shell -= box(a0, a1, pos - 0.07, pos + 0.03, z0, z1)
         add("vidrio", box(a0 + 0.01, a1 - 0.01, pos - 0.045, pos - 0.025, z0 + 0.01, z1 - 0.01))
-shell -= box(CX + 0.1, CX + 0.8, YCAS - WC / 2 - 0.03, YCAS - WC / 2 + 0.1, FLC, FLC + 1.8)    # puerta (lado −Y, sobre el descanso)
+shell -= box(CX - LC / 2 - 0.03, CX - LC / 2 + 0.1, YCAS - 0.4, YCAS + 0.4, FLC, FLC + 1.8)    # puerta (lado −X, sobre el descanso)
 add("rojo", shell)
 add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, FLC - 0.14, FLC, f=0.02))   # piso
 add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, TOPC, TOPC + 0.08, f=0.02))  # techo
-add("luz", Pos(CX + LC / 2 - 0.15, YCAS, TOPC + 0.1) * Box(0.1, 0.12, 0.05))
-# estructura de apoyo, fuera de los cilindros de izaje (y ±0,6): patas internas sobre el borde de la cubierta y externas al terreno,
-# con un travesaño horizontal por lado, sin diagonales
-YI, YO = YCAS + WC / 2 - 0.1, YCAS - WC / 2 + 0.1
+add("luz", Pos(CX, YCAS, TOPC + 0.1) * Box(0.1, 0.12, 0.05))
+# patas al terreno (detrás del extremo del bastidor, fuera de los cilindros de izaje en y ±0,6) con un travesaño por lado, sin diagonales
+YI, YO = YCAS + WC / 2 - 0.3, YCAS - WC / 2 + 0.1
 for x in (CX - LC / 2 + 0.1, CX + LC / 2 - 0.1):
-    add("rojo", bar((x, YI, ZK), (x, YI, FLC - 0.14), 0.06, sq=True))
-    add("rojo", bar((x, YO, 0.0), (x, YO, FLC - 0.14), 0.06, sq=True))
-    add("rojo", bar((x, YI, (ZK + FLC) / 2), (x, YO, (ZK + FLC) / 2), 0.04, sq=True))
-    add("rojo", box(x - 0.2, x + 0.2, YO - 0.2, YO + 0.2, 0.0, 0.04))
-# descanso y escalera de baranda amarilla por fuera del muro −Y, bajando hacia el frente del carrier
-YE = YCAS - WC / 2 - 0.5
-add("grating", box(CX - 0.2, CX + LC / 2, YE - 0.5, YCAS - WC / 2, FLC - 0.04, FLC))
-railing([(CX - 0.2, YCAS - WC / 2, FLC), (CX - 0.2, YE - 0.5, FLC), (CX + LC / 2, YE - 0.5, FLC)], h=0.95, step=1.2)
-stair((CX - 0.2, YE, FLC), (CX - 0.2 - FLC / 1.73, YE, 0.0), 0.8, mat_str="rojo", paso=0.2)
+    for y in (YI, YO):
+        add("rojo", bar((x, y, 0.0), (x, y, FLC - 0.14), 0.06, sq=True))
+        add("rojo", box(x - 0.2, x + 0.2, y - 0.2, y + 0.2, 0.0, 0.04))
+    add("rojo", bar((x, YI, FLC / 2), (x, YO, FLC / 2), 0.04, sq=True))
+# descanso frente a la puerta y escalera de baranda amarilla que sube desde la cubierta del carrier
+YE = -0.95
+add("grating", box(CX - LC / 2 - 0.6, CX - LC / 2, YCAS - 0.5, YE + 0.35, FLC - 0.04, FLC))
+railing([(CX - LC / 2 - 0.6, YCAS - 0.5, FLC), (CX - LC / 2 - 0.6, YE + 0.35, FLC)], h=0.95, step=1.2)
+railing([(CX - LC / 2, YCAS - 0.5, FLC), (CX - LC / 2 - 0.6, YCAS - 0.5, FLC)], h=0.95, step=1.2)
+stair((CX - LC / 2 - 0.6, YE, FLC), (CX - LC / 2 - 0.6 - 1.6, YE, ZK), 0.7, mat_str="rojo", paso=0.2)
 comp("sk575_carrier")
 comp("sk575_cuadro")
 # ───────────────────────── cuadro de maniobras DWA575-01 (X 226–376, hasta H 110") ─────────────────────────
@@ -1074,8 +1074,7 @@ for x in (X0, X1):
 railing([(X1, 0.6, ZP), (X1, YL, ZP), (X0, YL, ZP), (X0, 0.95, ZP)])
 railing([(X1, -0.6, ZP), (X1, -YL, ZP)])
 railing([(X0, -2.5, ZP), (X1, -2.5, ZP)])
-# única escalera del piso: sale del lado del carrier, hacia la cabina; del lado de la planchada no hay (indicación del usuario)
-stair((X0, -2.1, ZP), (X0 - ZP, -2.1, 0.0), 0.8, paso=0.18)                         # 45°, ancho 800 (plano escalera)
+# escalera del lado del carrier: sube desde la cubierta del carrier a la casilla (sub-nodo sk575_casilla)
 add("acero_oscuro", bar((WXP + LL_R + 0.055, 0, ZL + 0.31), (X1, 1.55, ZP + 1.1), 0.03))  # brazo de torque a la baranda
 manguera((WXP + 1.1, -0.15, ZL + 0.6), (WXP + 1.4, -1.2, ZP + 0.2), (X1 - 0.2, -1.5, ZP + 0.05), r=0.022)
 
