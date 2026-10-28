@@ -27,7 +27,7 @@
     "archivo": "public/models/rig10/sk575_piso.glb",
     "optimize": "npm run gltf:optimize -- sk575_piso.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
     "triangulos_origen": 20904,
-    "triangulos_publicados": 15630,
+    "triangulos_publicados": 16008,
     "segmentos_aristas": 6522,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }

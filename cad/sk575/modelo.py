@@ -1026,7 +1026,7 @@ for y in (-1.5, 1.5):
     for x in (X0 + 0.08, X1 - 0.08):
         add("rojo", bar((x, y, 0.2), (x, y, ZP - 0.2), 0.075, sq=True))
     add("rojo", bar((X0 + 0.08, y, ZP / 2), (X1 - 0.08, y, ZP / 2), 0.05, ang=(0, 0, -1)))
-# pasarela lateral (−Y) que une las dos escaleras
+# pasarela lateral (−Y) a lo largo del piso, hacia la escalera
 add("acero", box(X0, X1, -2.5, -YL, ZP - 0.0048, ZP))
 add("rojo", upn((X0, -2.5, ZU), (X1, -2.5, ZU), (0, 1, 0)))
 for x in (X0, X1):
@@ -1035,7 +1035,8 @@ for x in (X0, X1):
 railing([(X1, 0.6, ZP), (X1, YL, ZP), (X0, YL, ZP), (X0, 0.95, ZP)])
 railing([(X1, -0.6, ZP), (X1, -YL, ZP)])
 railing([(X0, -2.5, ZP), (X1, -2.5, ZP)])
-stair((X1, -2.1, ZP), (X1 + ZP, -2.1, 0.0), 0.8, paso=0.18)                      # 45°, ancho 800 (plano escalera)
+# única escalera del piso: sale del lado del carrier, hacia la cabina; del lado de la planchada no hay (indicación del usuario)
+stair((X0, -2.1, ZP), (X0 - ZP, -2.1, 0.0), 0.8, paso=0.18)                         # 45°, ancho 800 (plano escalera)
 add("acero_oscuro", bar((WXP + LL_R + 0.055, 0, ZL + 0.31), (X1, 1.55, ZP + 1.1), 0.03))  # brazo de torque a la baranda
 manguera((WXP + 1.1, -0.15, ZL + 0.6), (WXP + 1.4, -1.2, ZP + 0.2), (X1 - 0.2, -1.5, ZP + 0.05), r=0.022)
 
@@ -1079,7 +1080,6 @@ rd = rb - ra
 add("grating", Plane(origin=(ra + rb) * 0.5, x_dir=rd, z_dir=Vector(-rd.Z, 0, rd.X)) * Box(rd.length, 1.2, 0.04))
 for y in (-0.6, 0.6):
     add("rojo", upn(tuple(ra + Vector(0, y, -0.1)), tuple(rb + Vector(0, y, -0.1)), (0, -1 if y > 0 else 1, 0), h=0.16))
-stair((X0, -2.1, ZP), (X0 - ZP, -2.1, 0.0), 0.8, paso=0.18)                         # lado carrier, 45°
 
 comp("sk575_tiros")
 # tiros dobles de tubing (2 × R2 ≈ 18,8 m) en el piso, entre los peines del piso de enganche

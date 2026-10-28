@@ -2,11 +2,10 @@
   "id": "sk575_planchada",
   "confianza": "C",
   "alcance": "Planchada 12 m, rampa de la V, caballetes y línea de alta presión",
-  "triangulos": 90032,
+  "triangulos": 87452,
   "materiales": [
     "acero",
     "acero_oscuro",
-    "amarillo",
     "azul",
     "grating",
     "rojo"
@@ -15,7 +14,7 @@
   "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
-    "segmentos": 5592,
+    "segmentos": 4680,
     "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
     "umbral_grados": 28,
     "excluye": [
@@ -26,9 +25,9 @@
   "publicado": {
     "archivo": "public/models/rig10/sk575_planchada.glb",
     "optimize": "npm run gltf:optimize -- sk575_planchada.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 90032,
-    "triangulos_publicados": 27202,
-    "segmentos_aristas": 5592,
+    "triangulos_origen": 87452,
+    "triangulos_publicados": 24626,
+    "segmentos_aristas": 4410,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }
 }
