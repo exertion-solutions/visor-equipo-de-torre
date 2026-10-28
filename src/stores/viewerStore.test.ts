@@ -86,6 +86,78 @@ describe('viewerStore', () => {
     })
   })
 
+  describe('aislamiento', () => {
+    const ALL = ['mastil', 'bop', 'carrier', 'piletas'] as const
+    beforeEach(() =>
+      useViewerStore.setState({
+        selectedComponentId: null,
+        hoveredComponentId: null,
+        hiddenComponentIds: [],
+        isolationSnapshot: null,
+      }),
+    )
+
+    it('sin selección no hace nada', () => {
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual([])
+      expect(useViewerStore.getState().isolationSnapshot).toBeNull()
+    })
+
+    it('con una selección que no está en la escena no oculta nada', () => {
+      useViewerStore.getState().selectComponent('otro')
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual([])
+      expect(useViewerStore.getState().isolationSnapshot).toBeNull()
+    })
+
+    it('aísla: oculta todo salvo el seleccionado y conserva la selección', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().toggleIsolation(ALL)
+      const s = useViewerStore.getState()
+      expect(s.hiddenComponentIds).toEqual(['mastil', 'carrier', 'piletas'])
+      expect(s.isolationSnapshot).toEqual([])
+      expect(s.selectedComponentId).toBe('bop')
+    })
+
+    it('un segundo toggle restaura el estado inicial', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().toggleIsolation(ALL)
+      useViewerStore.getState().toggleIsolation(ALL)
+      const s = useViewerStore.getState()
+      expect(s.hiddenComponentIds).toEqual([])
+      expect(s.isolationSnapshot).toBeNull()
+    })
+
+    it('restaura también lo que ya estaba oculto antes de aislar', () => {
+      useViewerStore.setState({ hiddenComponentIds: ['piletas'] })
+      useViewerStore.getState().selectComponent('mastil')
+      useViewerStore.getState().toggleIsolation(ALL)
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual(['piletas'])
+    })
+
+    it('deseleccionar no sale del aislamiento y el toggle sigue restaurando', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().toggleIsolation(ALL)
+      useViewerStore.getState().selectComponent(null)
+      expect(useViewerStore.getState().isolationSnapshot).not.toBeNull()
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual([])
+    })
+
+    it('limpia el hover de un componente que queda oculto, pero no el del que sigue visible', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().hoverComponent('carrier')
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hoveredComponentId).toBeNull()
+
+      useViewerStore.setState({ hiddenComponentIds: [], isolationSnapshot: null })
+      useViewerStore.getState().hoverComponent('bop')
+      useViewerStore.getState().toggleIsolation(ALL)
+      expect(useViewerStore.getState().hoveredComponentId).toBe('bop')
+    })
+  })
+
   it('isViewerEngine rechaza valores inválidos', () => {
     expect(isViewerEngine('native')).toBe(true)
     expect(isViewerEngine('threejs')).toBe(false)
