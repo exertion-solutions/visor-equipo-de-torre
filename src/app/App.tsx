@@ -11,6 +11,8 @@ import { useUrlSync } from './urlSync'
 const Viewport = lazy(() =>
   import('@/components/viewer/Viewport').then((m) => ({ default: m.Viewport })),
 )
+// Ficha y tooltip traen los datos del equipo: también se cargan aparte.
+const NativeOverlay = lazy(() => import('./NativeOverlay'))
 
 export function App() {
   const engine = useViewerStore((s) => s.engine)
@@ -27,6 +29,7 @@ export function App() {
             <>
               <Suspense fallback={null}>
                 <Viewport />
+                <NativeOverlay />
               </Suspense>
               <p
                 role="status"
