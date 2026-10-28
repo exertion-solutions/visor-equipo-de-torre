@@ -237,7 +237,7 @@ def exportar(solo=None):
 
 SUBNODOS = {
     "sk575_cabina": "Cabina de manejo (one-man cab), vidrios, espejo, escalones y luces de techo (geometría C)",
-    "sk575_casilla": "Casilla del maquinista (desmontable): caja de chapa con techo plano, ventanas, ménsulas del bastidor y escalera con baranda; geometría C aproximada, medidas y posición del visor V2 (pendingValidation), no as-built",
+    "sk575_casilla": "Casilla del maquinista: caja de chapa con techo plano y ventanas, elevada sobre la cubierta trasera del carrier junto a la base del mástil, con patas y escalera con baranda; geometría C aproximada, leída de fotos de referencia, no as-built",
     "sk575_motor": "Motor Detroit S60 bajo capot, radiador, filtro de aire, escape, transmisión Allison y cardán (C)",
     "sk575_enganche": "Piso de enganche a 68' (20,629 m, plano del mástil) con peines, baranda y cartel; origen = bisagra del borde "
                       "interior (eje lateral, pivote del plegado ilustrativo del visor); va con el 2.º "

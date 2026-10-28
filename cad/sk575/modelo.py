@@ -440,17 +440,18 @@ for y in (-0.87, 0.87):
     add("acero", bar((XTS, y, 0.34), M(XTS, y, ZB), 0.089))                                # gato de tornillo Ø7"
     add("acero_oscuro", Pos(XTS, y, 0.75) * Box(0.3, 0.3, 0.05))
 
-# casilla del maquinista (desmontable): caja de chapa roja con techo plano y ventanas rectangulares, fuera del carrier del lado de la
-# escalera del piso (−Y), sobre ménsulas del bastidor, con escalera de baranda amarilla. GEOMETRÍA C, aproximada, no as-built:
-# medidas y posición tomadas del visor V2 (dato del usuario, pendingValidation) y de fotos de referencia; sin cotas de plano.
+# casilla del maquinista: caja de chapa roja, techo plano y ventanas rectangulares, elevada sobre la cubierta trasera del carrier, junto
+# a la base del mástil, con escalera de baranda amarilla desde la cubierta. GEOMETRÍA C, aproximada, no as-built: posición, alto y
+# medidas leídos de fotos de referencia (equipos de la misma familia, escala por ruedas y personas), sin cotas de plano.
 comp("sk575_carrier/sk575_casilla")
-CX, YCAS, FLC, TOPC = -5.0, -3.45, 1.85, 3.75                           # centro X, centro Y, piso y techo (sobre el terreno)
-shell = box(CX - 1.0, CX + 1.0, YCAS - 1.1, YCAS + 1.1, FLC, TOPC, f=0.02)
-shell -= box(CX - 0.94, CX + 0.94, YCAS - 1.04, YCAS + 1.04, FLC - 0.01, TOPC - 0.06)
-ventanas = [                                                                           # (caja de corte, vidrio) en el espesor del muro
-    (CX + 1.0, "x", YCAS - 0.85, YCAS + 0.85, 2.5, 3.4),                              # frente (mira al mástil)
-    (YCAS - 1.1, "y", CX - 0.9, CX - 0.15, 2.55, 3.35),                               # lado −Y
-    (YCAS + 1.1, "y", CX - 0.6, CX + 0.65, 2.55, 3.35),                               # lado +Y (hacia el carrier)
+CX, YCAS, FLC, TOPC = -5.2, -2.1, 3.5, 5.9                              # centro X, centro Y, piso y techo (sobre el terreno)
+LC, WC = 2.0, 1.6                                                        # largo (X) y ancho (Y)
+shell = box(CX - LC / 2, CX + LC / 2, YCAS - WC / 2, YCAS + WC / 2, FLC, TOPC, f=0.02)
+shell -= box(CX - LC / 2 + 0.06, CX + LC / 2 - 0.06, YCAS - WC / 2 + 0.06, YCAS + WC / 2 - 0.06, FLC - 0.01, TOPC - 0.06)
+ventanas = [                                                                           # (plano del muro, eje, desde, hasta, z0, z1)
+    (CX + LC / 2, "x", YCAS - 0.55, YCAS + 0.55, FLC + 0.85, FLC + 1.75),             # frente (mira al mástil)
+    (YCAS - WC / 2, "y", CX - 0.85, CX - 0.1, FLC + 0.85, FLC + 1.75),                # lado −Y (junto a la puerta)
+    (YCAS + WC / 2, "y", CX - 0.6, CX + 0.6, FLC + 0.85, FLC + 1.75),                  # lado +Y (hacia el carrier)
 ]
 for pos, eje, a0, a1, z0, z1 in ventanas:
     if eje == "x":
@@ -459,21 +460,24 @@ for pos, eje, a0, a1, z0, z1 in ventanas:
     else:
         shell -= box(a0, a1, pos - 0.07, pos + 0.03, z0, z1)
         add("vidrio", box(a0 + 0.01, a1 - 0.01, pos - 0.045, pos - 0.025, z0 + 0.01, z1 - 0.01))
-shell -= box(CX + 0.0, CX + 0.75, YCAS - 1.13, YCAS - 1.03, FLC, FLC + 1.75)                 # puerta (lado −Y, sobre el descanso)
+shell -= box(CX + 0.1, CX + 0.8, YCAS - WC / 2 - 0.03, YCAS - WC / 2 + 0.1, FLC, FLC + 1.8)    # puerta (lado −Y, sobre el descanso)
 add("rojo", shell)
-add("rojo", box(CX - 1.15, CX + 1.15, YCAS - 1.25, YCAS + 1.25, FLC - 0.12, FLC, f=0.02))   # piso / plataforma
-add("rojo", box(CX - 1.1, CX + 1.1, YCAS - 1.2, YCAS + 1.2, TOPC, TOPC + 0.08, f=0.02))     # techo plano con alero
-add("luz", Pos(CX + 0.9, YCAS, TOPC + 0.1) * Box(0.1, 0.12, 0.05))
-# ménsulas del bastidor y apoyos al terreno
-for x in (CX - 0.7, CX + 0.7):
-    add("acero_oscuro", bar((x, -HW, 1.2), (x, YCAS - 1.2, 1.2), 0.07, sq=True))
-    add("acero_oscuro", bar((x, YCAS - 1.1, 0.05), (x, YCAS - 1.1, 1.2), 0.07, sq=True))
-    add("acero_oscuro", box(x - 0.2, x + 0.2, YCAS - 1.3, YCAS - 0.9, 0.0, 0.05))
-# descanso y escalera de baranda amarilla (45°) del lado −Y
-YE = YCAS - 1.25 - 0.45
-add("grating", box(CX - 0.2, CX + 0.9, YCAS - 1.25 - 0.9, YCAS - 1.25, FLC - 0.04, FLC))
-railing([(CX - 0.2, YCAS - 1.25, FLC), (CX - 0.2, YE - 0.45, FLC), (CX + 0.9, YE - 0.45, FLC)], h=0.95, step=1.2)
-stair((CX + 0.9, YE, FLC), (CX + 0.9 + FLC, YE, 0.0), 0.8, mat_str="acero_oscuro", paso=0.18)
+add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, FLC - 0.14, FLC, f=0.02))   # piso
+add("rojo", box(CX - LC / 2 - 0.08, CX + LC / 2 + 0.08, YCAS - WC / 2 - 0.08, YCAS + WC / 2 + 0.08, TOPC, TOPC + 0.08, f=0.02))  # techo
+add("luz", Pos(CX + LC / 2 - 0.15, YCAS, TOPC + 0.1) * Box(0.1, 0.12, 0.05))
+# estructura de apoyo, fuera de los cilindros de izaje (y ±0,6): patas internas sobre el borde de la cubierta y externas al terreno,
+# con un travesaño horizontal por lado, sin diagonales
+YI, YO = YCAS + WC / 2 - 0.1, YCAS - WC / 2 + 0.1
+for x in (CX - LC / 2 + 0.1, CX + LC / 2 - 0.1):
+    add("rojo", bar((x, YI, ZK), (x, YI, FLC - 0.14), 0.06, sq=True))
+    add("rojo", bar((x, YO, 0.0), (x, YO, FLC - 0.14), 0.06, sq=True))
+    add("rojo", bar((x, YI, (ZK + FLC) / 2), (x, YO, (ZK + FLC) / 2), 0.04, sq=True))
+    add("rojo", box(x - 0.2, x + 0.2, YO - 0.2, YO + 0.2, 0.0, 0.04))
+# descanso y escalera de baranda amarilla por fuera del muro −Y, bajando hacia el frente del carrier
+YE = YCAS - WC / 2 - 0.5
+add("grating", box(CX - 0.2, CX + LC / 2, YE - 0.5, YCAS - WC / 2, FLC - 0.04, FLC))
+railing([(CX - 0.2, YCAS - WC / 2, FLC), (CX - 0.2, YE - 0.5, FLC), (CX + LC / 2, YE - 0.5, FLC)], h=0.95, step=1.2)
+stair((CX - 0.2, YE, FLC), (CX - 0.2 - FLC / 1.73, YE, 0.0), 0.8, mat_str="rojo", paso=0.2)
 comp("sk575_carrier")
 comp("sk575_cuadro")
 # ───────────────────────── cuadro de maniobras DWA575-01 (X 226–376, hasta H 110") ─────────────────────────
