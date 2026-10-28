@@ -69,14 +69,34 @@ const abrir = async (viewport = { width: 1280, height: 760 }) => {
   await page.waitForFunction(() => window.__rigNativo?.estado().componentes.length > 0, null, {
     timeout: 120_000,
   })
+  // La primera carga renderiza una ráfaga de cuadros (compilación de shaders por software, efectos al quedar quieta la
+  // cámara). Se espera a que la escena esté quieta antes de interactuar: así un clic no compite con esa ráfaga.
+  let previo = -1
+  let iguales = 0
+  for (let i = 0; i < 120 && iguales < 6; i++) {
+    await page.waitForTimeout(250)
+    const { cuadros } = await estado(page)
+    iguales = cuadros === previo ? iguales + 1 : 0
+    previo = cuadros
+  }
   return page
 }
 
-const cerrar = async (page) => {
-  const vistos = [...problemas]
-  await page.close()
-  assert.deepEqual(vistos, [], 'errores de consola del motor nativo')
-}
+/**
+ * Una prueba con su propia página: se cierra siempre (aunque falle, para no dejar una escena renderizando que compita por
+ * CPU con la siguiente) y, si la prueba pasó, no debe haber errores de consola del motor nativo.
+ */
+const prueba = (nombre, fn) =>
+  test(nombre, async (t) => {
+    if (skip) return t.skip(skip)
+    const page = await abrir()
+    try {
+      await fn(page)
+      assert.deepEqual([...problemas], [], 'errores de consola del motor nativo')
+    } finally {
+      await page.close()
+    }
+  })
 
 const estado = (page) => page.evaluate(() => window.__rigNativo.estado())
 const cajas = (page) => page.evaluate(() => window.__rigNativo.cajas())
@@ -113,156 +133,223 @@ const altoFoco = (t) => Math.max(4, Math.max(t[1], t[0] * 0.75, t[2] * 0.75) * 1
 const mismoConjunto = (a, b, msg) => assert.deepEqual([...a].sort(), [...b].sort(), msg)
 const distancia = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
-test('el motor nativo arranca en perspectiva, con los componentes montados y los controles sin efecto hasta elegir uno', async (t) => {
-  if (skip) return t.skip(skip)
-  const page = await abrir()
-  const e = await estado(page)
-  assert.equal(e.camara.tipo, 'PerspectiveCamera')
-  assert.ok(e.componentes.length >= 16, `componentes montados: ${e.componentes.length}`)
-  assert.ok(e.componentes.includes(MASTIL) && e.componentes.includes(LEJANO))
-  assert.deepEqual(e.visibles, e.componentes, 'al arrancar se dibuja todo')
-  assert.equal(e.tienda.seleccionado, null)
-  for (const n of ['Enfocar', 'Volver', 'Aislar selección'])
-    assert.equal(await boton(page, n).isDisabled(), true, `${n} deshabilitado sin selección`)
-  assert.equal(await boton(page, 'Ortográfica').getAttribute('aria-pressed'), 'false')
-  await cerrar(page)
+prueba(
+  'el motor nativo arranca en perspectiva, con los componentes montados y los controles sin efecto hasta elegir uno',
+  async (page) => {
+    const e = await estado(page)
+    assert.equal(e.camara.tipo, 'PerspectiveCamera')
+    assert.ok(e.componentes.length >= 16, `componentes montados: ${e.componentes.length}`)
+    assert.ok(e.componentes.includes(MASTIL) && e.componentes.includes(LEJANO))
+    assert.deepEqual(e.visibles, e.componentes, 'al arrancar se dibuja todo')
+    assert.equal(e.tienda.seleccionado, null)
+    for (const n of ['Enfocar', 'Volver', 'Aislar selección'])
+      assert.equal(await boton(page, n).isDisabled(), true, `${n} deshabilitado sin selección`)
+    assert.equal(await boton(page, 'Ortográfica').getAttribute('aria-pressed'), 'false')
+  },
+)
+
+prueba(
+  'foco de cámara: encuadra el componente (distancia del V2), el segundo foco no pisa la vista y "Volver" la restaura',
+  async (page) => {
+    const inicial = (await estado(page)).camara
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+    const { centro, tamano } = (await cajas(page))[MASTIL]
+    await boton(page, 'Enfocar').click()
+    // Se espera el estado final concreto (no "que nada cambie": con un cuadro lento la cámara puede seguir en su estado inicial).
+    const foco = await hasta(
+      page,
+      (e) =>
+        cerca(e.camara.objetivo, centro, 1e-3) &&
+        Math.abs(distancia(e.camara.posicion, e.camara.objetivo) - distanciaFoco(tamano)) < 1e-3,
+    )
+    assert.equal(foco.tienda.puedeVolver, true)
+
+    // Un segundo foco no reemplaza la vista guardada: "Volver" sigue llevando a la vista inicial.
+    await boton(page, 'Enfocar').click()
+    await page.waitForTimeout(500)
+    await boton(page, 'Volver').click()
+    const vuelta = await hasta(
+      page,
+      (e) =>
+        cerca(e.camara.posicion, inicial.posicion, 1e-3) &&
+        cerca(e.camara.objetivo, inicial.objetivo, 1e-3),
+    )
+    assert.equal(vuelta.tienda.puedeVolver, false)
+  },
+)
+
+prueba(
+  'aislamiento: deja solo el seleccionado, los ocultos no responden a hover ni a clic y restaurar devuelve el estado inicial',
+  async (page) => {
+    const antes = await estado(page)
+    const lejano = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), LEJANO)
+    assert.ok(lejano, 'punto clicable del componente lejano, con todo visible')
+
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+    await boton(page, 'Aislar selección').click()
+    const aislado = await hasta(page, (e) => e.tienda.aislado)
+    assert.deepEqual(aislado.visibles, [MASTIL], 'solo se dibuja el seleccionado')
+    assert.equal(aislado.tienda.seleccionado, MASTIL, 'la selección se conserva')
+    assert.equal(await boton(page, 'Aislar selección').getAttribute('aria-pressed'), 'true')
+
+    // Hover y clic sobre un componente oculto: no deben llegarle (three lanza el raycast también contra los invisibles).
+    await page.mouse.move(lejano.x, lejano.y)
+    await page.waitForTimeout(400)
+    assert.notEqual(await page.evaluate(() => document.body.style.cursor), 'pointer')
+    assert.equal((await estado(page)).tienda.hover, null)
+    await page.mouse.click(lejano.x, lejano.y)
+    const tras = await hasta(page, (e) => e.tienda.seleccionado !== MASTIL)
+    assert.equal(tras.tienda.seleccionado, null, 'el clic sobre un oculto no lo selecciona')
+    assert.equal(
+      await boton(page, 'Aislar selección').isDisabled(),
+      false,
+      'sigue habilitado para restaurar',
+    )
+
+    await boton(page, 'Aislar selección').click()
+    const restaurado = await hasta(page, (e) => !e.tienda.aislado)
+    mismoConjunto(restaurado.visibles, antes.visibles, 'restaurar devuelve lo que se dibujaba')
+    assert.deepEqual(restaurado.tienda.ocultos, [])
+
+    // El que estaba oculto vuelve a responder.
+    await page.mouse.click(lejano.x, lejano.y)
+    await hasta(page, (e) => e.tienda.seleccionado === LEJANO)
+  },
+)
+
+prueba(
+  'proyección: alternar conserva posición y objetivo, el frustum es de 44 m con el aspecto del lienzo y el aspecto no queda viejo al redimensionar',
+  async (page) => {
+    const p0 = (await estado(page)).camara
+
+    await boton(page, 'Ortográfica').click()
+    const o = (await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')).camara
+    assert.ok(cerca(o.posicion, p0.posicion), 'misma posición')
+    assert.ok(cerca(o.objetivo, p0.objetivo), 'mismo objetivo')
+    const alto = o.frustum.top - o.frustum.bottom
+    assert.ok(Math.abs(alto - 44) < 1e-6, `alto del frustum = 44 m (${alto})`)
+    const lienzo = (await estado(page)).lienzo
+    assert.ok(
+      Math.abs((o.frustum.right - o.frustum.left) / alto - lienzo.ancho / lienzo.alto) < 1e-6,
+    )
+
+    // Redimensionar con la ortográfica activa y volver: r3f solo actualiza la cámara activa, la de perspectiva queda vieja.
+    await page.setViewportSize({ width: 900, height: 700 })
+    await page.waitForTimeout(800)
+    await boton(page, 'Ortográfica').click()
+    const p1 = await hasta(page, (e) => e.camara.tipo === 'PerspectiveCamera')
+    assert.ok(
+      Math.abs(p1.camara.aspecto - p1.lienzo.ancho / p1.lienzo.alto) < 1e-6,
+      'aspecto actualizado',
+    )
+    assert.ok(cerca(p1.camara.posicion, p0.posicion) && cerca(p1.camara.objetivo, p0.objetivo))
+
+    // El picking funciona con la cámara ortográfica.
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+  },
+)
+
+prueba(
+  'foco en ortográfica: ajusta el alto del frustum al componente y "Volver" restaura proyección, alto y vista',
+  async (page) => {
+    await boton(page, 'Ortográfica').click()
+    const previa = (await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')).camara
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+
+    const { centro, tamano } = (await cajas(page))[MASTIL]
+    await boton(page, 'Enfocar').click()
+    const foco = (await hasta(page, (e) => cerca(e.camara.objetivo, centro, 1e-3))).camara
+    assert.ok(
+      Math.abs(foco.frustum.top - foco.frustum.bottom - altoFoco(tamano)) < 1e-6,
+      `alto del frustum = fórmula del V2 sobre la caja (${foco.frustum.top - foco.frustum.bottom} vs ${altoFoco(tamano)})`,
+    )
+    assert.equal(foco.zoom, 1)
+
+    // Cambiar de proyección con el foco activo; "Volver" restaura la proyección previa al foco.
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.camara.tipo === 'PerspectiveCamera')
+    await boton(page, 'Volver').click()
+    const vuelta = await hasta(
+      page,
+      (e) =>
+        e.camara.tipo === 'OrthographicCamera' &&
+        cerca(e.camara.posicion, previa.posicion, 1e-3) &&
+        cerca(e.camara.objetivo, previa.objetivo, 1e-3),
+    )
+    assert.ok(
+      Math.abs(vuelta.camara.frustum.top - vuelta.camara.frustum.bottom - 44) < 1e-6,
+      'alto 44 m restaurado',
+    )
+  },
+)
+
+prueba(
+  'selección y ficha: cada componente visible se selecciona con un clic y muestra su ficha con nombre y nivel',
+  async (page) => {
+    const { componentes } = await estado(page)
+    const ocluidos = []
+    const nombres = new Set()
+    for (const id of componentes) {
+      const p = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), id)
+      if (!p) {
+        ocluidos.push(id)
+        continue
+      }
+      await page.mouse.click(p.x, p.y)
+      await hasta(page, (e) => e.tienda.seleccionado === id)
+      const ficha = page.getByTestId('component-card')
+      await ficha.waitFor({ state: 'visible' })
+      const nombre = (await ficha.getByRole('heading').first().textContent())?.trim()
+      assert.ok(nombre, `la ficha de ${id} tiene nombre`)
+      nombres.add(nombre)
+      assert.match(
+        await ficha.getByTestId('grade-badge').textContent(),
+        /^[ABC] · (Confirmado|Parcial|Aproximado)$/,
+        id,
+      )
+      assert.match(await ficha.textContent(), /no as-built/)
+    }
+    // Los que quedan tapados desde la vista inicial no se pueden elegir con el mouse: se informan, no se ignoran.
+    console.log(
+      `# sin punto clicable desde la vista inicial (${ocluidos.length}): ${ocluidos.join(', ') || 'ninguno'}`,
+    )
+    assert.ok(
+      componentes.length - ocluidos.length >= 12,
+      'la mayoría de los componentes se puede seleccionar',
+    )
+    assert.equal(
+      nombres.size,
+      componentes.length - ocluidos.length,
+      'cada componente tiene su propia ficha',
+    )
+  },
+)
+
+prueba('tooltip: el hover muestra el nombre del componente y desaparece al salir', async (page) => {
+  const p = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), MASTIL)
+  assert.ok(p)
+  await page.mouse.move(p.x, p.y)
+  await hasta(page, (e) => e.tienda.hover === MASTIL)
+  const tooltip = page.getByTestId('hover-tooltip')
+  await tooltip.waitFor({ state: 'visible' })
+  assert.ok((await tooltip.textContent())?.trim().length > 0, 'el tooltip tiene el nombre')
+  // Al salir del lienzo (cabecera) el hover se limpia y el tooltip se va.
+  await page.mouse.move(640, 15)
+  await hasta(page, (e) => e.tienda.hover === null)
+  await tooltip.waitFor({ state: 'detached' })
 })
 
-test('foco de cámara: encuadra el componente (distancia del V2), el segundo foco no pisa la vista y "Volver" la restaura', async (t) => {
-  if (skip) return t.skip(skip)
-  const page = await abrir()
-  const inicial = (await estado(page)).camara
+prueba('Esc deselecciona el componente y cierra la ficha', async (page) => {
   await clic(page, MASTIL)
   await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
-  const { centro, tamano } = (await cajas(page))[MASTIL]
-  await boton(page, 'Enfocar').click()
-  // Se espera el estado final concreto (no "que nada cambie": con un cuadro lento la cámara puede seguir en su estado inicial).
-  const foco = await hasta(
-    page,
-    (e) =>
-      cerca(e.camara.objetivo, centro, 1e-3) &&
-      Math.abs(distancia(e.camara.posicion, e.camara.objetivo) - distanciaFoco(tamano)) < 1e-3,
-  )
-  assert.equal(foco.tienda.puedeVolver, true)
-
-  // Un segundo foco no reemplaza la vista guardada: "Volver" sigue llevando a la vista inicial.
-  await boton(page, 'Enfocar').click()
-  await page.waitForTimeout(500)
-  await boton(page, 'Volver').click()
-  const vuelta = await hasta(
-    page,
-    (e) =>
-      cerca(e.camara.posicion, inicial.posicion, 1e-3) &&
-      cerca(e.camara.objetivo, inicial.objetivo, 1e-3),
-  )
-  assert.equal(vuelta.tienda.puedeVolver, false)
-  await cerrar(page)
-})
-
-test('aislamiento: deja solo el seleccionado, los ocultos no responden a hover ni a clic y restaurar devuelve el estado inicial', async (t) => {
-  if (skip) return t.skip(skip)
-  const page = await abrir()
-  const antes = await estado(page)
-  const lejano = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), LEJANO)
-  assert.ok(lejano, 'punto clicable del componente lejano, con todo visible')
-
-  await clic(page, MASTIL)
-  await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
-  await boton(page, 'Aislar selección').click()
-  const aislado = await hasta(page, (e) => e.tienda.aislado)
-  assert.deepEqual(aislado.visibles, [MASTIL], 'solo se dibuja el seleccionado')
-  assert.equal(aislado.tienda.seleccionado, MASTIL, 'la selección se conserva')
-  assert.equal(await boton(page, 'Aislar selección').getAttribute('aria-pressed'), 'true')
-
-  // Hover y clic sobre un componente oculto: no deben llegarle (three lanza el raycast también contra los invisibles).
-  await page.mouse.move(lejano.x, lejano.y)
-  await page.waitForTimeout(400)
-  assert.notEqual(await page.evaluate(() => document.body.style.cursor), 'pointer')
-  assert.equal((await estado(page)).tienda.hover, null)
-  await page.mouse.click(lejano.x, lejano.y)
-  const tras = await hasta(page, (e) => e.tienda.seleccionado !== MASTIL)
-  assert.equal(tras.tienda.seleccionado, null, 'el clic sobre un oculto no lo selecciona')
-  assert.equal(
-    await boton(page, 'Aislar selección').isDisabled(),
-    false,
-    'sigue habilitado para restaurar',
-  )
-
-  await boton(page, 'Aislar selección').click()
-  const restaurado = await hasta(page, (e) => !e.tienda.aislado)
-  mismoConjunto(restaurado.visibles, antes.visibles, 'restaurar devuelve lo que se dibujaba')
-  assert.deepEqual(restaurado.tienda.ocultos, [])
-
-  // El que estaba oculto vuelve a responder.
-  await page.mouse.click(lejano.x, lejano.y)
-  await hasta(page, (e) => e.tienda.seleccionado === LEJANO)
-  await cerrar(page)
-})
-
-test('proyección: alternar conserva posición y objetivo, el frustum es de 44 m con el aspecto del lienzo y el aspecto no queda viejo al redimensionar', async (t) => {
-  if (skip) return t.skip(skip)
-  const page = await abrir()
-  const p0 = (await estado(page)).camara
-
-  await boton(page, 'Ortográfica').click()
-  const o = (await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')).camara
-  assert.ok(cerca(o.posicion, p0.posicion), 'misma posición')
-  assert.ok(cerca(o.objetivo, p0.objetivo), 'mismo objetivo')
-  const alto = o.frustum.top - o.frustum.bottom
-  assert.ok(Math.abs(alto - 44) < 1e-6, `alto del frustum = 44 m (${alto})`)
-  const lienzo = (await estado(page)).lienzo
-  assert.ok(Math.abs((o.frustum.right - o.frustum.left) / alto - lienzo.ancho / lienzo.alto) < 1e-6)
-
-  // Redimensionar con la ortográfica activa y volver: r3f solo actualiza la cámara activa, la de perspectiva queda vieja.
-  await page.setViewportSize({ width: 900, height: 700 })
-  await page.waitForTimeout(800)
-  await boton(page, 'Ortográfica').click()
-  const p1 = await hasta(page, (e) => e.camara.tipo === 'PerspectiveCamera')
-  assert.ok(
-    Math.abs(p1.camara.aspecto - p1.lienzo.ancho / p1.lienzo.alto) < 1e-6,
-    'aspecto actualizado',
-  )
-  assert.ok(cerca(p1.camara.posicion, p0.posicion) && cerca(p1.camara.objetivo, p0.objetivo))
-
-  // El picking funciona con la cámara ortográfica.
-  await boton(page, 'Ortográfica').click()
-  await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')
-  await clic(page, MASTIL)
-  await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
-  await cerrar(page)
-})
-
-test('foco en ortográfica: ajusta el alto del frustum al componente y "Volver" restaura proyección, alto y vista', async (t) => {
-  if (skip) return t.skip(skip)
-  const page = await abrir()
-  await boton(page, 'Ortográfica').click()
-  const previa = (await hasta(page, (e) => e.camara.tipo === 'OrthographicCamera')).camara
-  await clic(page, MASTIL)
-  await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
-
-  const { centro, tamano } = (await cajas(page))[MASTIL]
-  await boton(page, 'Enfocar').click()
-  const foco = (await hasta(page, (e) => cerca(e.camara.objetivo, centro, 1e-3))).camara
-  assert.ok(
-    Math.abs(foco.frustum.top - foco.frustum.bottom - altoFoco(tamano)) < 1e-6,
-    `alto del frustum = fórmula del V2 sobre la caja (${foco.frustum.top - foco.frustum.bottom} vs ${altoFoco(tamano)})`,
-  )
-  assert.equal(foco.zoom, 1)
-
-  // Cambiar de proyección con el foco activo; "Volver" restaura la proyección previa al foco.
-  await boton(page, 'Ortográfica').click()
-  await hasta(page, (e) => e.camara.tipo === 'PerspectiveCamera')
-  await boton(page, 'Volver').click()
-  const vuelta = await hasta(
-    page,
-    (e) =>
-      e.camara.tipo === 'OrthographicCamera' &&
-      cerca(e.camara.posicion, previa.posicion, 1e-3) &&
-      cerca(e.camara.objetivo, previa.objetivo, 1e-3),
-  )
-  assert.ok(
-    Math.abs(vuelta.camara.frustum.top - vuelta.camara.frustum.bottom - 44) < 1e-6,
-    'alto 44 m restaurado',
-  )
-  await cerrar(page)
+  await page.getByTestId('component-card').waitFor({ state: 'visible' })
+  await page.keyboard.press('Escape')
+  await hasta(page, (e) => e.tienda.seleccionado === null)
+  await page.getByTestId('component-card').waitFor({ state: 'detached' })
 })

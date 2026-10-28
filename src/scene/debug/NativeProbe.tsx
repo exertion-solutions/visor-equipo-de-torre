@@ -1,6 +1,6 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
-import { Box3, Raycaster, Vector2, Vector3 } from 'three'
+import { Box3, Raycaster, Vector2, Vector3, type Object3D } from 'three'
 import { getComponentObject, registeredComponentIds } from '@/scene/picking/componentObjects'
 import { useViewerStore } from '@/stores/viewerStore'
 
@@ -40,7 +40,8 @@ export interface NativeProbeApi {
   cajas: () => Record<string, { centro: number[]; tamano: number[] }>
   /**
    * Punto del lienzo (coordenadas de cliente) donde un clic selecciona ese componente: el primer punto de una grilla
-   * sobre su caja proyectada cuyo primer impacto del raycast es el propio componente. `null` si no hay.
+   * sobre su caja proyectada cuyo primer impacto del raycast es el propio componente y sin otro componente a la misma
+   * distancia (geometría coincidente), también a ±2 px (el mouse real cae en píxeles enteros). `null` si no hay.
    */
   puntoClicable: (id: string) => { x: number; y: number } | null
 }
@@ -138,24 +139,51 @@ export function NativeProbe() {
         const y0 = Math.max(-1, Math.min(...corners.map((c) => c.y)))
         const y1 = Math.min(1, Math.max(...corners.map((c) => c.y)))
         const ray = new Raycaster()
-        const roots = registeredComponentIds().flatMap((cid) => {
+        const ids = registeredComponentIds()
+        const roots = ids.flatMap((cid) => {
           const o = getComponentObject(cid)
           return o && o.visible ? [o] : []
         })
+        const ownerOf = (start: Object3D) => {
+          for (let o: Object3D | null = start; o && o !== scene; o = o.parent) {
+            const found = ids.find((cid) => getComponentObject(cid) === o)
+            if (found) return found
+          }
+          return undefined
+        }
+        const rect = gl.domElement.getBoundingClientRect()
+        // ¿El primer impacto del rayo en `ndc` es `id` y sin otro componente a la misma distancia? Con geometría
+        // coincidente el clic y el hover pueden resolverla distinto: ese punto es ambiguo.
+        const resuelveA = (ndc: Vector2) => {
+          ray.setFromCamera(ndc, camera)
+          const hits = ray.intersectObjects(roots, true)
+          const first = hits[0]
+          if (!first || ownerOf(first.object) !== id) return false
+          return !hits.some(
+            (h) =>
+              h !== first &&
+              ownerOf(h.object) !== id &&
+              Math.abs(h.distance - first.distance) < 1e-3,
+          )
+        }
+        // El mouse real cae en píxeles enteros: el punto tiene que resistir ±2 px, no solo el centro exacto.
+        const dx = 4 / rect.width
+        const dy = 4 / rect.height
         const N = 40
         for (let i = 0; i <= N; i++) {
           for (let j = 0; j <= N; j++) {
             const ndc = new Vector2(x0 + ((x1 - x0) * i) / N, y0 + ((y1 - y0) * j) / N)
-            ray.setFromCamera(ndc, camera)
-            const hit = ray.intersectObjects(roots, true)[0]
-            if (!hit) continue
-            let o: typeof hit.object | null = hit.object
-            while (o && o !== scene && getComponentObject(id) !== o) o = o.parent
-            if (o !== getComponentObject(id)) continue
-            const r = gl.domElement.getBoundingClientRect()
+            const vecinos = [
+              ndc,
+              new Vector2(ndc.x + dx, ndc.y),
+              new Vector2(ndc.x - dx, ndc.y),
+              new Vector2(ndc.x, ndc.y + dy),
+              new Vector2(ndc.x, ndc.y - dy),
+            ]
+            if (!vecinos.every(resuelveA)) continue
             return {
-              x: r.left + ((ndc.x + 1) / 2) * r.width,
-              y: r.top + ((1 - ndc.y) / 2) * r.height,
+              x: rect.left + ((ndc.x + 1) / 2) * rect.width,
+              y: rect.top + ((1 - ndc.y) / 2) * rect.height,
             }
           }
         }

@@ -1,20 +1,12 @@
+import { GRADE_HINT, GRADE_STYLES } from '@/components/equipment/grade'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { GRADE_LABELS, type GeometryGrade } from '@/lib/legacyBridge'
+import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
-
-const GRADE_STYLES: Record<GeometryGrade, string> = {
-  A: 'border-emerald-500/60 text-emerald-300',
-  B: 'border-amber-500/60 text-amber-300',
-  C: 'border-orange-500/60 text-orange-300',
-}
-
-const GRADE_HINT =
-  'Confiabilidad geométrica del componente: A confirmado (documentado) · B parcial · C aproximado. Lo pendiente de relevamiento se trata como aproximado. Referencia digital, no as-built.'
 
 export function StatusBar() {
   const mode = useModeStore((s) => s.mode)
