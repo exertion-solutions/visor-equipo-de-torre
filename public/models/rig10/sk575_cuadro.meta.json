@@ -2,11 +2,10 @@
   "id": "sk575_cuadro",
   "confianza": "C",
   "alcance": "Cuadro de maniobras DWA575-01: tambores 42×12 y 42×8, discos, embragues, consola",
-  "triangulos": 122202,
+  "triangulos": 115696,
   "materiales": [
     "acero",
     "acero_oscuro",
-    "blanco",
     "cable",
     "goma",
     "rojo"
@@ -15,7 +14,7 @@
   "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
-    "segmentos": 4652,
+    "segmentos": 3764,
     "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
     "umbral_grados": 28,
     "excluye": [
@@ -26,9 +25,9 @@
   "publicado": {
     "archivo": "public/models/rig10/sk575_cuadro.glb",
     "optimize": "npm run gltf:optimize -- sk575_cuadro.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 122202,
-    "triangulos_publicados": 40394,
-    "segmentos_aristas": 4652,
+    "triangulos_origen": 115696,
+    "triangulos_publicados": 39240,
+    "segmentos_aristas": 3764,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }
 }
