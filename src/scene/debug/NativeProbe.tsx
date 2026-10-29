@@ -2,6 +2,7 @@ import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { Box3, Raycaster, Vector2, Vector3, type Object3D } from 'three'
 import { getComponentObject, registeredComponentIds } from '@/scene/picking/componentObjects'
+import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
 
 /**
@@ -27,6 +28,8 @@ export interface NativeProbeState {
     proyeccion: string
     puedeVolver: boolean
   }
+  /** Cotas, modo medir y puntos medidos (marco de escena). */
+  herramientas: { cotas: boolean; medir: boolean; puntos: number[][] }
   /** Ids de los componentes montados y, de ellos, los que se dibujan (`visible`). */
   componentes: string[]
   visibles: string[]
@@ -35,6 +38,11 @@ export interface NativeProbeState {
 }
 
 export interface NativeProbeApi {
+  /**
+   * Primer impacto de un rayo desde el punto del lienzo (coordenadas de cliente) contra los componentes visibles: punto
+   * de escena y componente. Raycast propio, independiente de los eventos de r3f. `null` si no hay impacto.
+   */
+  impacto: (x: number, y: number) => { punto: number[]; componente: string } | null
   estado: () => NativeProbeState
   /** Centro y tamaño (m) de la caja de cada componente, en coordenadas de escena. */
   cajas: () => Record<string, { centro: number[]; tamano: number[] }>
@@ -98,6 +106,11 @@ export function NativeProbe() {
             proyeccion: s.projection,
             puedeVolver: s.canGoBack,
           },
+          herramientas: (({ dims, measure, points }) => ({
+            cotas: dims,
+            medir: measure,
+            puntos: points.map((p) => [...p]),
+          }))(useToolsStore.getState()),
           componentes: ids,
           visibles: ids.filter((id) => getComponentObject(id)?.visible),
           cuadros: gl.info.render.frame,
@@ -115,6 +128,30 @@ export function NativeProbe() {
           }
         }
         return out
+      },
+      impacto: (x, y) => {
+        const { camera, scene, gl } = get()
+        const rect = gl.domElement.getBoundingClientRect()
+        camera.updateMatrixWorld(true)
+        const ray = new Raycaster()
+        ray.setFromCamera(
+          new Vector2(
+            ((x - rect.left) / rect.width) * 2 - 1,
+            -((y - rect.top) / rect.height) * 2 + 1,
+          ),
+          camera,
+        )
+        const ids = registeredComponentIds()
+        const roots = ids.flatMap((cid) => {
+          const o = getComponentObject(cid)
+          return o && o.visible ? [o] : []
+        })
+        const hit = ray.intersectObjects(roots, true)[0]
+        if (!hit) return null
+        let owner: string | undefined
+        for (let o: Object3D | null = hit.object; o && o !== scene && !owner; o = o.parent)
+          owner = ids.find((cid) => getComponentObject(cid) === o)
+        return owner ? { punto: arr(hit.point), componente: owner } : null
       },
       puntoClicable: (id) => {
         const { camera, scene, gl } = get()

@@ -17,3 +17,8 @@ export function verticalDistance(a: Vec3, b: Vec3): number {
 export function midpoint(a: Vec3, b: Vec3): Vec3 {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
 }
+
+/** Rótulo de una medición entre dos puntos del modelo: siempre aproximada ("≈ … m · modelo"), nunca una cota. */
+export function formatApproxMeters(meters: number): string {
+  return `≈ ${meters.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m · modelo`
+}

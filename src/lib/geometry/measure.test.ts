@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { distance, horizontalDistance, midpoint, verticalDistance } from './measure'
+import {
+  distance,
+  formatApproxMeters,
+  horizontalDistance,
+  midpoint,
+  verticalDistance,
+} from './measure'
 
 describe('measure', () => {
   it('distancia euclídea 3-4-5', () => {
@@ -20,5 +26,13 @@ describe('measure', () => {
 
   it('las distancias anclaje-centro documentadas son consistentes (25 m por eje → 35,4 m de diagonal)', () => {
     expect(distance([0, 0, 0], [25, 0, 25])).toBeCloseTo(35.36, 2)
+  })
+})
+
+describe('formatApproxMeters', () => {
+  it('siempre rotula la medición como aproximada y del modelo, con dos decimales', () => {
+    expect(formatApproxMeters(12.3456)).toBe('≈ 12,35 m · modelo')
+    expect(formatApproxMeters(3)).toBe('≈ 3,00 m · modelo')
+    expect(formatApproxMeters(0)).toBe('≈ 0,00 m · modelo')
   })
 })
