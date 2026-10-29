@@ -1,5 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { distance, formatApproxMeters, midpoint, type Vec3 } from '@/lib/geometry'
+import {
+  distance,
+  formatApproxAngle,
+  formatApproxMeters,
+  midpoint,
+  type Vec3,
+} from '@/lib/geometry'
 import { RIG10_DIMENSION_VIEWS } from '@/scene/tools/dimensionViews'
 import { registerToolLabel } from '@/scene/tools/toolLabelElements'
 import { useDimsVisible, useToolsStore } from '@/stores/toolsStore'
@@ -43,8 +49,11 @@ export function ToolLabels() {
   const exploded = useToolsStore((s) => s.exploded)
   const points = useToolsStore((s) => s.points)
   // Con el despiece la medición se oculta: sus puntos quedaron sobre el equipo armado.
-  const [a, b] = exploded ? [] : points
-  if (!dims && !(a && b)) return null
+  const kind = useToolsStore((s) => s.measureKind)
+  const [a, b, c] = exploded ? [] : points
+  const angleText = kind === 'angle' && a && b && c ? formatApproxAngle(a, b, c) : null
+  const distanceShown = kind === 'distance' && a && b
+  if (!dims && !distanceShown && !angleText) return null
 
   return (
     <div
@@ -64,7 +73,12 @@ export function ToolLabels() {
             {d.text}
           </ToolPill>
         ))}
-      {a && b && (
+      {angleText && b && (
+        <ToolPill id="measure-angle" anchor={b} className="border-yellow-300/60 text-yellow-200">
+          {angleText}
+        </ToolPill>
+      )}
+      {distanceShown && a && b && (
         <ToolPill
           id="measure"
           anchor={midpoint(a, b)}

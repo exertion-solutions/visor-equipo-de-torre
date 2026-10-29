@@ -2,12 +2,12 @@ import { GRADE_HINT, GRADE_STYLES } from '@/components/equipment/grade'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { CUT_MAX, CUT_MIN, CUT_STEP, cutNote } from '@/lib/cut'
+import { CUT_MAX, CUT_MIN, CUT_STEP } from '@/lib/cut'
 import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
-import { dropsVisible, measureHint, useToolsStore, zonesVisible } from '@/stores/toolsStore'
+import { dropsVisible, useToolsStore, zonesVisible } from '@/stores/toolsStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -36,9 +36,10 @@ export function StatusBar() {
   const toggleDims = useToolsStore((s) => s.toggleDims)
   const measure = useToolsStore((s) => s.measure)
   const toggleMeasure = useToolsStore((s) => s.toggleMeasure)
+  const measureKind = useToolsStore((s) => s.measureKind)
+  const toggleAngle = useToolsStore((s) => s.toggleAngle)
   const points = useToolsStore((s) => s.points)
   const clearMeasure = useToolsStore((s) => s.clearMeasure)
-  const hint = measureHint(measure, points.length)
   const hasNativeSelection = useViewerStore((s) => s.selectedComponentId !== null)
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
@@ -96,11 +97,6 @@ export function StatusBar() {
             {GRADE_HINT}
           </TooltipContent>
         </Tooltip>
-      )}
-      {hint && (
-        <span role="status" data-testid="measure-hint" className="text-foreground min-w-0 shrink">
-          {hint}
-        </span>
       )}
       {/* Aviso de confianza: siempre visible, también en pantallas chicas. */}
       <span className="min-w-0 flex-1 truncate sm:flex-none">
@@ -260,16 +256,11 @@ export function StatusBar() {
             onChange={(e) => setCutX(Number(e.target.value))}
             className="w-20 shrink-0 accent-violet-500 disabled:opacity-40"
           />
-          {cut && (
-            <span className="shrink-0" data-testid="cut-note">
-              {cutNote(cutX)}
-            </span>
-          )}
           <Button
             type="button"
             size="xs"
-            variant={measure ? 'secondary' : 'ghost'}
-            aria-pressed={measure}
+            variant={measure && measureKind === 'distance' ? 'secondary' : 'ghost'}
+            aria-pressed={measure && measureKind === 'distance'}
             disabled={explodeOn || exploded}
             onClick={toggleMeasure}
             title={
@@ -280,6 +271,22 @@ export function StatusBar() {
             className="shrink-0"
           >
             Medir
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={measure && measureKind === 'angle' ? 'secondary' : 'ghost'}
+            aria-pressed={measure && measureKind === 'angle'}
+            disabled={explodeOn || exploded}
+            onClick={toggleAngle}
+            title={
+              explodeOn || exploded
+                ? 'No se mide con el equipo desarmado: apagá el despiece'
+                : 'Medir un ángulo con tres puntos de la superficie (A, vértice B, C) y el desnivel de A a C (aproximado)'
+            }
+            className="shrink-0"
+          >
+            Medir ángulo
           </Button>
           <Button
             type="button"

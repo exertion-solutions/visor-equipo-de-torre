@@ -18,6 +18,7 @@ beforeEach(() =>
     explodeAmount: 0.6,
     exploded: false,
     measure: false,
+    measureKind: 'distance',
     points: [],
   }),
 )
@@ -168,5 +169,49 @@ describe('corte de sección', () => {
     useToolsStore.getState().toggleCut()
     useToolsStore.getState().toggleCut()
     expect(useToolsStore.getState().cutX).toBeCloseTo(-4.4, 10)
+  })
+})
+
+describe('medir ángulo', () => {
+  it('es otro tipo de medición: cierra con tres puntos y el cuarto empieza de nuevo', () => {
+    useToolsStore.getState().toggleAngle()
+    expect([useToolsStore.getState().measure, useToolsStore.getState().measureKind]).toEqual([
+      true,
+      'angle',
+    ])
+    for (const p of [A, B, C]) useToolsStore.getState().addPoint(p)
+    expect(useToolsStore.getState().points).toEqual([A, B, C])
+    useToolsStore.getState().addPoint([0, 0, 1])
+    expect(useToolsStore.getState().points).toEqual([[0, 0, 1]])
+  })
+
+  it('se excluye con la distancia y cambiar de tipo descarta los puntos; apagar los conserva', () => {
+    useToolsStore.getState().toggleMeasure()
+    useToolsStore.getState().addPoint(A)
+    useToolsStore.getState().toggleAngle()
+    expect(useToolsStore.getState().measureKind).toBe('angle')
+    expect(useToolsStore.getState().points).toEqual([])
+    useToolsStore.getState().addPoint(A)
+    useToolsStore.getState().addPoint(B)
+    useToolsStore.getState().toggleAngle()
+    expect(useToolsStore.getState().measure).toBe(false)
+    expect(useToolsStore.getState().points).toEqual([A, B])
+    useToolsStore.getState().toggleAngle()
+    expect(useToolsStore.getState().points).toEqual([A, B])
+  })
+
+  it('no se mide con el equipo desarmado', () => {
+    useToolsStore.setState({ explodeOn: true })
+    useToolsStore.getState().toggleAngle()
+    expect(useToolsStore.getState().measure).toBe(false)
+    useToolsStore.setState({ explodeOn: false })
+  })
+
+  it('la ayuda de ángulo guía A, vértice B y C', () => {
+    expect(measureHint(true, 0, 'angle')).toMatch(/tres superficies/)
+    expect(measureHint(true, 1, 'angle')).toMatch(/vértice B/)
+    expect(measureHint(true, 2, 'angle')).toMatch(/tercer punto/)
+    expect(measureHint(true, 3, 'angle')).toMatch(/aproximada/)
+    expect(measureHint(false, 3, 'angle')).toBe('')
   })
 })

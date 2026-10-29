@@ -9,6 +9,11 @@ import { useViewerStore } from './viewerStore'
  * Herramientas de inspección del motor nativo (equivalen a `#c-dims` y `#c-measure` del V2): cotas del equipo y medición
  * entre dos puntos de la superficie del modelo.
  */
+export type MeasureKind = 'distance' | 'angle'
+
+/** Puntos que cierra cada medición. */
+export const MEASURE_POINTS: Record<MeasureKind, number> = { distance: 2, angle: 3 }
+
 interface ToolsState {
   /** Cotas del equipo dibujadas con su nivel A/B/C. */
   dims: boolean
@@ -30,7 +35,9 @@ interface ToolsState {
   cutX: number
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
-  /** Puntos medidos (0, 1 o 2), en el marco de la escena. */
+  /** Qué se mide: distancia entre 2 puntos o ángulo ABC con 3 (A, vértice B, C). Los puntos son de este tipo. */
+  measureKind: MeasureKind
+  /** Puntos medidos (0 a 2 en distancia, 0 a 3 en ángulo), en el marco de la escena. */
   points: readonly Vec3[]
   toggleDims: () => void
   toggleZones: () => void
@@ -45,9 +52,21 @@ interface ToolsState {
   setCutX: (x: number) => void
   /** Activa o desactiva el modo medir. Desactivarlo no borra la medición hecha (como el V2): se borra con `clearMeasure`. */
   toggleMeasure: () => void
+  /** Modo medir ángulo (3 puntos): se excluye con el de distancia, como en el V2. */
+  toggleAngle: () => void
   /** Agrega un punto; con dos ya puestos, el siguiente clic empieza una medición nueva. */
   addPoint: (point: Vec3) => void
   clearMeasure: () => void
+}
+
+/**
+ * Enciende o apaga un tipo de medición. Encender el otro tipo lo reemplaza y descarta los puntos (eran de otro tipo);
+ * apagar conserva la medición hecha. Con el equipo desarmado no se mide.
+ */
+function toggleKind(s: ToolsState, kind: MeasureKind): Partial<ToolsState> {
+  if (s.explodeOn || s.exploded) return {}
+  if (s.measure && s.measureKind === kind) return { measure: false }
+  return { measure: true, measureKind: kind, points: s.measureKind === kind ? s.points : [] }
 }
 
 export const useToolsStore = create<ToolsState>()((set) => ({
@@ -61,6 +80,7 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   explodeAmount: DEFAULT_EXPLODE_AMOUNT,
   exploded: false,
   measure: false,
+  measureKind: 'distance',
   points: [],
   toggleDims: () => set((s) => ({ dims: !s.dims })),
   toggleZones: () => set((s) => ({ zones: !s.zones })),
@@ -76,15 +96,29 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   toggleCut: () => set((s) => ({ cut: !s.cut })),
   setCutX: (x) => set({ cutX: clampCutX(x) }),
   // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
-  toggleMeasure: () => set((s) => (s.explodeOn || s.exploded ? s : { measure: !s.measure })),
+  toggleMeasure: () => set((s) => toggleKind(s, 'distance')),
+  toggleAngle: () => set((s) => toggleKind(s, 'angle')),
   addPoint: (point) =>
-    set((s) => ({ points: s.points.length >= 2 ? [point] : [...s.points, point] })),
+    set((s) => ({
+      points: s.points.length >= MEASURE_POINTS[s.measureKind] ? [point] : [...s.points, point],
+    })),
   clearMeasure: () => set({ points: [] }),
 }))
 
 /** Texto de ayuda del modo medir (el del V2); vacío fuera de ese modo. */
-export function measureHint(measure: boolean, pointCount: number): string {
+export function measureHint(
+  measure: boolean,
+  pointCount: number,
+  kind: MeasureKind = 'distance',
+): string {
   if (!measure) return ''
+  if (kind === 'angle') {
+    if (pointCount === 0)
+      return 'Hacé clic en tres superficies: A, el vértice B y C. Valores aproximados.'
+    if (pointCount === 1) return 'Seleccioná el vértice B.'
+    if (pointCount === 2) return 'Seleccioná el tercer punto, C.'
+    return 'Medición aproximada del modelo. Otro clic inicia una nueva.'
+  }
   if (pointCount === 0) return 'Hacé clic en dos superficies del modelo. Valores aproximados.'
   if (pointCount === 1) return 'Seleccioná el segundo punto de la superficie.'
   return 'Medición aproximada entre superficies. Otro clic inicia una nueva.'

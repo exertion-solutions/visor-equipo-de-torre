@@ -1174,3 +1174,87 @@ prueba(
     await esperar(0, (r) => r.recortado > sin.recortado * 0.9)
   },
 )
+
+// Ángulo ABC (vértice en B) y desnivel A→C enunciados de nuevo acá, independientes de `lib/geometry`.
+const anguloABC = (a, b, c) => {
+  const u = a.map((v, i) => v - b[i])
+  const w = c.map((v, i) => v - b[i])
+  const cos = (u[0] * w[0] + u[1] * w[1] + u[2] * w[2]) / (Math.hypot(...u) * Math.hypot(...w))
+  return (Math.acos(cos) * 180) / Math.PI
+}
+const num1 = (n) =>
+  n.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+prueba(
+  'medir ángulo: tres clics dan el ángulo con el vértice en B y el desnivel de A a C, sin seleccionar; el cuarto reinicia',
+  async (page) => {
+    await boton(page, 'Medir ángulo').click()
+    assert.equal(await boton(page, 'Medir ángulo').getAttribute('aria-pressed'), 'true')
+    assert.equal(await boton(page, 'Medir').getAttribute('aria-pressed'), 'false', 'se excluyen')
+    await page.getByTestId('measure-hint').waitFor({ state: 'visible' })
+    assert.match(await page.getByTestId('measure-hint').textContent(), /tres superficies/)
+    assert.equal((await estadoMedicion(page)).tipoMedicion, 'angle')
+
+    // A, B (vértice) y C en componentes distintos; el impacto esperado sale de un raycast propio de la sonda.
+    const esperados = []
+    for (const id of [MASTIL, LEJANO, 'sk575_carrier']) {
+      const p = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), id)
+      assert.ok(p, `punto clicable de ${id}`)
+      const impacto = await page.evaluate(([x, y]) => window.__rigNativo.impacto(x, y), [p.x, p.y])
+      assert.equal(impacto.componente, id)
+      await page.mouse.click(p.x, p.y)
+      esperados.push(impacto.punto)
+      await page.waitForFunction(
+        (n) => window.__rigNativo.estado().herramientas.puntos.length === n,
+        esperados.length,
+        { timeout: 30_000 },
+      )
+      if (esperados.length === 1)
+        assert.match(await page.getByTestId('measure-hint').textContent(), /vértice B/)
+    }
+    const m = await estadoMedicion(page)
+    assert.equal(m.seleccionado, null, 'midiendo, el clic no selecciona')
+    assert.equal(m.puntos.length, 3)
+    m.puntos.forEach((p, i) =>
+      assert.ok(distancia(p, esperados[i]) < 0.25, `punto ${i + 1} ≈ impacto del rayo`),
+    )
+
+    // El rótulo es el ángulo en B, el desnivel con signo de A a C y la distancia horizontal, de los puntos guardados.
+    const [a, b, c] = m.puntos
+    const angulo = anguloABC(a, b, c)
+    const dy = c[1] - a[1]
+    const dh = Math.hypot(c[0] - a[0], c[2] - a[2])
+    const rotulo = page.getByTestId('tool-label-measure-angle')
+    await rotulo.waitFor({ state: 'attached' })
+    assert.equal(
+      await rotulo.textContent(),
+      `≈ ${num1(angulo)}° · desnivel A→C ${num(dy)} m · horiz. ${num(dh)} m · modelo`,
+    )
+    // Y coincide con el del raycast propio (el clic cae en píxeles enteros: unos centímetros de diferencia).
+    assert.ok(Math.abs(angulo - anguloABC(...esperados)) < 3, 'el ángulo ≈ el del rayo propio')
+    assert.ok(Math.abs(dy - (esperados[2][1] - esperados[0][1])) < 0.5, 'el desnivel ≈ el del rayo')
+    // El vértice es B: con el vértice en A el valor sería otro.
+    assert.ok(Math.abs(angulo - anguloABC(b, a, c)) > 1, 'el vértice importa')
+    assert.equal(await page.getByTestId('tool-label-measure').count(), 0, 'no es una distancia')
+    assert.match(await page.getByTestId('measure-hint').textContent(), /aproximada/)
+
+    // Cuarto clic: empieza una medición nueva (queda solo el punto nuevo, sin rótulo).
+    const q = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), 'sk575_carrier')
+    assert.ok(q)
+    await page.mouse.click(q.x, q.y)
+    await page.waitForFunction(
+      () => window.__rigNativo.estado().herramientas.puntos.length === 1,
+      null,
+      { timeout: 30_000 },
+    )
+    assert.equal(await page.getByTestId('tool-label-measure-angle').count(), 0)
+
+    // Pasar a medir distancia descarta los puntos del ángulo y vuelve la ayuda de dos puntos.
+    await boton(page, 'Medir').click()
+    const d = await estadoMedicion(page)
+    assert.equal(d.tipoMedicion, 'distance')
+    assert.equal(d.puntos.length, 0)
+    assert.equal(await boton(page, 'Medir ángulo').getAttribute('aria-pressed'), 'false')
+    assert.match(await page.getByTestId('measure-hint').textContent(), /dos superficies/)
+  },
+)

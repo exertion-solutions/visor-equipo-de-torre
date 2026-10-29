@@ -6,7 +6,9 @@ import { toolLabels } from '@/scene/tools/toolLabelElements'
 import { useToolsStore } from '@/stores/toolsStore'
 import { ToolLabels } from './ToolLabels'
 
-beforeEach(() => useToolsStore.setState({ dims: false, measure: false, points: [] }))
+beforeEach(() =>
+  useToolsStore.setState({ dims: false, measure: false, measureKind: 'distance', points: [] }),
+)
 afterEach(cleanup)
 
 describe('ToolLabels', () => {
@@ -35,6 +37,19 @@ describe('ToolLabels', () => {
     act(() => useToolsStore.getState().addPoint([9, 9, 9]))
     expect(screen.queryByTestId('tool-label-measure')).toBeNull()
     expect(toolLabels().has('measure')).toBe(false)
+  })
+
+  it('el ángulo se rotula con tres puntos, anclado al vértice B, y no se confunde con la distancia', () => {
+    useToolsStore.setState({ measureKind: 'angle', points: [[1, 0, 0]] })
+    render(<ToolLabels />)
+    act(() => useToolsStore.getState().addPoint([0, 0, 0]))
+    expect(screen.queryByTestId('tool-label-measure-angle')).toBeNull()
+    act(() => useToolsStore.getState().addPoint([0, 2, 0]))
+    expect(screen.getByTestId('tool-label-measure-angle').textContent).toBe(
+      '≈ 90,0° · desnivel A→C 2,00 m · horiz. 1,00 m · modelo',
+    )
+    expect(screen.queryByTestId('tool-label-measure')).toBeNull()
+    expect(toolLabels().get('measure-angle')?.point).toEqual([0, 0, 0])
   })
 
   it('al apagar las cotas se limpia el registro', () => {
