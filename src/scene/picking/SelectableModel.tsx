@@ -25,8 +25,7 @@ export function SelectableModel({ componentId, position, children }: SelectableM
   // El raycaster no respeta el plano de corte: un impacto del lado recortado se ignora sin frenar el evento, y r3f lo sigue
   // entregando al siguiente objeto detrás del plano.
   const cutAway = (e: ThreeEvent<PointerEvent | MouseEvent>) => {
-    const { cut, cutX } = useToolsStore.getState()
-    return cut && isCutAway(e.point.x, cutX)
+    return isCutAway(e.point.toArray(), useToolsStore.getState().cuts)
   }
 
   const over = (e: ThreeEvent<PointerEvent>) => {
@@ -44,8 +43,8 @@ export function SelectableModel({ componentId, position, children }: SelectableM
   const click = (e: ThreeEvent<MouseEvent>) => {
     if (cutAway(e)) {
       // Todo lo que está bajo el clic quedó recortado: es un clic en el vacío (deselecciona, como el V2).
-      const { cutX, measure } = useToolsStore.getState()
-      if (!measure && e.intersections.every((i) => isCutAway(i.point.x, cutX)))
+      const { cuts, measure } = useToolsStore.getState()
+      if (!measure && e.intersections.every((i) => isCutAway(i.point.toArray(), cuts)))
         selectComponent(null)
       return
     }

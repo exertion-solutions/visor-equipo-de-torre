@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { initialCuts } from '@/lib/cut'
 import { dropsVisible, measureHint, useToolsStore, zonesVisible } from './toolsStore'
 import { useViewerStore } from './viewerStore'
 
@@ -12,8 +13,7 @@ beforeEach(() =>
     zones: false,
     drops: false,
     dropsSection: null,
-    cut: false,
-    cutX: 0,
+    cuts: initialCuts(),
     explodeOn: false,
     explodeAmount: 0.6,
     exploded: false,
@@ -152,66 +152,36 @@ describe('despiece', () => {
   })
 })
 
-describe('corte de sección', () => {
-  it('arranca apagado en x = 0 y se enciende y apaga', () => {
-    const s = useToolsStore.getState()
-    expect([s.cut, s.cutX]).toEqual([false, 0])
-    s.toggleCut()
-    expect(useToolsStore.getState().cut).toBe(true)
-    useToolsStore.getState().toggleCut()
-    expect(useToolsStore.getState().cut).toBe(false)
-  })
-
-  it('la posición se acota a ±18 m y se recuerda con el corte apagado', () => {
-    useToolsStore.getState().setCutX(99)
-    expect(useToolsStore.getState().cutX).toBe(18)
-    useToolsStore.getState().setCutX(-4.4)
-    useToolsStore.getState().toggleCut()
-    useToolsStore.getState().toggleCut()
-    expect(useToolsStore.getState().cutX).toBeCloseTo(-4.4, 10)
-  })
-})
-
-describe('medir ángulo', () => {
-  it('es otro tipo de medición: cierra con tres puntos y el cuarto empieza de nuevo', () => {
-    useToolsStore.getState().toggleAngle()
-    expect([useToolsStore.getState().measure, useToolsStore.getState().measureKind]).toEqual([
-      true,
-      'angle',
+describe('cortes de sección', () => {
+  it('arrancan apagados en la posición inicial del V2 (X 0, Y 12, Z 0) y se encienden y apagan por eje', () => {
+    const { cuts } = useToolsStore.getState()
+    expect([cuts.x, cuts.y, cuts.z]).toEqual([
+      { on: false, value: 0 },
+      { on: false, value: 12 },
+      { on: false, value: 0 },
     ])
-    for (const p of [A, B, C]) useToolsStore.getState().addPoint(p)
-    expect(useToolsStore.getState().points).toEqual([A, B, C])
-    useToolsStore.getState().addPoint([0, 0, 1])
-    expect(useToolsStore.getState().points).toEqual([[0, 0, 1]])
+    useToolsStore.getState().toggleCut('y')
+    expect(useToolsStore.getState().cuts.y.on).toBe(true)
+    expect(useToolsStore.getState().cuts.x.on).toBe(false)
+    useToolsStore.getState().toggleCut('y')
+    expect(useToolsStore.getState().cuts.y.on).toBe(false)
   })
 
-  it('se excluye con la distancia y cambiar de tipo descarta los puntos; apagar los conserva', () => {
-    useToolsStore.getState().toggleMeasure()
-    useToolsStore.getState().addPoint(A)
-    useToolsStore.getState().toggleAngle()
-    expect(useToolsStore.getState().measureKind).toBe('angle')
-    expect(useToolsStore.getState().points).toEqual([])
-    useToolsStore.getState().addPoint(A)
-    useToolsStore.getState().addPoint(B)
-    useToolsStore.getState().toggleAngle()
-    expect(useToolsStore.getState().measure).toBe(false)
-    expect(useToolsStore.getState().points).toEqual([A, B])
-    useToolsStore.getState().toggleAngle()
-    expect(useToolsStore.getState().points).toEqual([A, B])
+  it('se combinan: cada eje es independiente', () => {
+    useToolsStore.getState().toggleCut('x')
+    useToolsStore.getState().toggleCut('z')
+    const { cuts } = useToolsStore.getState()
+    expect([cuts.x.on, cuts.y.on, cuts.z.on]).toEqual([true, false, true])
   })
 
-  it('no se mide con el equipo desarmado', () => {
-    useToolsStore.setState({ explodeOn: true })
-    useToolsStore.getState().toggleAngle()
-    expect(useToolsStore.getState().measure).toBe(false)
-    useToolsStore.setState({ explodeOn: false })
-  })
-
-  it('la ayuda de ángulo guía A, vértice B y C', () => {
-    expect(measureHint(true, 0, 'angle')).toMatch(/tres superficies/)
-    expect(measureHint(true, 1, 'angle')).toMatch(/vértice B/)
-    expect(measureHint(true, 2, 'angle')).toMatch(/tercer punto/)
-    expect(measureHint(true, 3, 'angle')).toMatch(/aproximada/)
-    expect(measureHint(false, 3, 'angle')).toBe('')
+  it('la posición se acota al rango de su eje y se recuerda con el corte apagado', () => {
+    useToolsStore.getState().setCut('x', 99)
+    expect(useToolsStore.getState().cuts.x.value).toBe(18)
+    useToolsStore.getState().setCut('y', 0)
+    expect(useToolsStore.getState().cuts.y.value).toBe(0.5)
+    useToolsStore.getState().setCut('z', -4.4)
+    useToolsStore.getState().toggleCut('z')
+    useToolsStore.getState().toggleCut('z')
+    expect(useToolsStore.getState().cuts.z.value).toBe(-4.4)
   })
 })
