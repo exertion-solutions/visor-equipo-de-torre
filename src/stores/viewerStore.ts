@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { LegacyLayer, LegacySelection, LegacyView } from '@/lib/legacyBridge'
+import { presetProjection, type CameraPresetId } from '@/scene/cameras/presets'
 import { DEFAULT_PROJECTION, type Projection } from '@/scene/cameras/projection'
 
 /** legacy = visor V2 embebido (iframe); native = escena R3F (aún sin paridad). */
@@ -22,7 +23,9 @@ export function isViewerEngine(value: unknown): value is ViewerEngine {
  * componente vuelve a disparar la transición.
  */
 export type CameraCommand =
-  { type: 'focus'; componentId: string; seq: number } | { type: 'back'; seq: number }
+  | { type: 'focus'; componentId: string; seq: number }
+  | { type: 'back'; seq: number }
+  | { type: 'view'; view: CameraPresetId; seq: number }
 
 interface ViewerState {
   engine: ViewerEngine
@@ -44,6 +47,8 @@ interface ViewerState {
   canGoBack: boolean
   /** Etiquetas numeradas sobre los componentes (apagadas al arrancar, como en el V2). */
   labels: boolean
+  /** Última vista estándar elegida (botón resaltado); `null` = ninguna. El legacy tampoco la limpia al orbitar. */
+  activeView: CameraPresetId | null
   /** Motor nativo: proyección de la cámara (la aplica `CameraRig`, conservando posición y objetivo). */
   projection: Projection
   /** Componentes ocultos en la escena nativa: ni se dibujan ni reciben hover ni clic. */
@@ -63,6 +68,11 @@ interface ViewerState {
   /** Restaura la vista previa al primer foco (no hace nada si no hay vista guardada). */
   goBack: () => void
   setCanGoBack: (canGoBack: boolean) => void
+  /**
+   * Va a una vista estándar: fija la proyección (ortográfica salvo "Boca de pozo"), anula el "Volver" y anima la cámara
+   * (la ejecuta `CameraRig`). Como en el legacy.
+   */
+  setView: (view: CameraPresetId) => void
   setProjection: (projection: Projection) => void
   toggleProjection: () => void
   /**
@@ -89,6 +99,7 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   cameraCommand: null,
   canGoBack: false,
   labels: false,
+  activeView: null,
   projection: DEFAULT_PROJECTION,
   hiddenComponentIds: [],
   isolationSnapshot: null,
@@ -117,6 +128,14 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
     set({ cameraCommand: { type: 'back', seq: (cameraCommand?.seq ?? 0) + 1 } })
   },
   setCanGoBack: (canGoBack) => set({ canGoBack }),
+  setView: (view) => {
+    const { cameraCommand } = get()
+    set({
+      activeView: view,
+      projection: presetProjection(view),
+      cameraCommand: { type: 'view', view, seq: (cameraCommand?.seq ?? 0) + 1 },
+    })
+  },
   setProjection: (projection) => set({ projection }),
   toggleProjection: () =>
     set((s) => ({ projection: s.projection === 'orthographic' ? 'perspective' : 'orthographic' })),

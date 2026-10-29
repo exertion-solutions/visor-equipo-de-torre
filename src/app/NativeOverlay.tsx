@@ -4,13 +4,15 @@ import { ComponentTree } from '@/components/equipment/ComponentTree'
 import { ComponentLabels } from '@/components/viewer/ComponentLabels'
 import { HoverTooltip } from '@/components/viewer/HoverTooltip'
 import { ToolLabels } from '@/components/viewer/ToolLabels'
+import { ViewButtons } from '@/components/viewer/ViewButtons'
 import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
 import { useViewerStore } from '@/stores/viewerStore'
 
 const SCENE_IDS = RIG10_SCENE.map((m) => m.componentId)
 
 /**
- * Capa de interfaz del motor nativo sobre la escena: panel de componentes, etiquetas, ficha del seleccionado y tooltip del hover. Se carga
+ * Capa de interfaz del motor nativo sobre la escena: panel de componentes, etiquetas, vistas estándar, ficha del seleccionado y
+ * tooltip del hover. Se carga
  * aparte (lazy) con el visor 3D: los datos del equipo no entran en el paquete principal. Esc deselecciona, como en el V2.
  */
 export default function NativeOverlay() {
@@ -30,6 +32,7 @@ export default function NativeOverlay() {
       <ComponentLabels rig={RIG10_RIG} sceneIds={SCENE_IDS} />
       <ToolLabels />
       <ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />
+      <ViewButtons raised={selected !== null} />
       <HoverTooltip rig={RIG10_RIG} />
       <ComponentCard rig={RIG10_RIG} componentId={selected} onClose={() => selectComponent(null)} />
     </>

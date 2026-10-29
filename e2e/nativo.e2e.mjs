@@ -674,3 +674,53 @@ prueba(
     assert.equal(await page.getByTestId('tool-labels').count(), 0)
   },
 )
+// Cotas de las vistas del V2 (`na` y `Uh` de la base del legacy), enunciadas de nuevo acá como especificación independiente.
+const VISTAS = [
+  ['Isométrica', [40, 40, 42], [-2, 13, 0], true, 44],
+  ['Frontal', [50, 15, 0], [-3, 15, 0], true, 44],
+  ['Lateral', [-3, 15, 54], [-3, 15, 0], true, 44],
+  ['Superior', [-2.5, 72, 0.02], [-2.5, 0, 0], true, 62],
+  ['Boca de pozo', [6.5, 3.4, 5.5], [0, 2.4, 0], false, null],
+]
+
+prueba(
+  'vistas estándar: cada una lleva la cámara a su preset con la proyección y la escala del legacy',
+  async (page) => {
+    // Se recorren fuera de orden y se vuelve a una ortográfica después de la perspectiva ("Boca de pozo").
+    for (const nombre of ['Superior', 'Boca de pozo', 'Lateral', 'Frontal', 'Isométrica']) {
+      const [, pos, tgt, orto, span] = VISTAS.find((v) => v[0] === nombre)
+      await boton(page, nombre).click()
+      const e = await hasta(
+        page,
+        (s) => cerca(s.camara.posicion, pos, 1e-3) && cerca(s.camara.objetivo, tgt, 1e-3),
+      )
+      assert.equal(e.camara.tipo, orto ? 'OrthographicCamera' : 'PerspectiveCamera', nombre)
+      assert.equal(e.tienda.proyeccion, orto ? 'orthographic' : 'perspective', nombre)
+      if (orto) {
+        const f = e.camara.frustum
+        assert.ok(Math.abs(f.top - f.bottom - span) < 1e-6, `${nombre}: alto del frustum ${span} m`)
+        assert.equal(e.camara.zoom, 1, `${nombre}: zoom reiniciado`)
+      }
+      assert.equal(await boton(page, nombre).getAttribute('aria-pressed'), 'true', nombre)
+      assert.equal(
+        await page.locator('[data-testid="view-buttons"] [aria-pressed="true"]').count(),
+        1,
+        'una sola vista resaltada',
+      )
+    }
+  },
+)
+
+prueba('vistas estándar: ir a una vista descarta el "Volver" de un foco previo', async (page) => {
+  await clic(page, MASTIL)
+  await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+  await boton(page, 'Enfocar').click()
+  await hasta(page, (e) => e.tienda.puedeVolver)
+  await boton(page, 'Frontal').click()
+  const e = await hasta(
+    page,
+    (s) => cerca(s.camara.posicion, [50, 15, 0], 1e-3) && !s.tienda.puedeVolver,
+  )
+  assert.equal(e.tienda.puedeVolver, false)
+  assert.ok(await boton(page, 'Volver').isDisabled(), '"Volver" queda deshabilitado')
+})
