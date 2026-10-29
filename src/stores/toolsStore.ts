@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { clampCutX } from '@/lib/cut'
 import { clampExplodeAmount, DEFAULT_EXPLODE_AMOUNT } from '@/lib/explode'
 import type { Vec3 } from '@/lib/geometry'
 import { useModeStore } from './modeStore'
@@ -23,6 +24,10 @@ interface ToolsState {
   explodeAmount: number
   /** ¿Hay algo desplazado ahora (separación actual > 0)? La escribe el animador al cruzar el 0, no a cada cuadro. */
   exploded: boolean
+  /** Corte de sección X encendido (plano global; las superficies quedan abiertas, sin tapas). */
+  cut: boolean
+  /** Posición del plano de corte X (m); se conserva lo de x ≤ posición. */
+  cutX: number
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
   /** Puntos medidos (0, 1 o 2), en el marco de la escena. */
@@ -36,6 +41,8 @@ interface ToolsState {
   toggleExplode: () => void
   setExplodeAmount: (amount: number) => void
   setExploded: (exploded: boolean) => void
+  toggleCut: () => void
+  setCutX: (x: number) => void
   /** Activa o desactiva el modo medir. Desactivarlo no borra la medición hecha (como el V2): se borra con `clearMeasure`. */
   toggleMeasure: () => void
   /** Agrega un punto; con dos ya puestos, el siguiente clic empieza una medición nueva. */
@@ -48,6 +55,8 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   zones: false,
   drops: false,
   dropsSection: null,
+  cut: false,
+  cutX: 0,
   explodeOn: false,
   explodeAmount: DEFAULT_EXPLODE_AMOUNT,
   exploded: false,
@@ -64,6 +73,8 @@ export const useToolsStore = create<ToolsState>()((set) => ({
     set((s) => ({ explodeOn: !s.explodeOn, measure: s.explodeOn ? s.measure : false })),
   setExplodeAmount: (amount) => set({ explodeAmount: clampExplodeAmount(amount) }),
   setExploded: (exploded) => set({ exploded }),
+  toggleCut: () => set((s) => ({ cut: !s.cut })),
+  setCutX: (x) => set({ cutX: clampCutX(x) }),
   // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
   toggleMeasure: () => set((s) => (s.explodeOn || s.exploded ? s : { measure: !s.measure })),
   addPoint: (point) =>

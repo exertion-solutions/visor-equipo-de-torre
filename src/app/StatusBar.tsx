@@ -2,6 +2,7 @@ import { GRADE_HINT, GRADE_STYLES } from '@/components/equipment/grade'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { CUT_MAX, CUT_MIN, CUT_STEP, cutNote } from '@/lib/cut'
 import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
@@ -21,6 +22,10 @@ export function StatusBar() {
   // El botón refleja lo pedido (a mano o por el modo QHSE), aunque el despiece oculte la capa un rato.
   const zonesOn = useToolsStore((s) => zonesVisible(s.zones, mode))
   const dropsOn = useToolsStore((s) => dropsVisible(s.drops, mode))
+  const cut = useToolsStore((s) => s.cut)
+  const cutX = useToolsStore((s) => s.cutX)
+  const toggleCut = useToolsStore((s) => s.toggleCut)
+  const setCutX = useToolsStore((s) => s.setCutX)
   const explodeOn = useToolsStore((s) => s.explodeOn)
   const explodeAmount = useToolsStore((s) => s.explodeAmount)
   const exploded = useToolsStore((s) => s.exploded)
@@ -233,6 +238,33 @@ export function StatusBar() {
           <span className="shrink-0 font-mono" data-testid="explode-value">
             {explodeOn ? Math.round(explodeAmount * 100) : 0} %
           </span>
+          <Button
+            type="button"
+            size="xs"
+            variant={cut ? 'secondary' : 'ghost'}
+            aria-pressed={cut}
+            onClick={toggleCut}
+            title="Corte visual en el plano X: superficies abiertas, sin tapas ni sólidos CAD"
+            className="shrink-0"
+          >
+            Corte X
+          </Button>
+          <input
+            type="range"
+            min={CUT_MIN}
+            max={CUT_MAX}
+            step={CUT_STEP}
+            value={cutX}
+            disabled={!cut}
+            aria-label="Posición del corte X"
+            onChange={(e) => setCutX(Number(e.target.value))}
+            className="w-20 shrink-0 accent-violet-500 disabled:opacity-40"
+          />
+          {cut && (
+            <span className="shrink-0" data-testid="cut-note">
+              {cutNote(cutX)}
+            </span>
+          )}
           <Button
             type="button"
             size="xs"

@@ -3,6 +3,7 @@ import { Grid } from '@react-three/drei'
 import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three'
 import { Suspense, useMemo } from 'react'
 import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET } from '@/scene/cameras/presets'
+import { CutLayer } from '@/scene/cut/CutLayer'
 import { ExplodeRig } from '@/scene/explode/ExplodeRig'
 import { CameraRig } from '@/scene/controls/CameraRig'
 import { NativeProbe } from '@/scene/debug/NativeProbe'
@@ -79,6 +80,7 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
         <PostFx />
       </Suspense>
       <ExplodeRig offsets={offsets} />
+      <CutLayer />
       <CameraRig />
       <LabelsProjector />
       <ToolsLayer />

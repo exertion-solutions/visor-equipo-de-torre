@@ -38,6 +38,8 @@ export interface NativeProbeState {
 }
 
 export interface NativeProbeApi {
+  /** Planos de recorte globales del renderer (lo que realmente corta), con normal y constante. */
+  corte: () => { normal: number[]; constante: number }[]
   /** Huella de los colores de todos los materiales de los componentes (base y emisivo): detecta cualquier teñido. */
   huellaMateriales: () => string
   /** Zonas ilustrativas dibujadas: caja (centro y tamaño, en metros) de cada una; vacío si están apagadas. */
@@ -139,6 +141,8 @@ export function NativeProbe() {
         }
         return out
       },
+      corte: () =>
+        get().gl.clippingPlanes.map((p) => ({ normal: arr(p.normal), constante: p.constant })),
       huellaMateriales: () => {
         const colores: string[] = []
         for (const id of registeredComponentIds()) {
