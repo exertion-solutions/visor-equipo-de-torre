@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET } from '@/scene/cameras/presets'
 import { CameraRig } from '@/scene/controls/CameraRig'
 import { NativeProbe } from '@/scene/debug/NativeProbe'
+import { LabelsProjector } from '@/scene/labels/LabelsProjector'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { RigModel } from '@/scene/loaders/RigModel'
 import { PostFx } from '@/scene/effects/PostFx'
@@ -65,6 +66,7 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
         <PostFx />
       </Suspense>
       <CameraRig />
+      <LabelsProjector />
       {import.meta.env.DEV && <NativeProbe />}
     </Canvas>
   )

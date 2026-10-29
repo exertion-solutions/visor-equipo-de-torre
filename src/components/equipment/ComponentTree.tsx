@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { numberComponents } from '@/lib/componentLabels'
 import { buildComponentTree, groupVisibility } from '@/lib/componentTree'
 import { useViewerStore } from '@/stores/viewerStore'
 import type { Rig } from '@/types'
@@ -26,6 +27,7 @@ const abiertoAlInicio = () =>
 export function ComponentTree({ rig, sceneIds }: ComponentTreeProps) {
   const [open, setOpen] = useState(abiertoAlInicio)
   const groups = useMemo(() => buildComponentTree(rig, sceneIds), [rig, sceneIds])
+  const numbers = useMemo(() => numberComponents(groups), [groups])
   const selected = useViewerStore((s) => s.selectedComponentId)
   const hidden = useViewerStore((s) => s.hiddenComponentIds)
   const selectComponent = useViewerStore((s) => s.selectComponent)
@@ -111,6 +113,9 @@ export function ComponentTree({ rig, sceneIds }: ComponentTreeProps) {
                               isHidden ? 'opacity-40' : ''
                             }`}
                           >
+                            <span className="text-muted-foreground w-5 shrink-0 font-mono text-[10px]">
+                              {String(numbers.get(item.id) ?? 0).padStart(2, '0')}
+                            </span>
                             <span className="min-w-0 flex-1 truncate">{item.name}</span>
                             <span
                               className={`shrink-0 rounded border px-1 text-[10px] leading-4 ${GRADE_STYLES[item.confidence]}`}

@@ -14,6 +14,8 @@ export function StatusBar() {
   const selection = useViewerStore((s) => (s.engine === 'legacy' ? s.selection : null))
   const edges = useViewerStore((s) => s.edges)
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
+  const labels = useViewerStore((s) => s.labels)
+  const toggleLabels = useViewerStore((s) => s.toggleLabels)
   const hasNativeSelection = useViewerStore((s) => s.selectedComponentId !== null)
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
@@ -26,7 +28,7 @@ export function StatusBar() {
   return (
     <footer
       aria-label="Barra de estado"
-      className="bg-card/60 text-muted-foreground flex items-center gap-x-4 gap-y-1 border-t px-3 py-1.5 text-xs sm:px-4"
+      className="bg-card/60 text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-3 py-1.5 text-xs sm:px-4"
     >
       <span className="hidden min-w-0 shrink-0 sm:inline">
         Modo: <span className="text-foreground font-medium">{MODE_LABELS[mode]}</span>
@@ -130,6 +132,17 @@ export function StatusBar() {
             className="shrink-0"
           >
             Aristas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={labels ? 'secondary' : 'ghost'}
+            aria-pressed={labels}
+            onClick={toggleLabels}
+            title="Etiquetas numeradas sobre los componentes (el número es el del panel)"
+            className="shrink-0"
+          >
+            Etiquetas
           </Button>
         </>
       )}

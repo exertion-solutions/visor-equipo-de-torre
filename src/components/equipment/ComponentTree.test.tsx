@@ -40,6 +40,14 @@ describe('ComponentTree', () => {
     expect(within(item('sk575_bop')).getByText(nameOf('sk575_bop'))).toBeTruthy()
   })
 
+  it('cada componente lleva su número, el mismo que usan las etiquetas', () => {
+    render(<ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />)
+    const numbers = screen
+      .getAllByTestId(/^tree-item-/)
+      .map((li) => li.querySelector('button span')?.textContent)
+    expect(numbers).toEqual(SCENE_IDS.map((_, i) => String(i + 1).padStart(2, '0')))
+  })
+
   it('el nombre selecciona el componente y otro clic lo deselecciona', () => {
     render(<ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />)
     const button = within(item('sk575_bop')).getByRole('button')

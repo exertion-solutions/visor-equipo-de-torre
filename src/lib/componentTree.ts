@@ -1,9 +1,10 @@
-import type { GeometryConfidence, Rig } from '@/types'
+import type { ComponentFamily, GeometryConfidence, Rig } from '@/types'
 
 export interface ComponentTreeItem {
   id: string
   name: string
   confidence: GeometryConfidence
+  family: ComponentFamily
 }
 
 export interface ComponentTreeGroup {
@@ -26,7 +27,12 @@ export function buildComponentTree(rig: Rig, sceneIds: readonly string[]): Compo
     for (const id of equipment.componentIds) {
       const component = byId.get(id)
       if (component && inScene.has(id))
-        items.push({ id, name: component.name, confidence: component.confidence })
+        items.push({
+          id,
+          name: component.name,
+          confidence: component.confidence,
+          family: component.family,
+        })
     }
     if (items.length > 0) groups.push({ id: equipment.id, name: equipment.name, items })
   }
