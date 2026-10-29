@@ -29,7 +29,7 @@ export interface NativeProbeState {
     puedeVolver: boolean
   }
   /** Cotas, modo medir y puntos medidos (marco de escena). */
-  herramientas: { cotas: boolean; medir: boolean; puntos: number[][] }
+  herramientas: { cotas: boolean; medir: boolean; tipoMedicion: string; puntos: number[][] }
   /** Ids de los componentes montados y, de ellos, los que se dibujan (`visible`). */
   componentes: string[]
   visibles: string[]
@@ -118,9 +118,10 @@ export function NativeProbe() {
             proyeccion: s.projection,
             puedeVolver: s.canGoBack,
           },
-          herramientas: (({ dims, measure, points }) => ({
+          herramientas: (({ dims, measure, measureKind, points }) => ({
             cotas: dims,
             medir: measure,
+            tipoMedicion: measureKind,
             puntos: points.map((p) => [...p]),
           }))(useToolsStore.getState()),
           componentes: ids,

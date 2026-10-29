@@ -81,7 +81,7 @@ export function ToolsLayer() {
           <meshBasicMaterial color={MEASURE_COLOR} depthTest={false} transparent />
         </mesh>
       ))}
-      {points.length === 2 && (
+      {points.length >= 2 && (
         <Line
           points={[...points]}
           color={MEASURE_COLOR}
