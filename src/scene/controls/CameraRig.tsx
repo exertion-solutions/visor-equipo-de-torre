@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box3, Vector3, type Camera, type PerspectiveCamera } from 'three'
 import type { Vec3 } from '@/lib/geometry'
-import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET } from '@/scene/cameras/presets'
+import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET, presetSpan } from '@/scene/cameras/presets'
 import {
   FOCUS_DURATION_MS,
   computeFocusView,
@@ -118,6 +118,16 @@ export function CameraRig() {
         setOrthoZoom(ortho, 1)
         syncCameras()
       }
+    } else if (command.type === 'view') {
+      // Vista estándar (como `Uh` del legacy): la proyección ya la fijó el store; acá se reinicia la escala ortográfica,
+      // se descarta la vista guardada por un foco ("Volver" deja de tener a dónde volver) y se anima hasta el preset.
+      const preset = CAMERA_PRESETS[command.view]
+      goal = { position: [...preset.position], target: [...preset.target] }
+      savedView.current = null
+      setCanGoBack(false)
+      span.current = presetSpan(command.view)
+      setOrthoZoom(ortho, 1)
+      syncCameras()
     } else {
       const saved = savedView.current
       if (!saved) return

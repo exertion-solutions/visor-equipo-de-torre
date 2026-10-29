@@ -1,4 +1,5 @@
 import type { Vec3 } from '@/lib/geometry'
+import { ORTHO_SPAN, type Projection } from './projection'
 
 /**
  * Vistas estándar, heredadas del visor legacy (Digital_Rig_V2.html).
@@ -22,3 +23,29 @@ export const CAMERA_PRESETS: Record<CameraPresetId, CameraPreset> = {
 }
 
 export const DEFAULT_CAMERA_PRESET: CameraPresetId = 'iso'
+
+export const CAMERA_PRESET_IDS = [
+  'iso',
+  'front',
+  'side',
+  'top',
+  'well',
+] as const satisfies readonly CameraPresetId[]
+
+export const CAMERA_PRESET_LABELS: Record<CameraPresetId, string> = {
+  iso: 'Isométrica',
+  front: 'Frontal',
+  side: 'Lateral',
+  top: 'Superior',
+  well: 'Boca de pozo',
+}
+
+/**
+ * Como el legacy (`Uh`): cada vista fija la proyección. Todas son ortográficas salvo "Boca de pozo", que es una vista
+ * de recorrido y va en perspectiva.
+ */
+export const presetProjection = (id: CameraPresetId): Projection =>
+  id === 'well' ? 'perspective' : 'orthographic'
+
+/** Alto del frustum ortográfico (m) de cada vista: la superior abarca más (62 m) que las demás (44 m). */
+export const presetSpan = (id: CameraPresetId): number => (id === 'top' ? 62 : ORTHO_SPAN)
