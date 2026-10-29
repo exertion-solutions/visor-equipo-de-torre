@@ -6,7 +6,7 @@ import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
-import { measureHint, useDropsVisible, useToolsStore, useZonesVisible } from '@/stores/toolsStore'
+import { dropsVisible, measureHint, useToolsStore, zonesVisible } from '@/stores/toolsStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -18,8 +18,14 @@ export function StatusBar() {
   const labels = useViewerStore((s) => s.labels)
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
   const toggleZones = useToolsStore((s) => s.toggleZones)
-  const zonesOn = useZonesVisible()
-  const dropsOn = useDropsVisible()
+  // El botón refleja lo pedido (a mano o por el modo QHSE), aunque el despiece oculte la capa un rato.
+  const zonesOn = useToolsStore((s) => zonesVisible(s.zones, mode))
+  const dropsOn = useToolsStore((s) => dropsVisible(s.drops, mode))
+  const explodeOn = useToolsStore((s) => s.explodeOn)
+  const explodeAmount = useToolsStore((s) => s.explodeAmount)
+  const exploded = useToolsStore((s) => s.exploded)
+  const toggleExplode = useToolsStore((s) => s.toggleExplode)
+  const setExplodeAmount = useToolsStore((s) => s.setExplodeAmount)
   const toggleDrops = useToolsStore((s) => s.toggleDrops)
   const dims = useToolsStore((s) => s.dims)
   const toggleDims = useToolsStore((s) => s.toggleDims)
@@ -205,10 +211,40 @@ export function StatusBar() {
           <Button
             type="button"
             size="xs"
+            variant={explodeOn ? 'secondary' : 'ghost'}
+            aria-pressed={explodeOn}
+            onClick={toggleExplode}
+            title="Despiece: separa las piezas para mirarlas. Es solo visual (sin escala ni cálculo); oculta etiquetas, cotas, zonas y DROPS"
+            className="shrink-0"
+          >
+            Despiece
+          </Button>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            step={1}
+            value={Math.round(explodeAmount * 100)}
+            disabled={!explodeOn}
+            aria-label="Separación del despiece"
+            onChange={(e) => setExplodeAmount(Number(e.target.value) / 100)}
+            className="w-20 shrink-0 accent-violet-500 disabled:opacity-40"
+          />
+          <span className="shrink-0 font-mono" data-testid="explode-value">
+            {explodeOn ? Math.round(explodeAmount * 100) : 0} %
+          </span>
+          <Button
+            type="button"
+            size="xs"
             variant={measure ? 'secondary' : 'ghost'}
             aria-pressed={measure}
+            disabled={explodeOn || exploded}
             onClick={toggleMeasure}
-            title="Medir entre dos puntos de la superficie del modelo (aproximado)"
+            title={
+              explodeOn || exploded
+                ? 'No se mide con el equipo desarmado: apagá el despiece'
+                : 'Medir entre dos puntos de la superficie del modelo (aproximado)'
+            }
             className="shrink-0"
           >
             Medir

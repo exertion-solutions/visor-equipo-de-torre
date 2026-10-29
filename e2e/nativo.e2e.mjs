@@ -976,3 +976,88 @@ prueba(
     assert.ok(await boton(page, 'DROPS').isEnabled())
   },
 )
+
+// Despiece (visor V2, tabla de offsets por grupo), enunciado de nuevo acá como especificación independiente: metros a factor 1.
+const DESPIECE = {
+  sk575_mastil: [-5, 3, 0],
+  sk575_piso: [5, 0, 0],
+  sk575_vientos: [0, 7, 0],
+  sk575_aparejo: [7, 2, 0],
+  sk575_bop: [8, 0, -4],
+  sk575_llave: [5, 5, 4],
+  sk575_izaje: [0, 5, 6],
+  sk575_cuadro: [0, 4, 7],
+  sk575_carrier: [-7, 0, 0],
+}
+
+prueba(
+  'despiece: cada pieza se desplaza offset × separación, oculta las capas del equipo armado y vuelve a su lugar',
+  async (page) => {
+    const base = await cajas(page)
+    const ids = Object.keys(base)
+    assert.ok(ids.length >= 16, 'hay componentes montados')
+
+    // Con el equipo armado se encienden etiquetas, cotas y zonas: el despiece las oculta y al volver reaparecen.
+    await boton(page, 'Etiquetas').click()
+    await boton(page, 'Cotas').click()
+    await boton(page, 'Zonas').click()
+    await page.getByTestId('component-labels').waitFor({ state: 'attached' })
+    await page.getByTestId('tool-labels').waitFor({ state: 'attached' })
+    await page.getByTestId('qhse-panel').waitFor({ state: 'attached' })
+
+    // Espera a que todas las cajas estén en `base + offset × factor` (la animación es suave) y devuelve el desvío máximo.
+    const asentar = async (factor) => {
+      let peor = Infinity
+      for (let i = 0; i < 160; i++) {
+        const ahora = await cajas(page)
+        peor = 0
+        for (const id of ids) {
+          const o = DESPIECE[id] ?? [0, 0, 0]
+          for (let k = 0; k < 3; k++)
+            peor = Math.max(
+              peor,
+              Math.abs(ahora[id].centro[k] - (base[id].centro[k] + o[k] * factor)),
+            )
+        }
+        if (peor < 0.01) return peor
+        await page.waitForTimeout(150)
+      }
+      assert.fail(`las piezas no llegaron al despiece ${factor}: desvío máximo ${peor} m`)
+    }
+
+    await boton(page, 'Despiece').click()
+    assert.equal(await boton(page, 'Despiece').getAttribute('aria-pressed'), 'true')
+    assert.equal((await page.getByTestId('explode-value').textContent()).trim(), '60 %')
+    await asentar(0.6)
+    // Tamaños intactos: se desplaza, no se deforma.
+    const ahora = await cajas(page)
+    for (const id of ids)
+      assert.ok(cerca(ahora[id].tamano, base[id].tamano, 1e-3), `${id} conserva su tamaño`)
+
+    for (const testid of ['component-labels', 'tool-labels', 'qhse-panel'])
+      await page.getByTestId(testid).waitFor({ state: 'detached', timeout: 10_000 })
+    assert.equal(
+      await boton(page, 'Medir').isDisabled(),
+      true,
+      'no se mide con el equipo desarmado',
+    )
+
+    // Seleccionar una pieza desplazada sigue funcionando (el raycast ve la pieza donde está).
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+
+    // La perilla cambia la separación: a 100 % cada pieza está en su offset completo.
+    await page.getByLabel('Separación del despiece').fill('100')
+    assert.equal((await page.getByTestId('explode-value').textContent()).trim(), '100 %')
+    await asentar(1)
+
+    // Apagar: todo vuelve a su lugar y reaparecen las capas; la perilla queda deshabilitada y la lectura en 0 %.
+    await boton(page, 'Despiece').click()
+    await asentar(0)
+    assert.equal((await page.getByTestId('explode-value').textContent()).trim(), '0 %')
+    assert.equal(await page.getByLabel('Separación del despiece').isDisabled(), true)
+    for (const testid of ['component-labels', 'tool-labels', 'qhse-panel'])
+      await page.getByTestId(testid).waitFor({ state: 'attached', timeout: 10_000 })
+    assert.equal(await boton(page, 'Medir').isDisabled(), false)
+  },
+)
