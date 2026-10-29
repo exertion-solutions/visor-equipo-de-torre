@@ -67,6 +67,11 @@ interface ViewerState {
    * restaura lo que estaba oculto antes. Sin selección (o con una que no está en `allIds`) no hace nada.
    */
   toggleIsolation: (allIds: readonly string[]) => void
+  /**
+   * Muestra u oculta componentes a mano (panel de componentes). Ocultar el seleccionado o el que tiene hover los
+   * deselecciona. Un cambio manual termina el aislamiento: ya no hay un estado previo al que volver.
+   */
+  setComponentsVisible: (ids: readonly string[], visible: boolean) => void
 }
 
 export const useViewerStore = create<ViewerState>()((set, get) => ({
@@ -122,6 +127,20 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
       hiddenComponentIds: hidden,
       isolationSnapshot: hiddenComponentIds,
       // Un componente que se oculta no puede quedar con el contorno de hover.
+      hoveredComponentId:
+        hoveredComponentId && hidden.includes(hoveredComponentId) ? null : hoveredComponentId,
+    })
+  },
+  setComponentsVisible: (ids, visible) => {
+    const { hiddenComponentIds, selectedComponentId, hoveredComponentId } = get()
+    const hidden = visible
+      ? hiddenComponentIds.filter((id) => !ids.includes(id))
+      : [...hiddenComponentIds, ...ids.filter((id) => !hiddenComponentIds.includes(id))]
+    set({
+      hiddenComponentIds: hidden,
+      isolationSnapshot: null,
+      selectedComponentId:
+        selectedComponentId && hidden.includes(selectedComponentId) ? null : selectedComponentId,
       hoveredComponentId:
         hoveredComponentId && hidden.includes(hoveredComponentId) ? null : hoveredComponentId,
     })

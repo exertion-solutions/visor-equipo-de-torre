@@ -1,11 +1,14 @@
 import { useEffect } from 'react'
 import { ComponentCard } from '@/components/equipment/ComponentCard'
+import { ComponentTree } from '@/components/equipment/ComponentTree'
 import { HoverTooltip } from '@/components/viewer/HoverTooltip'
-import { RIG10_RIG } from '@/data/rigs/rig10'
+import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
 import { useViewerStore } from '@/stores/viewerStore'
 
+const SCENE_IDS = RIG10_SCENE.map((m) => m.componentId)
+
 /**
- * Capa de interfaz del motor nativo sobre la escena: ficha del componente seleccionado y tooltip del hover. Se carga
+ * Capa de interfaz del motor nativo sobre la escena: panel de componentes, ficha del seleccionado y tooltip del hover. Se carga
  * aparte (lazy) con el visor 3D: los datos del equipo no entran en el paquete principal. Esc deselecciona, como en el V2.
  */
 export default function NativeOverlay() {
@@ -22,6 +25,7 @@ export default function NativeOverlay() {
 
   return (
     <>
+      <ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />
       <HoverTooltip rig={RIG10_RIG} />
       <ComponentCard rig={RIG10_RIG} componentId={selected} onClose={() => selectComponent(null)} />
     </>

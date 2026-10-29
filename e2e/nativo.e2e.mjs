@@ -353,3 +353,43 @@ prueba('Esc deselecciona el componente y cierra la ficha', async (page) => {
   await hasta(page, (e) => e.tienda.seleccionado === null)
   await page.getByTestId('component-card').waitFor({ state: 'detached' })
 })
+
+prueba('árbol: elige un componente tapado y lo oculta y lo muestra de la escena', async (page) => {
+  const BOP = 'sk575_bop' // desde la vista inicial queda tapado: solo se puede elegir desde el árbol
+  assert.equal(
+    await page.evaluate((i) => window.__rigNativo.puntoClicable(i), BOP),
+    null,
+    'precondición: el BOP no es clicable en la vista inicial',
+  )
+  const fila = page.getByTestId(`tree-item-${BOP}`)
+  await fila.getByRole('button').click()
+  await hasta(page, (e) => e.tienda.seleccionado === BOP)
+  await page.getByTestId('component-card').waitFor({ state: 'visible' })
+
+  // Ocultar el seleccionado desde el árbol: sale de la escena y de la selección.
+  await fila.getByRole('checkbox').uncheck()
+  let e = await hasta(page, (s) => s.tienda.ocultos.includes(BOP))
+  assert.ok(!e.visibles.includes(BOP), 'el BOP oculto no se dibuja')
+  assert.equal(e.tienda.seleccionado, null)
+
+  // Elegir uno oculto lo muestra y lo selecciona.
+  await fila.getByRole('button').click()
+  e = await hasta(page, (s) => s.tienda.seleccionado === BOP && !s.tienda.ocultos.includes(BOP))
+  assert.ok(e.visibles.includes(BOP), 'el BOP vuelve a dibujarse')
+
+  // La casilla del grupo oculta todo el grupo y la escena lo refleja.
+  const grupo = page.locator('section', { has: fila })
+  const ids = await grupo
+    .locator('[data-testid^="tree-item-"]')
+    .evaluateAll((els) => els.map((el) => el.dataset.testid.replace('tree-item-', '')))
+  assert.ok(ids.length > 1)
+  await grupo.getByRole('checkbox').first().uncheck()
+  e = await hasta(page, (s) => ids.every((id) => s.tienda.ocultos.includes(id)))
+  assert.ok(
+    ids.every((id) => !e.visibles.includes(id)),
+    'todo el grupo oculto en la escena',
+  )
+  await grupo.getByRole('checkbox').first().check()
+  e = await hasta(page, (s) => ids.every((id) => !s.tienda.ocultos.includes(id)))
+  mismoConjunto(e.visibles, e.componentes, 'al mostrar el grupo vuelven a dibujarse todos')
+})
