@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -21,6 +22,8 @@ interface ComponentCardProps {
   /** Componente a mostrar; `null` o un id que no está en el equipo = no se dibuja nada. */
   componentId: string | null
   onClose: () => void
+  /** Bloque propio de otra capa (p. ej. los puntos DROPS), al principio del cuerpo de la ficha. */
+  extra?: ReactNode
 }
 
 /**
@@ -28,7 +31,7 @@ interface ComponentCardProps {
  * su fuente y, cuando las hay, las fuentes en conflicto (nunca se elige una en silencio). No muestra rutas de
  * documentos internos: solo el título de cada fuente.
  */
-export function ComponentCard({ rig, componentId, onClose }: ComponentCardProps) {
+export function ComponentCard({ rig, componentId, onClose, extra }: ComponentCardProps) {
   const component = componentId ? rig.components.find((c) => c.id === componentId) : undefined
   if (!component) return null
   const sources = new Map<string, Source>(rig.sources.map((s) => [s.id, s]))
@@ -64,6 +67,7 @@ export function ComponentCard({ rig, componentId, onClose }: ComponentCardProps)
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-4 p-3 text-xs">
+          {extra}
           {component.scope && (
             <section aria-label="Alcance de la geometría">
               <h3 className="text-muted-foreground mb-1 font-medium tracking-wide uppercase">

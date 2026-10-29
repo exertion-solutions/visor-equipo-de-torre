@@ -37,7 +37,8 @@ describe('QhsePanel', () => {
     useToolsStore.setState({ zones: true })
     useModeStore.setState({ mode: 'qhse' })
     render(<QhsePanel />)
-    const text = screen.getByTestId('qhse-panel').textContent ?? ''
+    // Solo la sección de zonas: la leyenda DROPS nombra "layout A2" y eso no es una medida de las zonas.
+    const text = screen.getByRole('region', { name: 'Zonas ilustrativas' }).textContent ?? ''
     expect(text).not.toMatch(/\d+([.,]\d+)?\s*(m|metros|km|ft)\b/i)
     for (const zone of RIG10_QHSE.zones) {
       if (zone.shape?.type === 'circle') {

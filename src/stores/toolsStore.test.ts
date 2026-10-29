@@ -1,11 +1,21 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { measureHint, useToolsStore, zonesVisible } from './toolsStore'
+import { dropsVisible, measureHint, useToolsStore, zonesVisible } from './toolsStore'
+import { useViewerStore } from './viewerStore'
 
 const A = [1, 2, 3] as const
 const B = [4, 5, 6] as const
 const C = [7, 8, 9] as const
 
-beforeEach(() => useToolsStore.setState({ dims: false, zones: false, measure: false, points: [] }))
+beforeEach(() =>
+  useToolsStore.setState({
+    dims: false,
+    zones: false,
+    drops: false,
+    dropsSection: null,
+    measure: false,
+    points: [],
+  }),
+)
 
 describe('toolsStore', () => {
   it('arranca con todo apagado y sin puntos', () => {
@@ -66,5 +76,35 @@ describe('zonas ilustrativas', () => {
     expect(zonesVisible(false, 'qhse')).toBe(true)
     expect(zonesVisible(false, 'operation')).toBe(false)
     expect(zonesVisible(false, 'training')).toBe(false)
+  })
+})
+
+describe('capa DROPS', () => {
+  it('arranca apagada, se alterna y al apagarla o encenderla cierra la sección abierta', () => {
+    expect(useToolsStore.getState().drops).toBe(false)
+    useToolsStore.getState().toggleDrops()
+    expect(useToolsStore.getState().drops).toBe(true)
+    useToolsStore.getState().openDropsSection('corona')
+    expect(useToolsStore.getState().dropsSection).toBe('corona')
+    useToolsStore.getState().toggleDrops()
+    expect(useToolsStore.getState().drops).toBe(false)
+    expect(useToolsStore.getState().dropsSection).toBeNull()
+  })
+
+  it('abrir una sección deselecciona el componente (comparten el costado del visor); cerrarla no toca la selección', () => {
+    useViewerStore.setState({ selectedComponentId: 'sk575_bop' })
+    useToolsStore.getState().openDropsSection('boca-pozo')
+    expect(useViewerStore.getState().selectedComponentId).toBeNull()
+    useViewerStore.setState({ selectedComponentId: 'sk575_bop' })
+    useToolsStore.getState().openDropsSection(null)
+    expect(useViewerStore.getState().selectedComponentId).toBe('sk575_bop')
+    expect(useToolsStore.getState().dropsSection).toBeNull()
+  })
+
+  it('la enciende el botón o el modo QHSE (capa derivada)', () => {
+    expect(dropsVisible(false, 'explore')).toBe(false)
+    expect(dropsVisible(true, 'explore')).toBe(true)
+    expect(dropsVisible(false, 'qhse')).toBe(true)
+    expect(dropsVisible(false, 'training')).toBe(false)
   })
 })
