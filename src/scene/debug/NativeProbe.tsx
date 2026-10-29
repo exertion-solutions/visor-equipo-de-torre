@@ -1,6 +1,6 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
-import { Box3, Raycaster, Vector2, Vector3, type Object3D } from 'three'
+import { Box3, Raycaster, Vector2, Vector3, type Material, type Mesh, type Object3D } from 'three'
 import { getComponentObject, registeredComponentIds } from '@/scene/picking/componentObjects'
 import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
@@ -38,6 +38,14 @@ export interface NativeProbeState {
 }
 
 export interface NativeProbeApi {
+  /** Zonas ilustrativas dibujadas: caja (centro y tamaño, en metros) de cada una; vacío si están apagadas. */
+  zonas: () => {
+    id: string
+    centro: number[]
+    tamano: number[]
+    opacidad: number
+    transparente: boolean
+  }[]
   /**
    * Primer impacto de un rayo desde el punto del lienzo (coordenadas de cliente) contra los componentes visibles: punto
    * de escena y componente. Raycast propio, independiente de los eventos de r3f. `null` si no hay impacto.
@@ -128,6 +136,28 @@ export function NativeProbe() {
           }
         }
         return out
+      },
+      zonas: () => {
+        const { scene } = get()
+        const capa = scene.getObjectByName('zonas_ilustrativas')
+        if (!capa) return []
+        capa.updateMatrixWorld(true)
+        return capa.children.map((zona) => {
+          const box = new Box3().setFromObject(zona)
+          // Opacidad del relleno (la primera malla de la zona).
+          let relleno: Material | undefined
+          zona.traverse((o) => {
+            const mesh = o as Mesh
+            if (!relleno && mesh.isMesh) relleno = mesh.material as Material
+          })
+          return {
+            id: String(zona.userData.zoneId),
+            centro: arr(box.getCenter(new Vector3())),
+            tamano: arr(box.getSize(new Vector3())),
+            opacidad: relleno?.opacity ?? 1,
+            transparente: relleno?.transparent ?? false,
+          }
+        })
       },
       impacto: (x, y) => {
         const { camera, scene, gl } = get()

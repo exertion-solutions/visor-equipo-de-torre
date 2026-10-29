@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { measureHint, useToolsStore } from './toolsStore'
+import { measureHint, useToolsStore, zonesVisible } from './toolsStore'
 
 const A = [1, 2, 3] as const
 const B = [4, 5, 6] as const
 const C = [7, 8, 9] as const
 
-beforeEach(() => useToolsStore.setState({ dims: false, measure: false, points: [] }))
+beforeEach(() => useToolsStore.setState({ dims: false, zones: false, measure: false, points: [] }))
 
 describe('toolsStore', () => {
   it('arranca con todo apagado y sin puntos', () => {
@@ -48,5 +48,23 @@ describe('measureHint', () => {
     expect(measureHint(true, 0)).toMatch(/dos superficies/)
     expect(measureHint(true, 1)).toMatch(/segundo punto/)
     expect(measureHint(true, 2)).toMatch(/aproximada/)
+  })
+})
+
+describe('zonas ilustrativas', () => {
+  it('arrancan apagadas y se alternan', () => {
+    expect(useToolsStore.getState().zones).toBe(false)
+    useToolsStore.getState().toggleZones()
+    expect(useToolsStore.getState().zones).toBe(true)
+    useToolsStore.getState().toggleZones()
+    expect(useToolsStore.getState().zones).toBe(false)
+  })
+
+  it('las enciende el botón o el modo QHSE, y al salir de QHSE se apagan solas', () => {
+    expect(zonesVisible(false, 'explore')).toBe(false)
+    expect(zonesVisible(true, 'explore')).toBe(true)
+    expect(zonesVisible(false, 'qhse')).toBe(true)
+    expect(zonesVisible(false, 'operation')).toBe(false)
+    expect(zonesVisible(false, 'training')).toBe(false)
   })
 })

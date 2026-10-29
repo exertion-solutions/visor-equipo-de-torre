@@ -6,7 +6,7 @@ import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
-import { measureHint, useToolsStore } from '@/stores/toolsStore'
+import { measureHint, useToolsStore, useZonesVisible } from '@/stores/toolsStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -17,6 +17,8 @@ export function StatusBar() {
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
   const labels = useViewerStore((s) => s.labels)
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
+  const toggleZones = useToolsStore((s) => s.toggleZones)
+  const zonesOn = useZonesVisible()
   const dims = useToolsStore((s) => s.dims)
   const toggleDims = useToolsStore((s) => s.toggleDims)
   const measure = useToolsStore((s) => s.measure)
@@ -42,7 +44,11 @@ export function StatusBar() {
         Modo: <span className="text-foreground font-medium">{MODE_LABELS[mode]}</span>
         {/* El modo controla el visor V2 embebido (puente postMessage); el motor nativo aún no lo consume. */}
         {engine === 'native' ? (
-          <span className="ml-1 italic">(sin efecto visual aún)</span>
+          <span className="ml-1 italic">
+            {mode === 'qhse'
+              ? '(zonas ilustrativas; el resto sin efecto aún)'
+              : '(sin efecto visual aún)'}
+          </span>
         ) : (
           <span
             className="ml-1 hidden max-w-[34ch] truncate align-bottom xl:inline-block"
@@ -167,6 +173,19 @@ export function StatusBar() {
             className="shrink-0"
           >
             Cotas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={zonesOn ? 'secondary' : 'ghost'}
+            aria-pressed={zonesOn}
+            // En modo QHSE las zonas están encendidas por el modo: el botón no las puede apagar (el modo es una capa derivada).
+            disabled={mode === 'qhse'}
+            onClick={toggleZones}
+            title="Zonas ilustrativas de riesgo: envolventes gráficas sin validar, no son exclusiones aprobadas"
+            className="shrink-0"
+          >
+            Zonas
           </Button>
           <Button
             type="button"

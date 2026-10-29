@@ -3,6 +3,7 @@ import { ComponentCard } from '@/components/equipment/ComponentCard'
 import { ComponentTree } from '@/components/equipment/ComponentTree'
 import { ComponentLabels } from '@/components/viewer/ComponentLabels'
 import { HoverTooltip } from '@/components/viewer/HoverTooltip'
+import { QhsePanel } from '@/components/viewer/QhsePanel'
 import { ToolLabels } from '@/components/viewer/ToolLabels'
 import { ViewButtons } from '@/components/viewer/ViewButtons'
 import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
@@ -33,6 +34,7 @@ export default function NativeOverlay() {
       <ToolLabels />
       <ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />
       <ViewButtons raised={selected !== null} />
+      <QhsePanel raised={selected !== null} />
       <HoverTooltip rig={RIG10_RIG} />
       <ComponentCard rig={RIG10_RIG} componentId={selected} onClose={() => selectComponent(null)} />
     </>
