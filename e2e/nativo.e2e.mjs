@@ -10,6 +10,7 @@
 // Estas pruebas son el gate automatizado de las filas "Foco de cámara", "Aislamiento" y "Ortográfica / perspectiva"
 // de docs/FEATURE_PARITY.md; no reemplazan una pasada humana en un dispositivo real.
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import path from 'node:path'
 import { after, before, test } from 'node:test'
 import { chromium } from 'playwright-core'
@@ -800,5 +801,178 @@ prueba(
     })
     assert.equal(await page.getByTestId('qhse-panel').count(), 0)
     assert.ok(await boton(page, 'Zonas').isEnabled())
+  },
+)
+
+// Capa DROPS: la verdad de los datos se lee del JSON del Libro directamente (no del módulo TypeScript de la app).
+const dropsJson = JSON.parse(
+  fs.readFileSync(path.join(root, 'src/data/qhse/rig10-drops.json'), 'utf8'),
+)
+const MAST_LEAN = (3.5 * Math.PI) / 180
+const sobreMastil = (t) => [-1 + t * Math.sin(MAST_LEAN), 1.2192 + t * Math.cos(MAST_LEAN), 0]
+// Posiciones cualitativas aproximadas de los marcadores, enunciadas de nuevo (V2 + casilla del modelo).
+const ANCLAJES_DROPS = {
+  corona: sobreMastil(30.4),
+  'debajo-corona': sobreMastil(24.5),
+  'piso-enganche': sobreMastil(20.629),
+  'debajo-piso-enganche': sobreMastil(9),
+  'boca-pozo': [0, 2.4, 0],
+  'subestructura-carrier': [-4, 1.5, 0],
+  'casilla-maquinista': [-1.3, 4.7, 1.8],
+  'plano-inclinado': [4, 1, -1.35],
+  piletas: [8, 2, -7.6],
+  'piso-trabajo': [0, 2.6, 1],
+  'poste-llave': [0.8, 3.6, 0],
+}
+
+prueba(
+  'capa DROPS: marcadores por sección con su zona A2, panel con los puntos del Libro, leyenda y sin teñir materiales',
+  async (page) => {
+    const huella = () => page.evaluate(() => window.__rigNativo.huellaMateriales())
+    const inicial = await huella()
+    assert.equal(await page.getByTestId('drops-markers').count(), 0, 'apagada al arrancar')
+
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await boton(page, 'DROPS').click()
+    assert.equal(await boton(page, 'DROPS').getAttribute('aria-pressed'), 'true')
+    await page.getByTestId('drops-markers').waitFor({ state: 'attached' })
+
+    // Un marcador por sección, con la cantidad de puntos y la zona del A2 en palabras (verdad: el JSON del Libro).
+    assert.equal(dropsJson.sections.length, 11)
+    for (const sec of dropsJson.sections) {
+      const n = dropsJson.points.filter((p) => p.sectionId === sec.id).length
+      const palabra = sec.zone ? sec.zone.toUpperCase() : 'SIN CLASIFICAR'
+      const marcador = page.getByTestId(`drops-marker-${sec.id}`)
+      assert.equal((await marcador.textContent()).trim(), `${n} · ${palabra}`, sec.id)
+    }
+    assert.equal(
+      dropsJson.sections.reduce(
+        (n, s) => n + dropsJson.points.filter((p) => p.sectionId === s.id).length,
+        0,
+      ),
+      66,
+    )
+
+    // Posición: cada marcador cae donde la proyección independiente pone su anclaje (o se oculta fuera de pantalla).
+    let fallos = []
+    for (let intento = 0; intento < 40; intento++) {
+      await page.waitForTimeout(250)
+      const { e, marcadores } = await page.evaluate((ids) => {
+        const capa = document.querySelector('[data-testid="drops-markers"]').getBoundingClientRect()
+        return {
+          e: window.__rigNativo.estado(),
+          marcadores: ids.map((id) => {
+            const el = document.querySelector(`[data-testid="drops-marker-${id}"]`)
+            const r = el.getBoundingClientRect()
+            return {
+              id,
+              visible: getComputedStyle(el).display !== 'none',
+              x: r.left + r.width / 2 - capa.left,
+              y: r.top + r.height / 2 - capa.top,
+              w: r.width,
+              h: r.height,
+            }
+          }),
+        }
+      }, Object.keys(ANCLAJES_DROPS))
+      fallos = []
+      let vistos = 0
+      for (const m of marcadores) {
+        const esperado = proyectarOrto(e.camara, e.lienzo, ANCLAJES_DROPS[m.id])
+        const dentro = Math.max(
+          Math.abs((esperado.x - e.lienzo.ancho / 2) / (e.lienzo.ancho / 2)),
+          Math.abs((esperado.y - e.lienzo.alto / 2) / (e.lienzo.alto / 2)),
+        )
+        if (dentro < 0.95) {
+          // En x coincide con la proyección; en y puede estar más abajo (los que se pisan se separan hacia abajo).
+          if (!m.visible) fallos.push(`${m.id} se ve`)
+          else if (
+            Math.abs(m.x - esperado.x) >= 3 ||
+            m.y - esperado.y < -3 ||
+            m.y - esperado.y > 90
+          )
+            fallos.push(
+              `${m.id} en (${m.x.toFixed(1)}, ${m.y.toFixed(1)}), esperado (${esperado.x.toFixed(1)}, ${esperado.y.toFixed(1)}) o hasta 90 px más abajo`,
+            )
+          else vistos++
+        } else if (dentro > 1.25 && m.visible) fallos.push(`${m.id} fuera de pantalla se oculta`)
+      }
+      if (vistos < 6) fallos.push(`solo ${vistos} marcadores a la vista`)
+      // Ninguno tapa a otro: todos se pueden clickear.
+      const v = marcadores.filter((m) => m.visible)
+      for (let a = 0; a < v.length; a++)
+        for (let b = a + 1; b < v.length; b++)
+          if (
+            Math.abs(v[a].x - v[b].x) < (v[a].w + v[b].w) / 2 &&
+            Math.abs(v[a].y - v[b].y) < (v[a].h + v[b].h) / 2
+          )
+            fallos.push(`${v[a].id} y ${v[b].id} se pisan`)
+      if (fallos.length === 0) break
+    }
+    assert.deepEqual(fallos, [], fallos.join('; '))
+
+    // Leyenda: zonas del A2, aviso y nota de posición aproximada.
+    const leyenda = page.getByTestId('drops-legend')
+    assert.match(await leyenda.textContent(), /ZONAS DROPS · layout A2/)
+    assert.match(
+      await page.getByTestId('a2-notice').textContent(),
+      /El A2 no define radios ni distancias/,
+    )
+    assert.match(await leyenda.textContent(), /posición aproximada del modelo/)
+
+    // Panel de una sección: los puntos del Libro (ids y orden del JSON), estatus y fuente con página.
+    await page.getByTestId('drops-marker-boca-pozo').click()
+    const panel = page.getByTestId('drops-panel')
+    await panel.waitFor({ state: 'visible' })
+    const esperados = dropsJson.points
+      .filter((p) => p.sectionId === 'boca-pozo')
+      .sort((a, b) => a.order - b.order)
+      .map((p) => p.id)
+    const ids = await panel
+      .locator('[data-testid^="drops-point-"]')
+      .evaluateAll((els) => els.map((el) => el.dataset.testid.replace('drops-point-', '')))
+    assert.deepEqual(ids, esperados)
+    assert.match(
+      await panel.getByTestId('drops-approx').textContent(),
+      /aproximada \(modelo\), no as-built/,
+    )
+    assert.match(await panel.textContent(), /pág\. \d+/)
+
+    // Seleccionar un componente reemplaza el panel por su ficha, con el bloque DROPS del componente.
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+    await page.getByTestId('component-card').waitFor({ state: 'visible' })
+    assert.equal(await page.getByTestId('drops-panel').count(), 0)
+    const delMastil = page.getByTestId('drops-of-component')
+    const nMastil = dropsJson.points.filter((p) =>
+      ['mastil', 'enganche'].includes(p.componentId),
+    ).length
+    assert.match(await delMastil.textContent(), new RegExp(`${nMastil} puntos`))
+    await page.keyboard.press('Escape')
+    await hasta(page, (e) => e.tienda.seleccionado === null)
+
+    // No tiñe materiales (el V2 sí lo hacía): los colores de todos los componentes quedan iguales.
+    assert.equal(await huella(), inicial, 'la capa DROPS no muta materiales')
+
+    // Apagada a mano, desaparece todo.
+    await boton(page, 'DROPS').click()
+    assert.equal(await page.getByTestId('drops-markers').count(), 0)
+    assert.equal(await page.getByTestId('drops-panel').count(), 0)
+
+    // Modo QHSE: enciende la capa sola (con las zonas) y EXPLORE la apaga; el botón queda fijo.
+    await page.getByRole('button', { name: 'QHSE', exact: true }).first().click()
+    await page.getByTestId('drops-markers').waitFor({ state: 'attached' })
+    assert.ok(await boton(page, 'DROPS').isDisabled(), 'en QHSE el botón no la apaga')
+    assert.equal(await huella(), inicial, 'el modo QHSE tampoco muta materiales')
+    await page.getByRole('button', { name: 'EXPLORE', exact: true }).first().click()
+    await page.waitForFunction(
+      () => !document.querySelector('[data-testid="drops-markers"]'),
+      null,
+      {
+        timeout: 30_000,
+      },
+    )
+    assert.ok(await boton(page, 'DROPS').isEnabled())
   },
 )

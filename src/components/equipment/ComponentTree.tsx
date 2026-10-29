@@ -43,7 +43,9 @@ export function ComponentTree({ rig, sceneIds }: ComponentTreeProps) {
     <aside
       aria-label="Panel de componentes"
       data-testid="component-tree"
-      className="bg-card/95 absolute top-24 left-3 z-10 sm:top-14 flex max-h-[calc(100%-11rem)] sm:max-h-[calc(100%-8rem)] w-[min(16rem,calc(100%-1.5rem))] flex-col rounded-lg border shadow-lg backdrop-blur"
+      className={`bg-card/95 pointer-events-auto flex shrink flex-col rounded-lg border shadow-lg backdrop-blur ${
+        open ? 'min-h-[9rem]' : ''
+      }`}
     >
       <header className="flex items-center gap-1 px-2 py-1.5">
         <h2 className="flex-1 px-1 text-sm font-semibold">Componentes</h2>

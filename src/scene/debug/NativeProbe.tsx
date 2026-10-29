@@ -38,6 +38,8 @@ export interface NativeProbeState {
 }
 
 export interface NativeProbeApi {
+  /** Huella de los colores de todos los materiales de los componentes (base y emisivo): detecta cualquier teñido. */
+  huellaMateriales: () => string
   /** Zonas ilustrativas dibujadas: caja (centro y tamaño, en metros) de cada una; vacío si están apagadas. */
   zonas: () => {
     id: string
@@ -136,6 +138,23 @@ export function NativeProbe() {
           }
         }
         return out
+      },
+      huellaMateriales: () => {
+        const colores: string[] = []
+        for (const id of registeredComponentIds()) {
+          getComponentObject(id)?.traverse((o) => {
+            const mesh = o as Mesh
+            if (!mesh.isMesh) return
+            for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+              const c = m as Material & {
+                color?: { getHexString: () => string }
+                emissive?: { getHexString: () => string }
+              }
+              colores.push(`${c.color?.getHexString() ?? '-'}/${c.emissive?.getHexString() ?? '-'}`)
+            }
+          })
+        }
+        return colores.join(',')
       },
       zonas: () => {
         const { scene } = get()

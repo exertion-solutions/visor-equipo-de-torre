@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Vector3 } from 'three'
 import { dimensionSegments } from '@/lib/dimensions'
 import { labelPosition } from '@/lib/componentLabels'
+import { separateLabels, type LabelBox } from '@/lib/labelLayout'
 import { useToolsStore } from '@/stores/toolsStore'
 import { RIG10_DIMENSION_VIEWS } from './dimensionViews'
 import { onToolLabelsChange, toolLabels } from './toolLabelElements'
@@ -27,14 +28,33 @@ export function ToolsLayer() {
   useFrame(({ camera, size }) => {
     if (toolLabels().size === 0) return
     camera.updateMatrixWorld()
-    for (const { element, point: anchor } of toolLabels().values()) {
+    const separar: LabelBox[] = []
+    for (const [id, { element, point: anchor }] of toolLabels()) {
       const position = labelPosition(point.set(...anchor).project(camera), size.width, size.height)
       if (!position) {
         element.style.display = 'none'
         continue
       }
-      element.style.display = 'block'
+      element.style.display = element.dataset.display ?? 'block'
       element.style.transform = `translate(${position.x}px, ${position.y}px) translate(-50%, -50%)`
+      // Los marcadores clicables (data-separar) no se pueden tapar entre sí: se separan en pantalla más abajo.
+      if (element.dataset.separar !== undefined)
+        separar.push({
+          id,
+          x: position.x,
+          y: position.y,
+          w: element.offsetWidth,
+          h: element.offsetHeight,
+        })
+    }
+    if (separar.length > 1) {
+      const ubicadas = separateLabels(separar)
+      for (const { id, x, y } of separar) {
+        const p = ubicadas.get(id)
+        const label = toolLabels().get(id)
+        if (p && label && (p.x !== x || p.y !== y))
+          label.element.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`
+      }
     }
   })
 

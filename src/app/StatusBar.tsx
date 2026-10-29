@@ -6,7 +6,7 @@ import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
-import { measureHint, useToolsStore, useZonesVisible } from '@/stores/toolsStore'
+import { measureHint, useDropsVisible, useToolsStore, useZonesVisible } from '@/stores/toolsStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -19,6 +19,8 @@ export function StatusBar() {
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
   const toggleZones = useToolsStore((s) => s.toggleZones)
   const zonesOn = useZonesVisible()
+  const dropsOn = useDropsVisible()
+  const toggleDrops = useToolsStore((s) => s.toggleDrops)
   const dims = useToolsStore((s) => s.dims)
   const toggleDims = useToolsStore((s) => s.toggleDims)
   const measure = useToolsStore((s) => s.measure)
@@ -46,7 +48,7 @@ export function StatusBar() {
         {engine === 'native' ? (
           <span className="ml-1 italic">
             {mode === 'qhse'
-              ? '(zonas ilustrativas; el resto sin efecto aún)'
+              ? '(zonas y puntos DROPS; el resto sin efecto aún)'
               : '(sin efecto visual aún)'}
           </span>
         ) : (
@@ -186,6 +188,19 @@ export function StatusBar() {
             className="shrink-0"
           >
             Zonas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={dropsOn ? 'secondary' : 'ghost'}
+            aria-pressed={dropsOn}
+            // En modo QHSE la capa la enciende el modo: el botón no la puede apagar (el modo es una capa derivada).
+            disabled={mode === 'qhse'}
+            onClick={toggleDrops}
+            title="Puntos DROPS por sección y clasificación cualitativa por zona (layout A2): referencia, no una verificación"
+            className="shrink-0"
+          >
+            DROPS
           </Button>
           <Button
             type="button"

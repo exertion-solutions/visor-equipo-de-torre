@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Vec3 } from '@/lib/geometry'
 import { useModeStore } from './modeStore'
+import { useViewerStore } from './viewerStore'
 
 /**
  * Herramientas de inspección del motor nativo (equivalen a `#c-dims` y `#c-measure` del V2): cotas del equipo y medición
@@ -11,12 +12,19 @@ interface ToolsState {
   dims: boolean
   /** Zonas ilustrativas de riesgo (envolventes gráficas sin validar) encendidas a mano; el modo QHSE las enciende solo. */
   zones: boolean
+  /** Capa DROPS (marcadores por sección y clasificación A2) encendida a mano; el modo QHSE la enciende sola. */
+  drops: boolean
+  /** Sección DROPS abierta en el panel (`null` = ninguna). */
+  dropsSection: string | null
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
   /** Puntos medidos (0, 1 o 2), en el marco de la escena. */
   points: readonly Vec3[]
   toggleDims: () => void
   toggleZones: () => void
+  toggleDrops: () => void
+  /** Abre una sección en el panel DROPS; deselecciona el componente (comparten el costado del visor). */
+  openDropsSection: (id: string | null) => void
   /** Activa o desactiva el modo medir. Desactivarlo no borra la medición hecha (como el V2): se borra con `clearMeasure`. */
   toggleMeasure: () => void
   /** Agrega un punto; con dos ya puestos, el siguiente clic empieza una medición nueva. */
@@ -27,10 +35,17 @@ interface ToolsState {
 export const useToolsStore = create<ToolsState>()((set) => ({
   dims: false,
   zones: false,
+  drops: false,
+  dropsSection: null,
   measure: false,
   points: [],
   toggleDims: () => set((s) => ({ dims: !s.dims })),
   toggleZones: () => set((s) => ({ zones: !s.zones })),
+  toggleDrops: () => set((s) => ({ drops: !s.drops, dropsSection: null })),
+  openDropsSection: (id) => {
+    if (id !== null) useViewerStore.getState().selectComponent(null)
+    set({ dropsSection: id })
+  },
   toggleMeasure: () => set((s) => ({ measure: !s.measure })),
   addPoint: (point) =>
     set((s) => ({ points: s.points.length >= 2 ? [point] : [...s.points, point] })),
@@ -55,4 +70,13 @@ export function useZonesVisible(): boolean {
   const zones = useToolsStore((s) => s.zones)
   const mode = useModeStore((s) => s.mode)
   return zonesVisible(zones, mode)
+}
+
+/** ¿Se muestra la capa DROPS? La enciende el botón "DROPS" o el modo QHSE (capa derivada, como las zonas). */
+export const dropsVisible = (drops: boolean, mode: string): boolean => drops || mode === 'qhse'
+
+export function useDropsVisible(): boolean {
+  const drops = useToolsStore((s) => s.drops)
+  const mode = useModeStore((s) => s.mode)
+  return dropsVisible(drops, mode)
 }
