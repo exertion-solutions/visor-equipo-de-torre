@@ -1,5 +1,6 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import type { ReactNode } from 'react'
+import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
 import { registerComponentObject } from './componentObjects'
 
@@ -30,6 +31,11 @@ export function SelectableModel({ componentId, position, children }: SelectableM
   }
   const click = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
+    // Midiendo, el clic pone un punto sobre la superficie en lugar de seleccionar (como el V2).
+    if (useToolsStore.getState().measure) {
+      useToolsStore.getState().addPoint([e.point.x, e.point.y, e.point.z])
+      return
+    }
     selectComponent(componentId)
   }
 

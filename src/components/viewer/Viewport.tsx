@@ -9,6 +9,7 @@ import { LabelsProjector } from '@/scene/labels/LabelsProjector'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { RigModel } from '@/scene/loaders/RigModel'
 import { PostFx } from '@/scene/effects/PostFx'
+import { ToolsLayer } from '@/scene/tools/ToolsLayer'
 import { SelectableModel } from '@/scene/picking/SelectableModel'
 import { useViewerStore } from '@/stores/viewerStore'
 import { RIG10_SCENE, type SceneModel } from '@/data/rigs/rig10'
@@ -67,6 +68,7 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
       </Suspense>
       <CameraRig />
       <LabelsProjector />
+      <ToolsLayer />
       {import.meta.env.DEV && <NativeProbe />}
     </Canvas>
   )

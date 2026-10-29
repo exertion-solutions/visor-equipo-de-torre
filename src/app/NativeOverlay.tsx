@@ -3,6 +3,7 @@ import { ComponentCard } from '@/components/equipment/ComponentCard'
 import { ComponentTree } from '@/components/equipment/ComponentTree'
 import { ComponentLabels } from '@/components/viewer/ComponentLabels'
 import { HoverTooltip } from '@/components/viewer/HoverTooltip'
+import { ToolLabels } from '@/components/viewer/ToolLabels'
 import { ViewButtons } from '@/components/viewer/ViewButtons'
 import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
 import { useViewerStore } from '@/stores/viewerStore'
@@ -29,6 +30,7 @@ export default function NativeOverlay() {
   return (
     <>
       <ComponentLabels rig={RIG10_RIG} sceneIds={SCENE_IDS} />
+      <ToolLabels />
       <ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />
       <ViewButtons raised={selected !== null} />
       <HoverTooltip rig={RIG10_RIG} />

@@ -431,19 +431,6 @@ const leerEtiquetas = (page) =>
     })
   })
 
-/** Espera a que la cámara deje de moverse (dos lecturas iguales con 300 ms de diferencia). */
-const camaraQuieta = async (page) => {
-  let previa = null
-  for (let i = 0; i < 100; i++) {
-    const e = await estado(page)
-    const actual = JSON.stringify([e.camara.posicion, e.camara.objetivo, e.camara.frustum])
-    if (actual === previa) return e
-    previa = actual
-    await page.waitForTimeout(300)
-  }
-  assert.fail('la cámara no se asentó')
-}
-
 prueba(
   'etiquetas: aparecen sobre cada componente con su número, lo siguen al mover la cámara y se apagan',
   async (page) => {
@@ -455,30 +442,53 @@ prueba(
 
     // Cada etiqueta cae donde la proyección independiente pone el centro de la caja de su componente; las que están
     // claramente dentro de la pantalla se ven y las claramente fuera se ocultan.
+    // Cámara, cajas y etiquetas se leen en una sola evaluación (sin un cuadro de por medio) y, si no cuadran porque la cámara
+    // todavía se movía (con render por software un cuadro tarda más que el intervalo de lectura), se vuelve a leer.
     const verificar = async (nombre) => {
-      const e = await camaraQuieta(page)
-      const cajasEscena = await cajas(page)
-      await page.waitForTimeout(400) // un cuadro más, ya con la cámara quieta
-      const etiquetas = await leerEtiquetas(page)
-      assert.ok(etiquetas.length >= 12, `${nombre}: hay una etiqueta por componente`)
-      let vistas = 0
-      for (const et of etiquetas) {
-        const esperado = proyectarOrto(e.camara, e.lienzo, cajasEscena[et.id].centro)
-        const nx = (esperado.x - e.lienzo.ancho / 2) / (e.lienzo.ancho / 2)
-        const ny = (esperado.y - e.lienzo.alto / 2) / (e.lienzo.alto / 2)
-        const dentro = Math.max(Math.abs(nx), Math.abs(ny))
-        if (dentro < 0.95) {
-          assert.ok(et.visible, `${nombre}: ${et.id} se ve (está dentro de la pantalla)`)
-          assert.ok(
-            Math.hypot(et.x - esperado.x, et.y - esperado.y) < 3,
-            `${nombre}: ${et.id} en (${et.x.toFixed(1)}, ${et.y.toFixed(1)}), esperado (${esperado.x.toFixed(1)}, ${esperado.y.toFixed(1)})`,
-          )
-          vistas++
-        } else if (dentro > 1.25) {
-          assert.ok(!et.visible, `${nombre}: ${et.id} se oculta (está fuera de la pantalla)`)
+      let ultimo = ''
+      for (let intento = 0; intento < 40; intento++) {
+        await page.waitForTimeout(250)
+        const { e, cajasEscena, etiquetas } = await page.evaluate(() => {
+          const capa = document.querySelector('[data-testid="component-labels"]')
+          const o = capa.getBoundingClientRect()
+          return {
+            e: window.__rigNativo.estado(),
+            cajasEscena: window.__rigNativo.cajas(),
+            etiquetas: [...capa.querySelectorAll('[data-testid^="label-"]')].map((el) => {
+              const r = el.getBoundingClientRect()
+              return {
+                id: el.dataset.testid.replace('label-', ''),
+                visible: getComputedStyle(el).display !== 'none',
+                x: r.left + r.width / 2 - o.left,
+                y: r.top + r.height / 2 - o.top,
+              }
+            }),
+          }
+        })
+        const fallos = []
+        let vistas = 0
+        for (const et of etiquetas) {
+          const esperado = proyectarOrto(e.camara, e.lienzo, cajasEscena[et.id].centro)
+          const nx = (esperado.x - e.lienzo.ancho / 2) / (e.lienzo.ancho / 2)
+          const ny = (esperado.y - e.lienzo.alto / 2) / (e.lienzo.alto / 2)
+          const dentro = Math.max(Math.abs(nx), Math.abs(ny))
+          if (dentro < 0.95) {
+            if (!et.visible) fallos.push(`${et.id} se ve (está dentro de la pantalla)`)
+            else if (Math.hypot(et.x - esperado.x, et.y - esperado.y) >= 3)
+              fallos.push(
+                `${et.id} en (${et.x.toFixed(1)}, ${et.y.toFixed(1)}), esperado (${esperado.x.toFixed(1)}, ${esperado.y.toFixed(1)})`,
+              )
+            else vistas++
+          } else if (dentro > 1.25 && et.visible)
+            fallos.push(`${et.id} se oculta (está fuera de pantalla)`)
         }
+        if (etiquetas.length < 12)
+          fallos.push(`hay ${etiquetas.length} etiquetas, se esperaban ≥ 12`)
+        if (vistas < 8) fallos.push(`solo ${vistas} etiquetas visibles, se esperaban ≥ 8`)
+        if (fallos.length === 0) return
+        ultimo = fallos.join('; ')
       }
-      assert.ok(vistas >= 8, `${nombre}: al menos 8 etiquetas visibles (hay ${vistas})`)
+      assert.fail(`${nombre}: ${ultimo}`)
     }
     await verificar('vista inicial')
 
@@ -500,6 +510,168 @@ prueba(
     // Apagadas, desaparece la capa.
     await boton(page, 'Etiquetas').click()
     assert.equal(await leerEtiquetas(page), null)
+  },
+)
+
+const num = (n) => n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const estadoMedicion = (page) =>
+  page.evaluate(() => {
+    const e = window.__rigNativo.estado()
+    return {
+      ...e.herramientas,
+      seleccionado: e.tienda.seleccionado,
+    }
+  })
+
+prueba(
+  'medición: dos clics sobre el modelo dan la distancia aproximada, el tercero reinicia y no selecciona',
+  async (page) => {
+    await boton(page, 'Medir').click()
+    assert.equal(await boton(page, 'Medir').getAttribute('aria-pressed'), 'true')
+    await page.getByTestId('measure-hint').waitFor({ state: 'visible' })
+    assert.match(await page.getByTestId('measure-hint').textContent(), /dos superficies/)
+
+    // Dos puntos de componentes distintos; el impacto esperado sale de un raycast propio de la sonda.
+    const puntos = []
+    for (const id of [MASTIL, LEJANO]) {
+      const p = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), id)
+      assert.ok(p, `punto clicable de ${id}`)
+      const esperado = await page.evaluate(([x, y]) => window.__rigNativo.impacto(x, y), [p.x, p.y])
+      assert.equal(esperado.componente, id)
+      await page.mouse.click(p.x, p.y)
+      puntos.push(esperado.punto)
+      await page.waitForFunction(
+        (n) => window.__rigNativo.estado().herramientas.puntos.length === n,
+        puntos.length,
+        { timeout: 30_000 },
+      )
+    }
+    let m = await estadoMedicion(page)
+    assert.equal(m.seleccionado, null, 'midiendo, el clic no selecciona')
+    assert.equal(m.puntos.length, 2)
+    // El clic cae en píxeles enteros y la sonda lanza el rayo en el centro exacto: coinciden a menos de ~un píxel (≈ 6 cm
+    // a esta escala), así que se tolera 0,25 m en cada punto.
+    puntos.forEach((p, i) =>
+      assert.ok(distancia(m.puntos[i], p) < 0.25, `punto ${i + 1} ≈ impacto del rayo`),
+    )
+    const medida = distancia(m.puntos[0], m.puntos[1])
+    const esperado = distancia(puntos[0], puntos[1])
+    assert.ok(esperado > 5, 'los dos puntos están lejos entre sí')
+    assert.ok(Math.abs(medida - esperado) < 0.5, 'la distancia medida ≈ la del rayo propio')
+    const rotulo = page.getByTestId('tool-label-measure')
+    await rotulo.waitFor({ state: 'attached' })
+    assert.equal(await rotulo.textContent(), `≈ ${num(medida)} m · modelo`)
+    assert.match(await page.getByTestId('measure-hint').textContent(), /aproximada/)
+
+    // Tercer clic: empieza una medición nueva (queda solo el punto nuevo, sin rótulo).
+    const q = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), 'sk575_carrier')
+    assert.ok(q)
+    await page.mouse.click(q.x, q.y)
+    await page.waitForFunction(
+      () => window.__rigNativo.estado().herramientas.puntos.length === 1,
+      null,
+      {
+        timeout: 30_000,
+      },
+    )
+    assert.equal(await page.getByTestId('tool-label-measure').count(), 0)
+
+    // Borrar medición; y fuera del modo medir el clic vuelve a seleccionar.
+    await boton(page, 'Borrar medición').click()
+    m = await estadoMedicion(page)
+    assert.equal(m.puntos.length, 0)
+    await boton(page, 'Medir').click()
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+  },
+)
+
+// Cotas enunciadas de nuevo acá, independientes de `rig10-dimensions.ts`: valor y nivel de la especificación de cada
+// componente (tomados del folleto, planos y layout) y el punto medio de cada línea en el marco de escena.
+const L = (3.5 * Math.PI) / 180
+const COTAS = [
+  [
+    'altura-mastil',
+    '31,71 m · Altura (104 ft) · A',
+    [-1 + 15.855 * Math.sin(L), 1.2192 + 15.855 * Math.cos(L), -2.8],
+  ],
+  [
+    'altura-piso',
+    '3,606 m · Altura del piso (12 ft) · B · Fuente en conflicto',
+    [2.6, 1.803, -2.8],
+  ],
+  ['largo-bastidor', '12,192 m · Bastidor (480") · B', [-2 - 6.096, 0.3, -2.8]],
+  [
+    'anclaje-lado-carrier',
+    '27,4 ± 3 m · Anclajes desde el pozo · B · Fuente en conflicto',
+    [-13.7, 0.15, -3.8],
+  ],
+  [
+    'anclaje-lado-v',
+    '24,4 ± 3 m · Anclajes desde el pozo · B · Fuente en conflicto',
+    [12.2, 0.15, -3.8],
+  ],
+]
+
+prueba(
+  'cotas: cada línea lleva el valor y el nivel A/B/C de su especificación, en su lugar, y se apagan',
+  async (page) => {
+    assert.equal(await page.getByTestId('tool-labels').count(), 0, 'apagadas al arrancar')
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await boton(page, 'Cotas').click()
+    assert.equal(await boton(page, 'Cotas').getAttribute('aria-pressed'), 'true')
+    // Cámara y rótulos en una sola evaluación; si no cuadran porque la cámara aún se movía (render por software), se relee.
+    let ultimo = ''
+    let ok = false
+    for (let intento = 0; intento < 40 && !ok; intento++) {
+      await page.waitForTimeout(250)
+      const { e, rotulos } = await page.evaluate(
+        (ids) => {
+          const o = document.querySelector('[data-testid="tool-labels"]').getBoundingClientRect()
+          return {
+            e: window.__rigNativo.estado(),
+            rotulos: ids.map((id) => {
+              const el = document.querySelector(`[data-testid="tool-label-dim-${id}"]`)
+              const r = el.getBoundingClientRect()
+              return {
+                id,
+                texto: el.textContent,
+                visible: getComputedStyle(el).display !== 'none',
+                x: r.left + r.width / 2 - o.left,
+                y: r.top + r.height / 2 - o.top,
+              }
+            }),
+          }
+        },
+        COTAS.map((c) => c[0]),
+      )
+      const fallos = []
+      let visibles = 0
+      for (const [id, texto, centro] of COTAS) {
+        const r = rotulos.find((x) => x.id === id)
+        if (r.texto !== texto) fallos.push(`${id}: texto "${r.texto}" ≠ "${texto}"`)
+        const esperado = proyectarOrto(e.camara, e.lienzo, centro)
+        const nx = (esperado.x - e.lienzo.ancho / 2) / (e.lienzo.ancho / 2)
+        const ny = (esperado.y - e.lienzo.alto / 2) / (e.lienzo.alto / 2)
+        const dentro = Math.max(Math.abs(nx), Math.abs(ny))
+        if (dentro < 0.95) {
+          if (!r.visible) fallos.push(`${id} se ve`)
+          else if (Math.hypot(r.x - esperado.x, r.y - esperado.y) >= 3)
+            fallos.push(
+              `${id} en (${r.x.toFixed(1)}, ${r.y.toFixed(1)}), esperado (${esperado.x.toFixed(1)}, ${esperado.y.toFixed(1)})`,
+            )
+          else visibles++
+        } else if (dentro > 1.25 && r.visible) fallos.push(`${id} fuera de pantalla se oculta`)
+      }
+      if (visibles < 2) fallos.push(`solo ${visibles} cotas a la vista, se esperaban ≥ 2`)
+      ok = fallos.length === 0
+      ultimo = fallos.join('; ')
+    }
+    assert.ok(ok, ultimo)
+
+    await boton(page, 'Cotas').click()
+    assert.equal(await page.getByTestId('tool-labels').count(), 0)
   },
 )
 // Cotas de las vistas del V2 (`na` y `Uh` de la base del legacy), enunciadas de nuevo acá como especificación independiente.
