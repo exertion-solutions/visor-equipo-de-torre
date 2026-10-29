@@ -181,10 +181,11 @@ export function NativeProbe() {
               new Vector2(ndc.x, ndc.y - dy),
             ]
             if (!vecinos.every(resuelveA)) continue
-            return {
-              x: rect.left + ((ndc.x + 1) / 2) * rect.width,
-              y: rect.top + ((1 - ndc.y) / 2) * rect.height,
-            }
+            const x = rect.left + ((ndc.x + 1) / 2) * rect.width
+            const y = rect.top + ((1 - ndc.y) / 2) * rect.height
+            // Un clic ahí tiene que llegar al lienzo: se descartan los puntos tapados por paneles de la interfaz.
+            if (document.elementFromPoint(x, y) !== gl.domElement) continue
+            return { x, y }
           }
         }
         return null

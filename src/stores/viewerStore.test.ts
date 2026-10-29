@@ -188,6 +188,49 @@ describe('viewerStore', () => {
     })
   })
 
+  describe('setComponentsVisible (panel de componentes)', () => {
+    beforeEach(() =>
+      useViewerStore.setState({
+        selectedComponentId: null,
+        hoveredComponentId: null,
+        hiddenComponentIds: [],
+        isolationSnapshot: null,
+      }),
+    )
+
+    it('oculta y vuelve a mostrar, sin duplicar ni tocar a los demás', () => {
+      const { setComponentsVisible } = useViewerStore.getState()
+      setComponentsVisible(['bop'], false)
+      setComponentsVisible(['bop', 'carrier'], false)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual(['bop', 'carrier'])
+      setComponentsVisible(['bop'], true)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual(['carrier'])
+      setComponentsVisible(['carrier', 'inexistente'], true)
+      expect(useViewerStore.getState().hiddenComponentIds).toEqual([])
+    })
+
+    it('ocultar el seleccionado o el que tiene hover los deselecciona; los demás se conservan', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().hoverComponent('carrier')
+      useViewerStore.getState().setComponentsVisible(['mastil'], false)
+      expect(useViewerStore.getState().selectedComponentId).toBe('bop')
+      expect(useViewerStore.getState().hoveredComponentId).toBe('carrier')
+      useViewerStore.getState().setComponentsVisible(['bop', 'carrier'], false)
+      expect(useViewerStore.getState().selectedComponentId).toBeNull()
+      expect(useViewerStore.getState().hoveredComponentId).toBeNull()
+    })
+
+    it('un cambio manual termina el aislamiento', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().toggleIsolation(['mastil', 'bop', 'carrier'])
+      expect(useViewerStore.getState().isolationSnapshot).not.toBeNull()
+      useViewerStore.getState().setComponentsVisible(['carrier'], true)
+      const s = useViewerStore.getState()
+      expect(s.isolationSnapshot).toBeNull()
+      expect(s.hiddenComponentIds).toEqual(['mastil'])
+    })
+  })
+
   it('isViewerEngine rechaza valores inválidos', () => {
     expect(isViewerEngine('native')).toBe(true)
     expect(isViewerEngine('threejs')).toBe(false)
