@@ -1088,7 +1088,7 @@ prueba(
     const contar = (c) => contarCorte(page, [c, 0, 0], [c + 8, 0, 0])
     const esperar = (c, pred, ms) => esperarCorte(page, [c, 0, 0], [c + 8, 0, 0], pred, ms)
 
-    const sin = await contar(0)
+    const sin = await contarEstable(page, [0, 0, 0], [8, 0, 0])
     assert.ok(sin.recortado > 300, `hay equipo del lado +X sin corte (${sin.recortado} px)`)
     assert.ok(sin.conservado > 300, `hay equipo del lado −X (${sin.conservado} px)`)
 
