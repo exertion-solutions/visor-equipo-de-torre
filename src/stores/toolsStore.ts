@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { clampCutX } from '@/lib/cut'
+import { clampCut, initialCuts, type CutAxis, type Cuts } from '@/lib/cut'
 import { clampExplodeAmount, DEFAULT_EXPLODE_AMOUNT } from '@/lib/explode'
 import type { Vec3 } from '@/lib/geometry'
 import { useModeStore } from './modeStore'
@@ -29,10 +29,8 @@ interface ToolsState {
   explodeAmount: number
   /** ¿Hay algo desplazado ahora (separación actual > 0)? La escribe el animador al cruzar el 0, no a cada cuadro. */
   exploded: boolean
-  /** Corte de sección X encendido (plano global; las superficies quedan abiertas, sin tapas). */
-  cut: boolean
-  /** Posición del plano de corte X (m); se conserva lo de x ≤ posición. */
-  cutX: number
+  /** Cortes de sección X, Y y Z (planos globales que se combinan; las superficies quedan abiertas, sin tapas). */
+  cuts: Cuts
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
   /** Qué se mide: distancia entre 2 puntos o ángulo ABC con 3 (A, vértice B, C). Los puntos son de este tipo. */
@@ -48,8 +46,8 @@ interface ToolsState {
   toggleExplode: () => void
   setExplodeAmount: (amount: number) => void
   setExploded: (exploded: boolean) => void
-  toggleCut: () => void
-  setCutX: (x: number) => void
+  toggleCut: (axis: CutAxis) => void
+  setCut: (axis: CutAxis, value: number) => void
   /** Activa o desactiva el modo medir. Desactivarlo no borra la medición hecha (como el V2): se borra con `clearMeasure`. */
   toggleMeasure: () => void
   /** Modo medir ángulo (3 puntos): se excluye con el de distancia, como en el V2. */
@@ -74,8 +72,7 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   zones: false,
   drops: false,
   dropsSection: null,
-  cut: false,
-  cutX: 0,
+  cuts: initialCuts(),
   explodeOn: false,
   explodeAmount: DEFAULT_EXPLODE_AMOUNT,
   exploded: false,
@@ -93,8 +90,12 @@ export const useToolsStore = create<ToolsState>()((set) => ({
     set((s) => ({ explodeOn: !s.explodeOn, measure: s.explodeOn ? s.measure : false })),
   setExplodeAmount: (amount) => set({ explodeAmount: clampExplodeAmount(amount) }),
   setExploded: (exploded) => set({ exploded }),
-  toggleCut: () => set((s) => ({ cut: !s.cut })),
-  setCutX: (x) => set({ cutX: clampCutX(x) }),
+  toggleCut: (axis) =>
+    set((s) => ({ cuts: { ...s.cuts, [axis]: { ...s.cuts[axis], on: !s.cuts[axis].on } } })),
+  setCut: (axis, value) =>
+    set((s) => ({
+      cuts: { ...s.cuts, [axis]: { ...s.cuts[axis], value: clampCut(axis, value) } },
+    })),
   // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
   toggleMeasure: () => set((s) => toggleKind(s, 'distance')),
   toggleAngle: () => set((s) => toggleKind(s, 'angle')),

@@ -1076,50 +1076,9 @@ prueba(
     await boton(page, 'Lateral').click()
     await hasta(page, (e) => Math.abs(e.camara.posicion[0] - e.camara.objetivo[0]) < 1)
 
-    // Píxeles "de equipo" (claros) a cada lado de la vertical del plano, sin los paneles superpuestos de la izquierda.
-    const contar = async (c) => {
-      const e = await estado(page)
-      const col = proyectarOrto(e.camara, e.lienzo, [c, 0, 0]).x
-      const signo = proyectarOrto(e.camara, e.lienzo, [c + 8, 0, 0]).x > col ? 1 : -1
-      const png = (await page.screenshot()).toString('base64')
-      return page.evaluate(
-        async ({ png, col, signo, alto }) => {
-          const img = new Image()
-          img.src = `data:image/png;base64,${png}`
-          await img.decode()
-          const cv = document.createElement('canvas')
-          cv.width = img.width
-          cv.height = img.height
-          const ctx = cv.getContext('2d')
-          ctx.drawImage(img, 0, 0)
-          const { data } = ctx.getImageData(0, 0, img.width, img.height)
-          let recortado = 0
-          let conservado = 0
-          for (let y = 80; y < alto - 90; y++)
-            for (let x = 290; x < img.width; x++) {
-              const i = (y * img.width + x) * 4
-              if (Math.max(data[i], data[i + 1], data[i + 2]) < 130) continue
-              const d = signo * (x - col)
-              if (d > 20) recortado++
-              else if (d < -20) conservado++
-            }
-          return { recortado, conservado }
-        },
-        { png, col, signo, alto: e.lienzo.alto },
-      )
-    }
-    const esperar = async (c, pred, ms = 40_000) => {
-      const t0 = Date.now()
-      let r
-      while (Date.now() - t0 < ms) {
-        r = await contar(c)
-        if (pred(r)) return r
-        await page.waitForTimeout(400)
-      }
-      assert.fail(
-        `el corte en x = ${c} no se ve como se esperaba: ${JSON.stringify(r)} (sin corte: ${JSON.stringify(sin)})`,
-      )
-    }
+    // Píxeles "de equipo" a cada lado de la vertical del plano x = c (ver `contarCorte`).
+    const contar = (c) => contarCorte(page, [c, 0, 0], [c + 8, 0, 0])
+    const esperar = (c, pred, ms) => esperarCorte(page, [c, 0, 0], [c + 8, 0, 0], pred, ms)
 
     const sin = await contar(0)
     assert.ok(sin.recortado > 300, `hay equipo del lado +X sin corte (${sin.recortado} px)`)
@@ -1256,5 +1215,172 @@ prueba(
     assert.equal(d.puntos.length, 0)
     assert.equal(await boton(page, 'Medir ángulo').getAttribute('aria-pressed'), 'false')
     assert.match(await page.getByTestId('measure-hint').textContent(), /dos superficies/)
+  },
+)
+
+/**
+ * Píxeles "de equipo" (claros) a cada lado de un plano de corte, en la vista ortográfica actual. `p0` está sobre el plano y
+ * `p1` del lado recortado (proyección independiente): el plano es una recta vertical u horizontal en pantalla. Se cuenta
+ * a más de 20 px de la recta, dentro del lienzo y sin el panel de componentes (izquierda) ni la nota flotante (abajo).
+ */
+const contarCorte = async (page, p0, p1) => {
+  const e = await estado(page)
+  const s0 = proyectarOrto(e.camara, e.lienzo, p0)
+  const s1 = proyectarOrto(e.camara, e.lienzo, p1)
+  const eje = Math.abs(s1.x - s0.x) > Math.abs(s1.y - s0.y) ? 'x' : 'y'
+  const signo = Math.sign(s1[eje] - s0[eje])
+  const png = (await page.screenshot()).toString('base64')
+  return page.evaluate(
+    async ({ png, s0, eje, signo }) => {
+      const r = document.querySelector('canvas').getBoundingClientRect()
+      const linea = (eje === 'x' ? r.left : r.top) + s0[eje]
+      const img = new Image()
+      img.src = `data:image/png;base64,${png}`
+      await img.decode()
+      const cv = document.createElement('canvas')
+      cv.width = img.width
+      cv.height = img.height
+      const ctx = cv.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const { data } = ctx.getImageData(0, 0, img.width, img.height)
+      let recortado = 0
+      let conservado = 0
+      for (let y = Math.max(80, r.top); y < r.bottom - 90; y++)
+        for (let x = 290; x < Math.min(img.width, r.right); x++) {
+          const i = (y * img.width + x) * 4
+          if (Math.max(data[i], data[i + 1], data[i + 2]) < 130) continue
+          const d = signo * ((eje === 'x' ? x : y) - linea)
+          if (d > 20) recortado++
+          else if (d < -20) conservado++
+        }
+      return { recortado, conservado }
+    },
+    { png, s0, eje, signo },
+  )
+}
+/** Conteo sin corte, ya asentada la vista: dos lecturas seguidas iguales (±3 %). */
+const contarEstable = async (page, p0, p1) => {
+  let previo = await contarCorte(page, p0, p1)
+  for (let i = 0; i < 30; i++) {
+    await page.waitForTimeout(400)
+    const r = await contarCorte(page, p0, p1)
+    const igual = (a, b) => Math.abs(a - b) <= Math.max(a, b) * 0.03
+    if (igual(r.recortado, previo.recortado) && igual(r.conservado, previo.conservado)) return r
+    previo = r
+  }
+  return previo
+}
+const esperarCorte = async (page, p0, p1, pred, ms = 40_000) => {
+  const t0 = Date.now()
+  let r
+  while (Date.now() - t0 < ms) {
+    r = await contarCorte(page, p0, p1)
+    if (pred(r)) return r
+    await page.waitForTimeout(400)
+  }
+  assert.fail(`el corte no se ve como se esperaba: ${JSON.stringify(r)}`)
+}
+
+prueba(
+  'cortes Y y Z: cada plano recorta su lado, se combinan con X, y lo recortado no se selecciona',
+  async (page) => {
+    const base = await cajas(page)
+    const corte = () => page.evaluate(() => window.__rigNativo.corte())
+    const fijar = (nombre, v) => page.getByLabel(nombre).fill(String(v))
+    assert.equal(await page.getByLabel('Altura del corte Y').isDisabled(), true)
+    assert.equal(await page.getByLabel('Posición del corte Z').isDisabled(), true)
+    assert.deepEqual(await corte(), [])
+
+    // — Corte Y (altura): vista lateral ortográfica; se conserva lo de abajo —
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await boton(page, 'Lateral').click()
+    await hasta(page, (e) => Math.abs(e.camara.posicion[0] - e.camara.objetivo[0]) < 1)
+    const H = 8
+    const yP0 = [0, H, 0]
+    const yP1 = [0, H + 5, 0]
+    const sinY = await contarEstable(page, yP0, yP1)
+    assert.ok(sinY.recortado > 150, `hay equipo por encima de ${H} m (${sinY.recortado} px)`)
+    assert.ok(sinY.conservado > 150, `hay equipo por debajo (${sinY.conservado} px)`)
+
+    await boton(page, 'Corte Y').click()
+    assert.equal(await boton(page, 'Corte Y').getAttribute('aria-pressed'), 'true')
+    await fijar('Altura del corte Y', H)
+    let planos = await corte()
+    assert.equal(planos.length, 1)
+    assert.ok(cerca(planos[0].normal, [0, -1, 0]) && Math.abs(planos[0].constante - H) < 1e-9)
+    const conY = await esperarCorte(page, yP0, yP1, (r) => r.recortado < sinY.recortado * 0.15)
+    assert.ok(
+      Math.abs(conY.conservado - sinY.conservado) < sinY.conservado * 0.05,
+      `lo de abajo no cambia (${sinY.conservado} → ${conY.conservado})`,
+    )
+    assert.match(
+      await page.getByTestId('cut-note').textContent(),
+      /Corte visual Y ≈ 8,0 m: superficies abiertas, sin tapas ni sólidos CAD/,
+    )
+
+    // En la vista lateral los rayos son horizontales: un punto de pantalla sobre el plano solo tiene impactos a esa altura,
+    // todos recortados. Ahí un clic no selecciona nada; sin corte, el mismo clic sí selecciona (control).
+    const e0 = await estado(page)
+    const yLinea = await page.evaluate(
+      (s) => document.querySelector('canvas').getBoundingClientRect().top + s,
+      proyectarOrto(e0.camara, e0.lienzo, yP0).y,
+    )
+    const pa = await page.evaluate(
+      async ([yLinea]) => {
+        const r = document.querySelector('canvas').getBoundingClientRect()
+        for (let y = yLinea - 24; y > yLinea - 260; y -= 8)
+          for (let x = r.left + 20; x < r.right - 20; x += 10) {
+            const hit = window.__rigNativo.impacto(x, y)
+            if (hit && document.elementFromPoint(x, y)?.tagName === 'CANVAS')
+              return { x, y, componente: hit.componente, altura: hit.punto[1] }
+          }
+        return null
+      },
+      [yLinea],
+    )
+    assert.ok(pa, 'hay un componente tocable por encima del corte Y')
+    assert.ok(pa.altura > H, `el impacto está por encima del plano (${pa.altura} m)`)
+    await page.mouse.click(pa.x, pa.y)
+    await page.waitForTimeout(600)
+    assert.equal((await estado(page)).tienda.seleccionado, null, 'recortado en Y: no se selecciona')
+    const alto = pa.componente
+
+    // — Se combina con X: dos planos a la vez y la leyenda los nombra a los dos —
+    await boton(page, 'Corte X').click()
+    await fijar('Posición del corte X', 0)
+    planos = await corte()
+    assert.equal(planos.length, 2)
+    assert.match(await page.getByTestId('cut-note').textContent(), /X ≈ 0,0 m · Y ≈ 8,0 m/)
+    await boton(page, 'Corte X').click()
+    await boton(page, 'Corte Y').click()
+    assert.deepEqual(await corte(), [])
+    await page.mouse.click(pa.x, pa.y)
+    await hasta(page, (e) => e.tienda.seleccionado === alto)
+    await page.keyboard.press('Escape')
+
+    // — Corte Z (lateral): vista superior ortográfica; se conserva el lado −Z —
+    await boton(page, 'Superior').click()
+    await hasta(page, (e) => e.camara.posicion[1] > 50)
+    const V = 0
+    const zP0 = [0, 0, V]
+    const zP1 = [0, 0, V + 5]
+    const sinZ = await contarEstable(page, zP0, zP1)
+    assert.ok(sinZ.recortado > 150, `hay equipo del lado +Z (${sinZ.recortado} px)`)
+    assert.ok(sinZ.conservado > 150, `hay equipo del lado −Z (${sinZ.conservado} px)`)
+    await boton(page, 'Corte Z').click()
+    await fijar('Posición del corte Z', V)
+    planos = await corte()
+    assert.equal(planos.length, 1)
+    assert.ok(cerca(planos[0].normal, [0, 0, -1]) && Math.abs(planos[0].constante - V) < 1e-9)
+    const conZ = await esperarCorte(page, zP0, zP1, (r) => r.recortado < sinZ.recortado * 0.15)
+    assert.ok(
+      Math.abs(conZ.conservado - sinZ.conservado) < sinZ.conservado * 0.05,
+      `el lado −Z no cambia (${sinZ.conservado} → ${conZ.conservado})`,
+    )
+    assert.match(await page.getByTestId('cut-note').textContent(), /Corte visual Z ≈ 0,0 m/)
+    await boton(page, 'Corte Z').click()
+    assert.deepEqual(await corte(), [])
+    assert.equal(await page.getByLabel('Posición del corte Z').isDisabled(), true)
   },
 )

@@ -1,4 +1,4 @@
-import { cutNote } from '@/lib/cut'
+import { anyCut, cutNote } from '@/lib/cut'
 import { measureHint, useToolsStore } from '@/stores/toolsStore'
 
 /**
@@ -9,9 +9,9 @@ export function ToolHints() {
   const measure = useToolsStore((s) => s.measure)
   const kind = useToolsStore((s) => s.measureKind)
   const points = useToolsStore((s) => s.points.length)
-  const cut = useToolsStore((s) => s.cut)
-  const cutX = useToolsStore((s) => s.cutX)
+  const cuts = useToolsStore((s) => s.cuts)
   const hint = measureHint(measure, points, kind)
+  const cut = anyCut(cuts)
   if (!hint && !cut) return null
 
   return (
@@ -30,7 +30,7 @@ export function ToolHints() {
           data-testid="cut-note"
           className="bg-card/90 text-foreground rounded-md border px-2 py-1 shadow backdrop-blur"
         >
-          {cutNote(cutX)}
+          {cutNote(cuts)}
         </p>
       )}
     </div>
