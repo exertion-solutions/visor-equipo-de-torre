@@ -2,7 +2,7 @@
   "id": "sk575_mastil",
   "confianza": "C",
   "alcance": "Mástil SK 104-330 inclinado 3,5°, corona centrada sobre el reticulado (pozo a 76\" del pie, C6), piso de enganche a 68'",
-  "triangulos": 47302,
+  "triangulos": 45646,
   "materiales": [
     "acero",
     "acero_oscuro",
@@ -16,7 +16,7 @@
   "fuentes": "informe técnico interno (no publicado)",
   "as_built": false,
   "aristas": {
-    "segmentos": 11193,
+    "segmentos": 11157,
     "nodo": "<nodo>_aristas (primitiva LINES, mode 1)",
     "umbral_grados": 28,
     "excluye": [
@@ -39,9 +39,9 @@
   "publicado": {
     "archivo": "public/models/rig10/sk575_mastil.glb",
     "optimize": "npm run gltf:optimize -- sk575_mastil.glb --simplify true --simplify-error 0.0001 --simplify-ratio 0",
-    "triangulos_origen": 47302,
-    "triangulos_publicados": 28050,
-    "segmentos_aristas": 11169,
+    "triangulos_origen": 45646,
+    "triangulos_publicados": 27854,
+    "segmentos_aristas": 11133,
     "nota": "simplify (meshoptimizer) quita triángulos con error ≤ 1e-4 de la extensión de cada malla; las LINES no se simplifican"
   }
 }

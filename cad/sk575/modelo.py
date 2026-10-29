@@ -193,10 +193,7 @@ for z in [7 + 2.4 * i for i in range(5)] + [ZM + 1.5 + 1.35 * i for i in range(7
     add("luz", Pos(MX + w / 2 - 0.25, -w / 2 + 0.15, z) * Cylinder(0.06, 0.8))
     add("acero_oscuro", Pos(MX + w / 2 - 0.25, -w / 2 + 0.15, z + 0.42) * Box(0.16, 0.16, 0.06))
 
-# tablero rojo con cartelería en la base
-add("rojo", box(MX - 0.6, MX + 0.6, -1.35, -0.9, 4.2, 6.3, f=0.03))
-for z in (4.5, 5.2, 5.9):
-    add("blanco", box(MX - 0.25, MX + 0.25, -1.37, -1.35, z, z + 0.45))
+# (el tablero rojo de la base era la consola del maquinista: ahora va dentro de la casilla, ver sk575_casilla)
 
 # inclinación del mástil hacia el pozo (placa API: 3,5° desde la vertical; base montada 4'-0" sobre el suelo).
 # Todo lo agregado hasta acá es mástil: se rota en bloque; los puntos de mástil usados más abajo pasan por M().
@@ -472,6 +469,17 @@ for x in (CX - LC / 2 + 0.1, CX + LC / 2 - 0.1):
         add("rojo", bar((x, y, 0.0), (x, y, FLC - 0.14), 0.06, sq=True))
         add("rojo", box(x - 0.2, x + 0.2, y - 0.2, y + 0.2, 0.0, 0.04))
     add("rojo", bar((x, YI, FLC / 2), (x, YO, FLC / 2), 0.04, sq=True))
+# consola del maquinista, dentro de la casilla (contra el muro +X, bajo el antepecho de las ventanas: no asoma por fuera)
+XCON = CX + LC / 2 - 0.06 - 0.22
+add("rojo", box(XCON - 0.2, XCON + 0.2, YCAS - 0.4, YCAS + 0.4, FLC, FLC + 0.9, f=0.02))
+pan = Plane(origin=(XCON, YCAS, FLC + 0.93), x_dir=(0, 1, 0), z_dir=(-0.6, 0, 0.8))
+add("acero_oscuro", pan * Box(0.4, 0.7, 0.04))
+for i in range(6):
+    add("blanco", pan * Pos(-0.1 + 0.1 * (i % 3), -0.2 + 0.2 * (i // 3), 0.03) * Box(0.06, 0.06, 0.015))
+for k in range(4):
+    add("acero", bar((XCON - 0.12, YCAS - 0.3 + 0.2 * k, FLC + 0.9), (XCON - 0.12, YCAS - 0.3 + 0.2 * k, FLC + 1.1), 0.012, sq=True))
+    add("rojo" if k == 0 else "goma", box(XCON - 0.14, XCON - 0.10, YCAS - 0.32 + 0.2 * k, YCAS - 0.28 + 0.2 * k, FLC + 1.1, FLC + 1.14))
+
 # descanso frente a la puerta y escalera de baranda amarilla que sube desde la cubierta del carrier
 YE = -0.95
 add("grating", box(CX - LC / 2 - 0.6, CX - LC / 2, YCAS - 0.5, YE + 0.35, FLC - 0.04, FLC))
@@ -536,15 +544,6 @@ for x, z, w in ((XD, ZD, 0.18), (XS, ZS, 0.14)):                                
 for x, z in ((XD, ZD), (XS, ZS)):                                                         # palancas de freno (lado maquinista −Y)
     add("acero_oscuro", bar((x - 0.15, -1.12, z - 0.5), (x + 0.55, -1.15, z + 0.55), 0.025))
     add("goma", Pos(x + 0.58, -1.15, z + 0.6) * Sphere(0.045))
-# consola del maquinista junto al mástil (lado −Y)
-add("rojo", box(-3.4, -3.0, -1.28, -0.85, ZK, 2.35, f=0.03))
-pan = Plane(origin=(-3.2, -1.06, 2.55), x_dir=(0, 1, 0), z_dir=(0.6, 0, 0.8))
-add("acero_oscuro", pan * Box(0.5, 0.45, 0.05))
-for i in range(6):
-    add("blanco", pan * Pos(-0.15 + 0.15 * (i % 3), -0.1 + 0.18 * (i // 3), 0.03) * Cylinder(0.055, 0.015))
-for j in range(4):
-    add("acero", bar((-3.05, -1.2 + 0.12 * j, 2.35), (-2.9, -1.2 + 0.12 * j, 2.6), 0.012))
-    add("rojo" if j == 0 else "goma", Pos(-2.9, -1.2 + 0.12 * j, 2.62) * Sphere(0.028))
 # malacate auxiliar Braden 12.000 lb
 add("acero_oscuro", Pos(-2.6, 0.95, ZK + 0.25) * Rot(90, 0, 0) * Cylinder(0.11, 0.3))
 for y in (0.78, 1.12):
