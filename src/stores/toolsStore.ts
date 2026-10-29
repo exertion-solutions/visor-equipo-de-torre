@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { clampExplodeAmount, DEFAULT_EXPLODE_AMOUNT } from '@/lib/explode'
 import type { Vec3 } from '@/lib/geometry'
 import { useModeStore } from './modeStore'
 import { useViewerStore } from './viewerStore'
@@ -16,6 +17,12 @@ interface ToolsState {
   drops: boolean
   /** Sección DROPS abierta en el panel (`null` = ninguna). */
   dropsSection: string | null
+  /** Despiece encendido (el botón); la separación pedida va en `explodeAmount`. */
+  explodeOn: boolean
+  /** Separación pedida por la perilla (0,01–1); se recuerda mientras el despiece está apagado. */
+  explodeAmount: number
+  /** ¿Hay algo desplazado ahora (separación actual > 0)? La escribe el animador al cruzar el 0, no a cada cuadro. */
+  exploded: boolean
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
   /** Puntos medidos (0, 1 o 2), en el marco de la escena. */
@@ -25,6 +32,10 @@ interface ToolsState {
   toggleDrops: () => void
   /** Abre una sección en el panel DROPS; deselecciona el componente (comparten el costado del visor). */
   openDropsSection: (id: string | null) => void
+  /** Enciende o apaga el despiece. Encenderlo apaga el modo medir (las medidas valen sobre el equipo armado). */
+  toggleExplode: () => void
+  setExplodeAmount: (amount: number) => void
+  setExploded: (exploded: boolean) => void
   /** Activa o desactiva el modo medir. Desactivarlo no borra la medición hecha (como el V2): se borra con `clearMeasure`. */
   toggleMeasure: () => void
   /** Agrega un punto; con dos ya puestos, el siguiente clic empieza una medición nueva. */
@@ -37,6 +48,9 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   zones: false,
   drops: false,
   dropsSection: null,
+  explodeOn: false,
+  explodeAmount: DEFAULT_EXPLODE_AMOUNT,
+  exploded: false,
   measure: false,
   points: [],
   toggleDims: () => set((s) => ({ dims: !s.dims })),
@@ -46,7 +60,12 @@ export const useToolsStore = create<ToolsState>()((set) => ({
     if (id !== null) useViewerStore.getState().selectComponent(null)
     set({ dropsSection: id })
   },
-  toggleMeasure: () => set((s) => ({ measure: !s.measure })),
+  toggleExplode: () =>
+    set((s) => ({ explodeOn: !s.explodeOn, measure: s.explodeOn ? s.measure : false })),
+  setExplodeAmount: (amount) => set({ explodeAmount: clampExplodeAmount(amount) }),
+  setExploded: (exploded) => set({ exploded }),
+  // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
+  toggleMeasure: () => set((s) => (s.explodeOn || s.exploded ? s : { measure: !s.measure })),
   addPoint: (point) =>
     set((s) => ({ points: s.points.length >= 2 ? [point] : [...s.points, point] })),
   clearMeasure: () => set({ points: [] }),
@@ -69,7 +88,9 @@ export const zonesVisible = (zones: boolean, mode: string): boolean => zones || 
 export function useZonesVisible(): boolean {
   const zones = useToolsStore((s) => s.zones)
   const mode = useModeStore((s) => s.mode)
-  return zonesVisible(zones, mode)
+  const exploded = useToolsStore((s) => s.exploded)
+  // Las zonas están referidas al equipo armado: con el despiece no valen y se ocultan (como en el V2).
+  return zonesVisible(zones, mode) && !exploded
 }
 
 /** ¿Se muestra la capa DROPS? La enciende el botón "DROPS" o el modo QHSE (capa derivada, como las zonas). */
@@ -78,5 +99,13 @@ export const dropsVisible = (drops: boolean, mode: string): boolean => drops || 
 export function useDropsVisible(): boolean {
   const drops = useToolsStore((s) => s.drops)
   const mode = useModeStore((s) => s.mode)
-  return dropsVisible(drops, mode)
+  const exploded = useToolsStore((s) => s.exploded)
+  return dropsVisible(drops, mode) && !exploded
+}
+
+/** Cotas visibles: el botón las enciende y el despiece las oculta (están referidas al equipo armado). */
+export function useDimsVisible(): boolean {
+  const dims = useToolsStore((s) => s.dims)
+  const exploded = useToolsStore((s) => s.exploded)
+  return dims && !exploded
 }

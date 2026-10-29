@@ -2,6 +2,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import type { ReactNode } from 'react'
 import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
+import { registerExplodeObject } from '@/scene/explode/explodeObjects'
 import { registerComponentObject } from './componentObjects'
 
 interface SelectableModelProps {
@@ -51,7 +52,15 @@ export function SelectableModel({ componentId, position, children }: SelectableM
       onPointerOut={hidden ? undefined : out}
       onClick={hidden ? undefined : click}
     >
-      {children}
+      {/* El despiece mueve este grupo interno: el seleccionable (y su registro) queda en su lugar. */}
+      <group
+        ref={(o) => {
+          registerExplodeObject(componentId, o)
+        }}
+        name={`explode_${componentId}`}
+      >
+        {children}
+      </group>
     </group>
   )
 }

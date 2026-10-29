@@ -12,6 +12,9 @@ beforeEach(() =>
     zones: false,
     drops: false,
     dropsSection: null,
+    explodeOn: false,
+    explodeAmount: 0.6,
+    exploded: false,
     measure: false,
     points: [],
   }),
@@ -106,5 +109,42 @@ describe('capa DROPS', () => {
     expect(dropsVisible(true, 'explore')).toBe(true)
     expect(dropsVisible(false, 'qhse')).toBe(true)
     expect(dropsVisible(false, 'training')).toBe(false)
+  })
+})
+
+describe('despiece', () => {
+  it('arranca apagado, con la separación de arranque del V2 (60 %)', () => {
+    const s = useToolsStore.getState()
+    expect([s.explodeOn, s.explodeAmount, s.exploded]).toEqual([false, 0.6, false])
+  })
+
+  it('encenderlo apaga el modo medir; apagarlo no lo toca', () => {
+    useToolsStore.getState().toggleMeasure()
+    useToolsStore.getState().toggleExplode()
+    expect(useToolsStore.getState().explodeOn).toBe(true)
+    expect(useToolsStore.getState().measure).toBe(false)
+    useToolsStore.getState().toggleExplode()
+    expect(useToolsStore.getState().explodeOn).toBe(false)
+  })
+
+  it('no se puede medir con el equipo desarmado (ni mientras vuelve a armarse)', () => {
+    useToolsStore.setState({ explodeOn: true })
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().measure).toBe(false)
+    useToolsStore.setState({ explodeOn: false, exploded: true })
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().measure).toBe(false)
+    useToolsStore.setState({ exploded: false })
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().measure).toBe(true)
+  })
+
+  it('la separación se acota y se recuerda con el despiece apagado', () => {
+    useToolsStore.getState().setExplodeAmount(5)
+    expect(useToolsStore.getState().explodeAmount).toBe(1)
+    useToolsStore.getState().setExplodeAmount(0.3)
+    useToolsStore.getState().toggleExplode()
+    useToolsStore.getState().toggleExplode()
+    expect(useToolsStore.getState().explodeAmount).toBe(0.3)
   })
 })

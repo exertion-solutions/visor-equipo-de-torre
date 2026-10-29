@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { distance, formatApproxMeters, midpoint, type Vec3 } from '@/lib/geometry'
 import { RIG10_DIMENSION_VIEWS } from '@/scene/tools/dimensionViews'
 import { registerToolLabel } from '@/scene/tools/toolLabelElements'
-import { useToolsStore } from '@/stores/toolsStore'
+import { useDimsVisible, useToolsStore } from '@/stores/toolsStore'
 
 /** Un rótulo: lo ubica `ToolsLayer` (dentro del Canvas) a través del registro, no React. Arranca oculto. */
 function ToolPill({
@@ -39,9 +39,11 @@ function ToolPill({
  * tiene) y de la medición ("≈ x,xx m · modelo": siempre aproximada). No reciben clics.
  */
 export function ToolLabels() {
-  const dims = useToolsStore((s) => s.dims)
+  const dims = useDimsVisible()
+  const exploded = useToolsStore((s) => s.exploded)
   const points = useToolsStore((s) => s.points)
-  const [a, b] = points
+  // Con el despiece la medición se oculta: sus puntos quedaron sobre el equipo armado.
+  const [a, b] = exploded ? [] : points
   if (!dims && !(a && b)) return null
 
   return (

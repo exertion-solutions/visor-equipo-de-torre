@@ -5,7 +5,7 @@ import { Vector3 } from 'three'
 import { dimensionSegments } from '@/lib/dimensions'
 import { labelPosition } from '@/lib/componentLabels'
 import { separateLabels, type LabelBox } from '@/lib/labelLayout'
-import { useToolsStore } from '@/stores/toolsStore'
+import { useDimsVisible, useToolsStore } from '@/stores/toolsStore'
 import { RIG10_DIMENSION_VIEWS } from './dimensionViews'
 import { onToolLabelsChange, toolLabels } from './toolLabelElements'
 
@@ -20,8 +20,10 @@ const point = new Vector3()
  */
 export function ToolsLayer() {
   const invalidate = useThree((s) => s.invalidate)
-  const dims = useToolsStore((s) => s.dims)
-  const points = useToolsStore((s) => s.points)
+  const dims = useDimsVisible()
+  const exploded = useToolsStore((s) => s.exploded)
+  const stored = useToolsStore((s) => s.points)
+  const points = exploded ? [] : stored
 
   useEffect(() => onToolLabelsChange(invalidate), [invalidate])
 

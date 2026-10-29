@@ -1,8 +1,9 @@
 import { Canvas } from '@react-three/fiber'
 import { Grid } from '@react-three/drei'
 import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three'
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET } from '@/scene/cameras/presets'
+import { ExplodeRig } from '@/scene/explode/ExplodeRig'
 import { CameraRig } from '@/scene/controls/CameraRig'
 import { NativeProbe } from '@/scene/debug/NativeProbe'
 import { LabelsProjector } from '@/scene/labels/LabelsProjector'
@@ -13,7 +14,8 @@ import { ZonesLayer } from '@/scene/qhse/ZonesLayer'
 import { ToolsLayer } from '@/scene/tools/ToolsLayer'
 import { SelectableModel } from '@/scene/picking/SelectableModel'
 import { useViewerStore } from '@/stores/viewerStore'
-import { RIG10_SCENE, type SceneModel } from '@/data/rigs/rig10'
+import { RIG10_RIG, RIG10_SCENE, type SceneModel } from '@/data/rigs/rig10'
+import type { Vec3 } from '@/lib/geometry'
 
 interface ViewportProps {
   /** GLB a cargar (con su posición). Vacío = escena de referencia (grilla 1 m). */
@@ -22,6 +24,15 @@ interface ViewportProps {
 
 export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
   const selectComponent = useViewerStore((s) => s.selectComponent)
+  const offsets = useMemo(
+    () =>
+      new Map<string, Vec3>(
+        RIG10_RIG.components.flatMap((c) =>
+          c.explodeOffset ? [[c.id, c.explodeOffset] as const] : [],
+        ),
+      ),
+    [],
+  )
   return (
     <Canvas
       role="img"
@@ -67,6 +78,7 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
         ))}
         <PostFx />
       </Suspense>
+      <ExplodeRig offsets={offsets} />
       <CameraRig />
       <LabelsProjector />
       <ToolsLayer />

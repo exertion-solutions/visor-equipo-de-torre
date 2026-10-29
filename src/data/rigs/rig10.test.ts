@@ -14,6 +14,23 @@ const conflictsOf = (componentId: string, key: string) =>
     ?.conflicts?.map((c) => c.sourceId)
 
 describe('RIG10_RIG', () => {
+  it('el despiece solo mueve componentes que se dibujan, con un desplazamiento finito y no nulo', () => {
+    const dibujados = new Set(RIG10_SCENE.map((m) => m.componentId))
+    const conOffset = RIG10_RIG.components.filter((c) => c.explodeOffset)
+    expect(conOffset.length).toBeGreaterThan(0)
+    for (const c of conOffset) {
+      expect(dibujados.has(c.id), c.id).toBe(true)
+      expect(c.explodeOffset!.every(Number.isFinite), c.id).toBe(true)
+      expect(
+        c.explodeOffset!.some((v) => v !== 0),
+        c.id,
+      ).toBe(true)
+    }
+    // La locación (huellas, planchada, piletas…) no se desarma.
+    for (const id of ['layout_locacion', 'carrier_huella', 'sk575_planchada', 'sk575_piletas'])
+      expect(RIG10_RIG.components.find((c) => c.id === id)?.explodeOffset, id).toBeUndefined()
+  })
+
   it('cumple el schema (fuentes, ids únicos, conflictos, rutas de modelo)', () => {
     const r = rigSchema.safeParse(RIG10_RIG)
     expect(r.success, JSON.stringify(r.error?.issues)).toBe(true)

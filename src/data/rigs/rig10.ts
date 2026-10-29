@@ -65,6 +65,23 @@ const cilManual = (value: string | number) => ({
   note: 'Parts & Service Manual SK575 p233-251 (Mast): plano de otro mástil/variante del manual; manda src-plano-hyco por decisión del usuario 2026-10-11',
 })
 
+/**
+ * Despiece: desplazamiento visual (m, a factor 1) de los componentes del modelo de referencia. Son los del grupo
+ * equivalente del visor V2; solo separan las piezas para mirarlas, sin escala ni significado de ingeniería. Lo que no
+ * figura acá (locación) no se mueve.
+ */
+const EXPLODE_OFFSETS: Partial<Record<(typeof SK575_IDS)[number], [number, number, number]>> = {
+  sk575_mastil: [-5, 3, 0],
+  sk575_piso: [5, 0, 0],
+  sk575_vientos: [0, 7, 0],
+  sk575_aparejo: [7, 2, 0],
+  sk575_bop: [8, 0, -4],
+  sk575_llave: [5, 5, 4],
+  sk575_izaje: [0, 5, 6],
+  sk575_cuadro: [0, 4, 7],
+  sk575_carrier: [-7, 0, 0],
+}
+
 const SK575_COMPONENTS: Component[] = [
   sk575(
     'sk575_mastil',
@@ -952,7 +969,10 @@ export const RIG10_RIG: Rig = {
         },
       ],
     },
-    ...SK575_COMPONENTS,
+    ...SK575_COMPONENTS.map((c) => {
+      const explodeOffset = EXPLODE_OFFSETS[c.id as (typeof SK575_IDS)[number]]
+      return explodeOffset ? { ...c, explodeOffset } : c
+    }),
   ],
 }
 

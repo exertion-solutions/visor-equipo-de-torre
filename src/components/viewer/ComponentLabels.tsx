@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { FAMILY_COLORS, numberComponents } from '@/lib/componentLabels'
 import { buildComponentTree, type ComponentTreeItem } from '@/lib/componentTree'
 import { registerLabelElement } from '@/scene/labels/labelElements'
+import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
 import type { Rig } from '@/types'
 
@@ -43,10 +44,12 @@ function LabelPill({ item, number }: { item: ComponentTreeItem; number: number }
  */
 export function ComponentLabels({ rig, sceneIds }: ComponentLabelsProps) {
   const labels = useViewerStore((s) => s.labels)
+  const exploded = useToolsStore((s) => s.exploded)
   const hidden = useViewerStore((s) => s.hiddenComponentIds)
   const groups = useMemo(() => buildComponentTree(rig, sceneIds), [rig, sceneIds])
   const numbers = useMemo(() => numberComponents(groups), [groups])
-  if (!labels) return null
+  // Con el despiece las etiquetas se ocultan (como en el V2): su ancla es la del equipo armado.
+  if (!labels || exploded) return null
 
   return (
     <div
