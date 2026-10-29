@@ -6,6 +6,7 @@ import { GRADE_LABELS } from '@/lib/legacyBridge'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
+import { measureHint, useToolsStore } from '@/stores/toolsStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -16,6 +17,13 @@ export function StatusBar() {
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
   const labels = useViewerStore((s) => s.labels)
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
+  const dims = useToolsStore((s) => s.dims)
+  const toggleDims = useToolsStore((s) => s.toggleDims)
+  const measure = useToolsStore((s) => s.measure)
+  const toggleMeasure = useToolsStore((s) => s.toggleMeasure)
+  const points = useToolsStore((s) => s.points)
+  const clearMeasure = useToolsStore((s) => s.clearMeasure)
+  const hint = measureHint(measure, points.length)
   const hasNativeSelection = useViewerStore((s) => s.selectedComponentId !== null)
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
@@ -69,6 +77,11 @@ export function StatusBar() {
             {GRADE_HINT}
           </TooltipContent>
         </Tooltip>
+      )}
+      {hint && (
+        <span role="status" data-testid="measure-hint" className="text-foreground min-w-0 shrink">
+          {hint}
+        </span>
       )}
       {/* Aviso de confianza: siempre visible, también en pantallas chicas. */}
       <span className="min-w-0 flex-1 truncate sm:flex-none">
@@ -143,6 +156,39 @@ export function StatusBar() {
             className="shrink-0"
           >
             Etiquetas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={dims ? 'secondary' : 'ghost'}
+            aria-pressed={dims}
+            onClick={toggleDims}
+            title="Cotas del equipo con su nivel A/B/C: la línea es orientativa, el valor sale de la especificación"
+            className="shrink-0"
+          >
+            Cotas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={measure ? 'secondary' : 'ghost'}
+            aria-pressed={measure}
+            onClick={toggleMeasure}
+            title="Medir entre dos puntos de la superficie del modelo (aproximado)"
+            className="shrink-0"
+          >
+            Medir
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            disabled={points.length === 0}
+            onClick={clearMeasure}
+            title="Borra la medición"
+            className="shrink-0"
+          >
+            Borrar medición
           </Button>
         </>
       )}

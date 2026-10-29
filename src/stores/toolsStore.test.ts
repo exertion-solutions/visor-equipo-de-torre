@@ -1,0 +1,52 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+import { measureHint, useToolsStore } from './toolsStore'
+
+const A = [1, 2, 3] as const
+const B = [4, 5, 6] as const
+const C = [7, 8, 9] as const
+
+beforeEach(() => useToolsStore.setState({ dims: false, measure: false, points: [] }))
+
+describe('toolsStore', () => {
+  it('arranca con todo apagado y sin puntos', () => {
+    const s = useToolsStore.getState()
+    expect([s.dims, s.measure, s.points]).toEqual([false, false, []])
+  })
+
+  it('alterna las cotas y el modo medir', () => {
+    useToolsStore.getState().toggleDims()
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().dims).toBe(true)
+    expect(useToolsStore.getState().measure).toBe(true)
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().measure).toBe(false)
+  })
+
+  it('con dos puntos, el siguiente clic empieza una medición nueva', () => {
+    const { addPoint } = useToolsStore.getState()
+    addPoint(A)
+    addPoint(B)
+    expect(useToolsStore.getState().points).toEqual([A, B])
+    addPoint(C)
+    expect(useToolsStore.getState().points).toEqual([C])
+  })
+
+  it('apagar el modo medir conserva la medición; borrar la limpia', () => {
+    useToolsStore.getState().toggleMeasure()
+    useToolsStore.getState().addPoint(A)
+    useToolsStore.getState().addPoint(B)
+    useToolsStore.getState().toggleMeasure()
+    expect(useToolsStore.getState().points).toHaveLength(2)
+    useToolsStore.getState().clearMeasure()
+    expect(useToolsStore.getState().points).toEqual([])
+  })
+})
+
+describe('measureHint', () => {
+  it('guía cada paso y calla fuera del modo medir', () => {
+    expect(measureHint(false, 2)).toBe('')
+    expect(measureHint(true, 0)).toMatch(/dos superficies/)
+    expect(measureHint(true, 1)).toMatch(/segundo punto/)
+    expect(measureHint(true, 2)).toMatch(/aproximada/)
+  })
+})
