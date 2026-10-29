@@ -231,6 +231,48 @@ describe('viewerStore', () => {
     })
   })
 
+  describe('setView (vistas estándar)', () => {
+    beforeEach(() =>
+      useViewerStore.setState({
+        activeView: null,
+        projection: 'perspective',
+        cameraCommand: null,
+        canGoBack: false,
+      }),
+    )
+
+    it('marca la vista, fija la proyección y emite una orden con secuencia creciente', () => {
+      useViewerStore.getState().setView('front')
+      let s = useViewerStore.getState()
+      expect(s.activeView).toBe('front')
+      expect(s.projection).toBe('orthographic')
+      expect(s.cameraCommand).toEqual({ type: 'view', view: 'front', seq: 1 })
+      useViewerStore.getState().setView('front')
+      s = useViewerStore.getState()
+      expect(s.cameraCommand?.seq).toBe(2)
+    })
+
+    it('"Boca de pozo" va en perspectiva y las demás en ortográfica', () => {
+      useViewerStore.getState().setView('top')
+      expect(useViewerStore.getState().projection).toBe('orthographic')
+      useViewerStore.getState().setView('well')
+      expect(useViewerStore.getState().projection).toBe('perspective')
+      useViewerStore.getState().setView('iso')
+      expect(useViewerStore.getState().projection).toBe('orthographic')
+    })
+
+    it('la secuencia continúa la de los focos (CameraRig no repite órdenes viejas)', () => {
+      useViewerStore.getState().selectComponent('bop')
+      useViewerStore.getState().focusSelected()
+      useViewerStore.getState().setView('side')
+      expect(useViewerStore.getState().cameraCommand).toEqual({
+        type: 'view',
+        view: 'side',
+        seq: 2,
+      })
+    })
+  })
+
   it('isViewerEngine rechaza valores inválidos', () => {
     expect(isViewerEngine('native')).toBe(true)
     expect(isViewerEngine('threejs')).toBe(false)
