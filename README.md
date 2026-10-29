@@ -3,21 +3,45 @@
 Gemelo digital web de equipos **Pulling / Workover** de servicios petroleros (no es un drilling rig).
 Primera implementación: **Equipo 10**. Después: Equipo 05, 06, 11 y otros.
 
+**Probalo:** https://exertion-solutions.github.io/visor-equipo-de-torre/ · abrí el motor **R3F nativo** desde el selector de la
+barra superior, o directo: https://exertion-solutions.github.io/visor-equipo-de-torre/?engine=native
+
+![Vista general del Equipo 10](docs/preview/readme-01-vista-general.jpg)
+
+> **Referencia digital, no as-built.** La geometría es un modelo de referencia aproximado: no es apto para fabricación, cálculo ni
+> como validación de seguridad. Cada dato lleva su nivel de confianza (A/B/C) y su fuente; lo que no está confirmado se dice.
+> Cómo se lee: [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md).
+
+## Qué tiene
+
+|                                                                      |                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Zonas QHSE y DROPS](docs/preview/readme-02-qhse-drops.jpg)         | **Modo QHSE**: zonas ilustrativas (siempre rotuladas "sin validar") y capa DROPS: 66 puntos de control de caída de objetos del Libro DROPS 2024 clasificados cualitativamente por zona del layout A2 (sin radios ni distancias). Es **referencia de lo que debe tener cada control**, no una verificación. |
+| ![Ficha con nivel A/B/C](docs/preview/readme-03-ficha-nivel-abc.jpg) | **Ficha por componente** con nivel de confianza A (confirmado) / B (parcial) / C (aproximado), especificaciones con su fuente y **fuentes en conflicto** a la vista: nunca se elige una en silencio.                                                                                                       |
+| ![Despiece](docs/preview/readme-04-despiece.jpg)                     | **Despiece** animado para ver las piezas por separado (solo visual).                                                                                                                                                                                                                                       |
+| ![Corte por altura](docs/preview/readme-05-corte-altura.jpg)         | **Cortes X, Y y Z** combinables (superficies abiertas, sin tapas), **cotas** con su nivel, **medición** de distancia y de ángulo con desnivel, **vistas estándar**, **etiquetas**, **aislar** y **árbol de componentes**.                                                                                  |
+
+### Compartir
+
+- **Copiar enlace**: abre el visor en el componente seleccionado o en la última vista estándar. A mano:
+  `?engine=native&comp=sk575_bop` (componente) o `?engine=native&view=top` (`iso`, `front`, `side`, `top`, `well`); se puede sumar
+  `&mode=qhse`. Un id desconocido se ignora.
+- **Captura PNG**: descarga la escena 3D con una franja de leyenda ("referencia digital, no as-built") y el sitio, para que la
+  imagen no pierda el aviso al circular. No incluye etiquetas ni paneles.
+- **Sin conexión**: se instala como PWA y, tras la primera visita, abre sin señal.
+
 ## Estado
 
 Migración por etapas desde el visor HTML V2 hacia una app React + React Three Fiber:
 
-- El visor V2 (`public/legacy/Digital_Rig_V2.html`) se embebe en un iframe y es el motor por
-  defecto ("V2 compatible"). El motor nativo ("R3F nativo") se alterna desde la UI y todavía no tiene paridad.
-- Hecho en nativo: vistas estándar de cámara, carga GLB (Draco/Meshopt/KTX2), stores, modelo de datos con
-  validación zod (incluye QHSE bow-tie) y el estado de modos (EXPLORE / OPERATION / QHSE / TRAINING).
-  Los modos ya gobiernan el V2 embebido (puente `postMessage`); el motor nativo aún no los consume.
-- El V2 embebido incluye la **capa DROPS** (botón "Zonas DROPS", se activa sola en modo QHSE): 66 puntos de
-  control de caída de objetos del Libro DROPS 2024 clasificados por zona del layout A2, con
-  panel por punto (sujeción primaria, retención secundaria, fuente y página).
-  Ver extracto interno (no publicado).
-- Pendiente: el resto de las funciones del V2. Estado por función en `docs/FEATURE_PARITY.md`.
-- Sin modelos GLB reales todavía (`assets/source/` y `public/models/rig10/` vacíos).
+- El visor **V2** (`public/legacy/Digital_Rig_V2.html`, embebido en un iframe) sigue siendo el motor por defecto ("V2 compatible"):
+  tiene todas las funciones. El motor **nativo** ("R3F nativo") ya tiene lo central (lo de arriba) y sigue sin paridad completa;
+  los modos EXPLORE / OPERATION / QHSE / TRAINING gobiernan el V2 y, en el nativo, la capa de zonas y DROPS en modo QHSE.
+- Pendiente en el nativo (estado por función en [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md)): malla, exportar GLB, animación
+  de aparejo, recorridos, secuencia de montaje, clima, VR y más. El V2 no se retira hasta que todas las filas críticas estén
+  verificadas.
+- Modelo de referencia SK-575 en `public/models/rig10/` (GLB generados desde `cad/sk575/`, aproximados, nivel C).
+- Hoy hay un solo equipo (Equipo 10); el esquema de datos (zod) está pensado para sumar otros equipos de pulling/workover.
 
 ## Comandos
 
@@ -81,7 +105,7 @@ docs/           arquitectura, paridad, auditoría legacy, setup
   opcional a un disparador HTTP (Power Automate). Es un registro de campo: el visor no evalúa ni aprueba.
 - **Evaluación de inducción** (modo Entrenamiento, recorrido guiado): 8 preguntas sobre las fichas de "Ir a equipo", registro con
   nombre/empresa/puntaje, CSV y envío opcional. No es una habilitación.
-- **Enlaces profundos**: `?comp=bop`, `?vp=piso-enganche`; botón "Copiar enlace a esta vista" en Exportar.
+- **Enlaces profundos** (V2): `?comp=bop`, `?vp=piso-enganche`; botón "Copiar enlace a esta vista" en Exportar. En el nativo: ver "Compartir".
 - Los datos quedan en el navegador (localStorage de la app). Envío: el flujo recibe el cuerpo como texto; leerlo con `json(triggerBody())`.
 
 ## Sitio publicado: sin conexión, compartir y envío de registros
@@ -96,7 +120,7 @@ docs/           arquitectura, paridad, auditoría legacy, setup
   (`scripts/inject-webhook.mjs`). Un dispositivo puede seguir usando una URL propia. La URL queda visible en la página: el
   flujo tiene que validar el cuerpo (`tipo` = `checklist-drops` o `induccion`) y descartar lo demás.
 - **Teclado**: con foco en el modelo (clic o Tab), flechas giran e inclinan, Mayús + flechas desplazan, + / − zoom, `?` atajos.
-- three.js (≈ 470 KB comprimidos) solo se descarga con el motor nativo (`?dev=1`): React y zustand van en su propio chunk.
+- three.js (≈ 470 KB comprimidos) solo se descarga con el motor nativo: React y zustand van en su propio chunk.
 
 ## Efectos y herramientas 3D (V2)
 
@@ -114,3 +138,9 @@ umbral o zona aprobada.
 - **Entrar en VR** (Vista) si el navegador ofrece WebXR `immersive-vr` (`74-vr.js`; requiere verificación con visor real).
 - Pendientes: LOD del equipo (depende de validar `docs/gltf-simplify.md` contra cotas) e instancing (el entorno ya está
   fusionado en 9 mallas: la ganancia medida es marginal).
+
+## Licencia y uso
+
+Sin licencia definida todavía: hasta que se publique una, todos los derechos quedan reservados. El modelo de referencia no incluye
+documentos ni marcas internas de ninguna empresa, y sus datos distinguen lo confirmado de lo aproximado. Si querés usarlo, citarlo o
+contribuir, abrí un issue.

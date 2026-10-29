@@ -32,9 +32,18 @@ export function parseUrlState(search: string): UrlState {
   }
 }
 
-/** El motor R3F nativo (sin paridad con V2) solo se ofrece en desarrollo o con `?dev=1`. */
-export function isNativeEngineEnabled(search: string, isDev: boolean): boolean {
-  return isDev || new URLSearchParams(search).get('dev') === '1'
+/** Motor pedido por la URL: `?engine=native` abre el nativo; sin el parámetro (o con otro valor) rige el V2. */
+export function parseEngineParam(search: string): 'native' | null {
+  return new URLSearchParams(search).get('engine') === 'native' ? 'native' : null
+}
+
+/** `search` con el motor reflejado: `engine=native` solo con el nativo (el V2 es el valor por defecto). */
+export function withEngine(search: string, engine: 'legacy' | 'native'): string {
+  const p = new URLSearchParams(search)
+  p.delete('engine')
+  if (engine === 'native') p.set('engine', 'native')
+  const s = p.toString().replace(/%2C/g, ',')
+  return s ? `?${s}` : ''
 }
 
 /**
@@ -55,6 +64,12 @@ export function buildSearch(search: string, state: UrlState): string {
 }
 
 let initial: UrlState | null = null
+let initialSearch: string | null = null
+
+/** Query con la que se abrió la página (memoizada): de ahí salen el motor y los enlaces profundos, una sola vez. */
+export function getInitialSearch(): string {
+  return (initialSearch ??= typeof location === 'undefined' ? '' : location.search)
+}
 
 /** Estado que traía la URL al abrir la página (memoizado). Se aplica al visor V2 una sola vez, en `ready`. */
 export function getInitialUrlState(): UrlState {

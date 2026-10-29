@@ -12,6 +12,7 @@ import { ToolLabels } from '@/components/viewer/ToolLabels'
 import { ViewButtons } from '@/components/viewer/ViewButtons'
 import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
 import { useViewerStore } from '@/stores/viewerStore'
+import { useNativeLink } from './useNativeLink'
 
 const SCENE_IDS = RIG10_SCENE.map((m) => m.componentId)
 
@@ -23,6 +24,7 @@ const SCENE_IDS = RIG10_SCENE.map((m) => m.componentId)
 export default function NativeOverlay() {
   const selected = useViewerStore((s) => s.selectedComponentId)
   const selectComponent = useViewerStore((s) => s.selectComponent)
+  useNativeLink(SCENE_IDS)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

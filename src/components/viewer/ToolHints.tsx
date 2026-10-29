@@ -10,12 +10,22 @@ export function ToolHints() {
   const kind = useToolsStore((s) => s.measureKind)
   const points = useToolsStore((s) => s.points.length)
   const cuts = useToolsStore((s) => s.cuts)
+  const notice = useToolsStore((s) => s.notice)
   const hint = measureHint(measure, points, kind)
   const cut = anyCut(cuts)
-  if (!hint && !cut) return null
+  if (!hint && !cut && !notice) return null
 
   return (
     <div className="pointer-events-none absolute inset-x-3 bottom-14 z-10 flex flex-col items-center gap-1 text-center text-xs">
+      {notice && (
+        <p
+          role="status"
+          data-testid="notice"
+          className="bg-card/90 text-foreground rounded-md border px-2 py-1 shadow backdrop-blur"
+        >
+          {notice}
+        </p>
+      )}
       {hint && (
         <p
           role="status"

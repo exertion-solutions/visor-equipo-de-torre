@@ -31,6 +31,9 @@ interface ToolsState {
   exploded: boolean
   /** Cortes de sección X, Y y Z (planos globales que se combinan; las superficies quedan abiertas, sin tapas). */
   cuts: Cuts
+  /** Aviso breve de una acción (enlace copiado, captura lista); se borra solo. `null` = ninguno. */
+  notice: string | null
+  showNotice: (text: string) => void
   /** Modo medir: los clics sobre el modelo ponen puntos en lugar de seleccionar. */
   measure: boolean
   /** Qué se mide: distancia entre 2 puntos o ángulo ABC con 3 (A, vértice B, C). Los puntos son de este tipo. */
@@ -67,6 +70,8 @@ function toggleKind(s: ToolsState, kind: MeasureKind): Partial<ToolsState> {
   return { measure: true, measureKind: kind, points: s.measureKind === kind ? s.points : [] }
 }
 
+let noticeTimer: ReturnType<typeof setTimeout> | undefined
+
 export const useToolsStore = create<ToolsState>()((set) => ({
   dims: false,
   zones: false,
@@ -76,6 +81,7 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   explodeOn: false,
   explodeAmount: DEFAULT_EXPLODE_AMOUNT,
   exploded: false,
+  notice: null,
   measure: false,
   measureKind: 'distance',
   points: [],
@@ -97,6 +103,11 @@ export const useToolsStore = create<ToolsState>()((set) => ({
       cuts: { ...s.cuts, [axis]: { ...s.cuts[axis], value: clampCut(axis, value) } },
     })),
   // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
+  showNotice: (text) => {
+    set({ notice: text })
+    clearTimeout(noticeTimer)
+    noticeTimer = setTimeout(() => set({ notice: null }), 3500)
+  },
   toggleMeasure: () => set((s) => toggleKind(s, 'distance')),
   toggleAngle: () => set((s) => toggleKind(s, 'angle')),
   addPoint: (point) =>

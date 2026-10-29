@@ -1,11 +1,21 @@
 import { useEffect } from 'react'
-import { buildSearch, getInitialUrlState } from '@/lib/urlState'
+import {
+  buildSearch,
+  getInitialSearch,
+  getInitialUrlState,
+  parseEngineParam,
+  parseUrlState,
+  withEngine,
+} from '@/lib/urlState'
 import { useModeStore } from '@/stores/modeStore'
 import { useViewerStore } from '@/stores/viewerStore'
 
 /** Carga el modo de la URL en `modeStore` antes del primer render (evita un parpadeo EXPLORE → modo). */
 export function hydrateStoresFromUrl(): void {
   useModeStore.setState({ mode: getInitialUrlState().mode })
+  // Un enlace con `engine=native` abre el motor nativo directamente.
+  if (parseEngineParam(getInitialSearch()) === 'native')
+    useViewerStore.setState({ engine: 'native' })
 }
 
 /**
@@ -20,13 +30,20 @@ export function useUrlSync(): void {
   const engine = useViewerStore((s) => s.engine)
 
   useEffect(() => {
-    if (engine !== 'legacy') return
-    const init = getInitialUrlState()
-    const next = buildSearch(location.search, {
-      mode,
-      view: view ?? init.view,
-      layers: layers ?? init.layers,
-    })
+    let next: string
+    if (engine === 'legacy') {
+      const init = getInitialUrlState()
+      next = buildSearch(location.search, {
+        mode,
+        view: view ?? init.view,
+        layers: layers ?? init.layers,
+      })
+    } else {
+      // Nativo: solo modo y motor; la vista y el componente de un enlace no se tocan (se aplican una vez, al abrir).
+      const cur = parseUrlState(location.search)
+      next = buildSearch(location.search, { mode, view: cur.view, layers: cur.layers })
+    }
+    next = withEngine(next, engine)
     if (next !== location.search) {
       history.replaceState(history.state, '', `${location.pathname}${next}${location.hash}`)
     }

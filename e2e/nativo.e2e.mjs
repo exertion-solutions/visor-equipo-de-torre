@@ -56,17 +56,25 @@ after(async () => {
 })
 
 /** Página con el motor nativo cargado. Los errores de consola propios se juntan en `problemas`. */
-const abrir = async (viewport = { width: 1280, height: 760 }) => {
+const abrir = async (
+  viewport = { width: 1280, height: 760 },
+  query = '?dev=1',
+  alternar = true,
+) => {
   problemas.length = 0
-  const page = await browser.newPage({ viewport })
+  const contexto = await browser.newContext({ viewport })
+  await contexto.grantPermissions(['clipboard-read', 'clipboard-write'], {
+    origin: new URL(base).origin,
+  })
+  const page = await contexto.newPage()
   page.on('console', (m) => {
     // El visor V2 queda montado (oculto) en un iframe sandbox de origen opaco: el servidor de desarrollo no manda
     // cabeceras CORS y sus fetch de los GLB fallan (el V2 cae a su respaldo). No es del motor nativo.
     if (m.type() === 'error' && !/CORS|ERR_FAILED/.test(m.text())) problemas.push(m.text())
   })
   page.on('pageerror', (e) => problemas.push(e.message))
-  await page.goto(`${base}?dev=1`, { waitUntil: 'load', timeout: 120_000 })
-  await page.getByRole('button', { name: /R3F nativo/ }).click()
+  await page.goto(`${base}${query}`, { waitUntil: 'load', timeout: 120_000 })
+  if (alternar) await page.getByRole('button', { name: /R3F nativo/ }).click()
   await page.waitForFunction(() => window.__rigNativo?.estado().componentes.length > 0, null, {
     timeout: 120_000,
   })
@@ -87,15 +95,15 @@ const abrir = async (viewport = { width: 1280, height: 760 }) => {
  * Una prueba con su propia página: se cierra siempre (aunque falle, para no dejar una escena renderizando que compita por
  * CPU con la siguiente) y, si la prueba pasó, no debe haber errores de consola del motor nativo.
  */
-const prueba = (nombre, fn) =>
+const prueba = (nombre, fn, { query = '?dev=1', alternar = true } = {}) =>
   test(nombre, async (t) => {
     if (skip) return t.skip(skip)
-    const page = await abrir()
+    const page = await abrir(undefined, query, alternar)
     try {
       await fn(page)
       assert.deepEqual([...problemas], [], 'errores de consola del motor nativo')
     } finally {
-      await page.close()
+      await page.context().close()
     }
   })
 
@@ -1147,6 +1155,10 @@ const num1 = (n) =>
 prueba(
   'medir ángulo: tres clics dan el ángulo con el vértice en B y el desnivel de A a C, sin seleccionar; el cuarto reinicia',
   async (page) => {
+    // En ortográfica un píxel equivale a una distancia fija (~7 cm): la tolerancia de los puntos no depende de lo lejos que
+    // esté lo que se toca, como pasaba en perspectiva con el carrier a 15 m.
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
     await boton(page, 'Medir ángulo').click()
     assert.equal(await boton(page, 'Medir ángulo').getAttribute('aria-pressed'), 'true')
     assert.equal(await boton(page, 'Medir').getAttribute('aria-pressed'), 'false', 'se excluyen')
@@ -1384,3 +1396,130 @@ prueba(
     assert.equal(await page.getByLabel('Posición del corte Z').isDisabled(), true)
   },
 )
+
+// — Enlaces profundos del motor nativo: `?engine=native&comp=<id>` / `&view=<vista>` —
+const PRESET_SUPERIOR = [-2.5, 72, 0.02] // vista "Superior" del legacy (misma tabla que VISTAS)
+
+prueba(
+  'enlace profundo: ?engine=native&comp= abre el nativo con el componente seleccionado y encuadrado',
+  async (page) => {
+    assert.equal(
+      await page.getByRole('button', { name: /R3F nativo/ }).getAttribute('aria-pressed'),
+      'true',
+      'abre en el nativo sin tocar el selector',
+    )
+    const e = await hasta(page, (s) => s.tienda.seleccionado === MASTIL)
+    assert.equal(e.tienda.seleccionado, MASTIL)
+    const { centro, tamano } = (await cajas(page))[MASTIL]
+    // Encuadre: el objetivo es el centro de la caja y la distancia la del foco del legacy.
+    await hasta(
+      page,
+      (s) =>
+        cerca(s.camara.objetivo, centro, 1e-2) &&
+        Math.abs(distancia(s.camara.posicion, s.camara.objetivo) - distanciaFoco(tamano)) < 1e-2,
+    )
+    await page.getByTestId('component-card').waitFor({ state: 'visible' })
+    assert.match(page.url(), /engine=native/, 'la URL conserva el enlace')
+  },
+  { query: '?dev=1&engine=native&comp=sk575_mastil', alternar: false },
+)
+
+prueba(
+  'enlace profundo: ?engine=native&view= va a la vista estándar y un componente inexistente se ignora',
+  async (page) => {
+    const e = await hasta(
+      page,
+      (s) =>
+        s.tienda.proyeccion === 'orthographic' && cerca(s.camara.posicion, PRESET_SUPERIOR, 1e-2),
+    )
+    assert.equal(e.tienda.seleccionado, null, 'un id desconocido no selecciona nada')
+    assert.equal(await boton(page, 'Superior').getAttribute('aria-pressed'), 'true')
+  },
+  { query: '?dev=1&engine=native&comp=no_existe&view=top', alternar: false },
+)
+
+prueba(
+  'copiar enlace: arma el enlace del componente o de la vista, y abrirlo reproduce lo que se veía',
+  async (page) => {
+    const origen = new URL(page.url())
+    const sitio = `${origen.origin}${origen.pathname}`
+    const copiado = () => page.evaluate(() => navigator.clipboard.readText())
+
+    // Con un componente seleccionado manda el componente.
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+    await boton(page, 'Copiar enlace').click()
+    await page.getByTestId('notice').waitFor({ state: 'visible' })
+    assert.equal(await page.getByTestId('notice').textContent(), 'Enlace copiado')
+    const conComponente = await copiado()
+    assert.equal(conComponente, `${sitio}?engine=native&comp=${MASTIL}`)
+
+    // Sin selección, la última vista estándar elegida.
+    await page.keyboard.press('Escape')
+    await hasta(page, (e) => e.tienda.seleccionado === null)
+    await boton(page, 'Superior').click()
+    await hasta(page, (e) => cerca(e.camara.posicion, PRESET_SUPERIOR, 1e-2))
+    await boton(page, 'Copiar enlace').click()
+    await hasta(page, () => true)
+    assert.equal(await copiado(), `${sitio}?engine=native&view=top`)
+
+    // Ida y vuelta: el enlace copiado abre una página nueva en el mismo componente.
+    const otra = await page.context().newPage()
+    await otra.goto(`${conComponente}&dev=1`, { waitUntil: 'load', timeout: 120_000 })
+    await otra.waitForFunction(() => window.__rigNativo?.estado().tienda.seleccionado, null, {
+      timeout: 120_000,
+    })
+    assert.equal((await estado(otra)).tienda.seleccionado, MASTIL)
+    await otra.close()
+  },
+)
+
+prueba('captura PNG: descarga la escena con la leyenda "no as-built" y el sitio', async (page) => {
+  const lienzo = (await estado(page)).lienzo
+  const [descarga] = await Promise.all([
+    page.waitForEvent('download', { timeout: 60_000 }),
+    boton(page, 'Captura PNG').click(),
+  ])
+  assert.match(descarga.suggestedFilename(), /^digital-rig-equipo10-\d{8}-\d{4}\.png$/)
+  const archivo = path.join(root, 'node_modules', '.cache', `captura-${Date.now()}.png`)
+  fs.mkdirSync(path.dirname(archivo), { recursive: true })
+  await descarga.saveAs(archivo)
+  const bytes = fs.readFileSync(archivo)
+  fs.rmSync(archivo)
+  assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'firma PNG')
+  // IHDR: ancho y alto del lienzo (dpr 1) más la franja de la leyenda (36 px).
+  assert.equal(bytes.readUInt32BE(16), lienzo.ancho)
+  assert.equal(bytes.readUInt32BE(20), lienzo.alto + 36)
+  await page.getByTestId('notice').waitFor({ state: 'visible' })
+  assert.match(await page.getByTestId('notice').textContent(), /Captura guardada/)
+
+  // Contenido: la escena trae equipo (píxeles claros y de color) y la franja trae texto claro sobre fondo oscuro.
+  const r = await page.evaluate(
+    async ({ b64, ancho, alto }) => {
+      const img = new Image()
+      img.src = `data:image/png;base64,${b64}`
+      await img.decode()
+      const cv = document.createElement('canvas')
+      cv.width = img.width
+      cv.height = img.height
+      const ctx = cv.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const cuenta = (x0, y0, x1, y1, min) => {
+        const { data } = ctx.getImageData(x0, y0, x1 - x0, y1 - y0)
+        let n = 0
+        for (let i = 0; i < data.length; i += 4)
+          if (Math.max(data[i], data[i + 1], data[i + 2]) >= min) n++
+        return n
+      }
+      return {
+        escena: cuenta(0, 0, ancho, alto, 130),
+        franja: cuenta(0, alto, ancho, alto + 36, 130),
+        esquina: Array.from(ctx.getImageData(2, alto + 2, 1, 1).data),
+      }
+    },
+    { b64: bytes.toString('base64'), ancho: lienzo.ancho, alto: lienzo.alto },
+  )
+  assert.ok(r.escena > 500, `la escena trae equipo (${r.escena} px claros)`)
+  assert.ok(r.franja > 150, `la franja trae texto (${r.franja} px claros)`)
+  assert.deepEqual(r.esquina.slice(0, 3), [11, 13, 18], 'el fondo de la franja es el de la escena')
+})

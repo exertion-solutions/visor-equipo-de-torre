@@ -155,7 +155,15 @@ export function ComponentCard({ rig, componentId, onClose, extra }: ComponentCar
       </ScrollArea>
 
       <footer className="text-muted-foreground border-t p-2 text-[11px]">
-        Referencia digital · no as-built
+        Referencia digital · no as-built ·{' '}
+        <a
+          href="https://github.com/exertion-solutions/visor-equipo-de-torre/blob/main/docs/METODOLOGIA.md"
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2"
+        >
+          cómo leer A/B/C
+        </a>
       </footer>
     </aside>
   )

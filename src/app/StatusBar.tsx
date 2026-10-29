@@ -3,8 +3,11 @@ import { GRADE_HINT, GRADE_STYLES } from '@/components/equipment/grade'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { captureFileName } from '@/lib/capture'
+import { buildShareUrl } from '@/lib/deepLink'
 import { CUT_AXES, CUT_SPECS } from '@/lib/cut'
 import { GRADE_LABELS } from '@/lib/legacyBridge'
+import { captureView } from '@/scene/capture/captureRegistry'
 import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
@@ -40,6 +43,9 @@ export function StatusBar() {
   const toggleAngle = useToolsStore((s) => s.toggleAngle)
   const points = useToolsStore((s) => s.points)
   const clearMeasure = useToolsStore((s) => s.clearMeasure)
+  const showNotice = useToolsStore((s) => s.showNotice)
+  const selectedId = useViewerStore((s) => s.selectedComponentId)
+  const activeView = useViewerStore((s) => s.activeView)
   const hasNativeSelection = useViewerStore((s) => s.selectedComponentId !== null)
   const canGoBack = useViewerStore((s) => s.canGoBack)
   const focusSelected = useViewerStore((s) => s.focusSelected)
@@ -48,6 +54,29 @@ export function StatusBar() {
   const toggleProjection = useViewerStore((s) => s.toggleProjection)
   const isolated = useViewerStore((s) => s.isolationSnapshot !== null)
   const toggleIsolation = useViewerStore((s) => s.toggleIsolation)
+
+  const copyLink = async () => {
+    const url = buildShareUrl(location.href, { mode, comp: selectedId, view: activeView })
+    try {
+      await navigator.clipboard.writeText(url)
+      showNotice('Enlace copiado')
+    } catch {
+      showNotice(`No se pudo copiar. Enlace: ${url}`)
+    }
+  }
+
+  const savePng = async () => {
+    const blob = await captureView()
+    if (!blob) return showNotice('No se pudo generar la captura')
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = captureFileName(new Date())
+    document.body.append(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+    showNotice('Captura guardada: solo el 3D, con la leyenda "no as-built"')
+  }
 
   return (
     <footer
@@ -306,6 +335,26 @@ export function StatusBar() {
             className="shrink-0"
           >
             Borrar medición
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            onClick={copyLink}
+            title="Copia un enlace que abre el visor en el componente seleccionado o, sin selección, en la última vista estándar"
+            className="shrink-0"
+          >
+            Copiar enlace
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            onClick={savePng}
+            title="Descarga una imagen PNG de la escena 3D con la leyenda de referencia digital (no incluye etiquetas ni paneles)"
+            className="shrink-0"
+          >
+            Captura PNG
           </Button>
         </>
       )}

@@ -59,7 +59,7 @@ Si `ready` no llega en 45 s (copia en caché sin el puente), el cartel de carga 
 Enlaces profundos: `?comp=<componente>` (selecciona y enfoca) o `?vp=<sector de "Ir a equipo">` (vuela a la vista). La app
 los pasa al `src` del iframe (`src/lib/deepLink.ts`) y `legacy-ext/91-enlaces.js` los aplica al arrancar; ids desconocidos se ignoran.
 
-`?mode=qhse&view=front&layers=zonas,cotas` (+ `dev=1` habilita el motor R3F nativo). Solo se escribe lo
+`?mode=qhse&view=front&layers=zonas,cotas` (+ `engine=native` abre el motor R3F nativo; `dev=1` solo activa la sonda de pruebas en desarrollo). Solo se escribe lo
 que difiere del valor por defecto (`explore`, `iso`, sin capas); `layers=` vacío fuera de EXPLORE conserva
 "todas las capas apagadas". La URL se actualiza con `history.replaceState` (no ensucia el historial).
 Implementación: `src/lib/urlState.ts` (puro, con tests) y `src/app/urlSync.ts`.
@@ -80,4 +80,4 @@ Cada preset define el conjunto completo de capas (estado determinista) y limpia 
 ## Cambio de motor
 
 El iframe **no se desmonta** al pasar a R3F (solo se oculta): se conservan cámara, capas y mediciones y no
-se vuelve a bajar el HTML. El motor nativo solo se ofrece en desarrollo o con `?dev=1`.
+se vuelve a bajar el HTML. El selector de motor se ofrece siempre; `?engine=native` abre el nativo directo (`src/lib/urlState.ts`: `parseEngineParam`, `withEngine`) y los enlaces profundos del nativo (`?engine=native&comp=<id>` / `&view=<vista>`, `src/lib/deepLink.ts`, `src/app/useNativeLink.ts`) se aplican una vez al abrir.
