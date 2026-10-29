@@ -8,8 +8,12 @@ export interface LabelBox {
   h: number
 }
 
+/** Tolerancia de coma flotante: un rótulo apoyado justo sobre otro (distancia = suma de mitades + hueco) no los pisa. */
+const EPS = 1e-6
+
 const overlaps = (a: LabelBox, b: LabelBox, gap: number): boolean =>
-  Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap && Math.abs(a.y - b.y) < (a.h + b.h) / 2 + gap
+  Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap - EPS &&
+  Math.abs(a.y - b.y) < (a.h + b.h) / 2 + gap - EPS
 
 /**
  * Separa rótulos que se pisan: se recorren de arriba hacia abajo (y, luego x, luego id: orden estable) y cada uno baja lo

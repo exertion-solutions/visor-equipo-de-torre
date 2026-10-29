@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSearch, isNativeEngineEnabled, parseUrlState, type UrlState } from './urlState'
+import { buildSearch, parseEngineParam, parseUrlState, withEngine, type UrlState } from './urlState'
 
 describe('parseUrlState', () => {
   it('sin parámetros: modo por defecto, vista y capas desconocidas', () => {
@@ -58,13 +58,17 @@ describe('buildSearch', () => {
   })
 })
 
-describe('isNativeEngineEnabled', () => {
-  it('en producción solo con ?dev=1', () => {
-    expect(isNativeEngineEnabled('', false)).toBe(false)
-    expect(isNativeEngineEnabled('?dev=0', false)).toBe(false)
-    expect(isNativeEngineEnabled('?dev=1', false)).toBe(true)
+describe('motor en la URL', () => {
+  it('solo engine=native abre el nativo; lo demás es el V2', () => {
+    expect(parseEngineParam('?engine=native')).toBe('native')
+    expect(parseEngineParam('')).toBeNull()
+    expect(parseEngineParam('?engine=legacy')).toBeNull()
+    expect(parseEngineParam('?engine=otro')).toBeNull()
   })
-  it('en desarrollo siempre', () => {
-    expect(isNativeEngineEnabled('', true)).toBe(true)
+  it('withEngine escribe engine=native y lo quita con el V2, conservando el resto', () => {
+    expect(withEngine('?mode=qhse', 'native')).toBe('?mode=qhse&engine=native')
+    expect(withEngine('?engine=native&comp=sk575_bop', 'legacy')).toBe('?comp=sk575_bop')
+    expect(withEngine('', 'legacy')).toBe('')
+    expect(withEngine('?engine=native', 'native')).toBe('?engine=native')
   })
 })

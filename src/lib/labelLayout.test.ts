@@ -39,3 +39,53 @@ describe('separateLabels', () => {
     expect(separateLabels([box('a', 5, 5)]).get('a')).toEqual({ x: 5, y: 5 })
   })
 })
+
+describe('separateLabels: redondeo de coma flotante', () => {
+  // Caso real (ortográfica, lienzo de 614 px de alto): al apoyar un rótulo sobre otro la distancia daba 24,999… en vez de 25,
+  // el rótulo seguía "pisando" al de arriba, no bajaba más y dos marcadores quedaban encimados.
+  const entrada = [
+    { id: 'casilla', x: 629.1459109087866, y: 422.648488742809, w: 79, h: 23 },
+    { id: 'poste', x: 667.628590413998, y: 437.8474858902554, w: 127, h: 23 },
+    { id: 'sub', x: 620.2652925614301, y: 444.92522784548424, w: 79, h: 23 },
+    { id: 'boca', x: 659.73470743857, y: 449.82520304525804, w: 79, h: 23 },
+    { id: 'pisoT', x: 649.867353719285, y: 451.367787830372, w: 127, h: 23 },
+    { id: 'plano', x: 712.5250498367449, y: 478.4310767809744, w: 79, h: 23 },
+  ]
+
+  it('ninguno queda pisado por otro', () => {
+    const out = separateLabels(entrada)
+    const colocados = entrada.map((b) => ({ ...b, ...out.get(b.id)! }))
+    for (let i = 0; i < colocados.length; i++)
+      for (let j = i + 1; j < colocados.length; j++) {
+        const a = colocados[i]!
+        const b = colocados[j]!
+        const pisa = Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2
+        expect(pisa, `${a.id} y ${b.id}`).toBe(false)
+      }
+  })
+
+  it('con posiciones al azar tampoco se pisan nunca', () => {
+    let seed = 12345
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296
+    for (let ronda = 0; ronda < 200; ronda++) {
+      const boxes = Array.from({ length: 12 }, (_, i) => ({
+        id: `b${i}`,
+        x: 300 + rnd() * 120,
+        y: 100 + rnd() * 160,
+        w: 60 + Math.floor(rnd() * 70),
+        h: 23,
+      }))
+      const out = separateLabels(boxes)
+      const c = boxes.map((b) => ({ ...b, ...out.get(b.id)! }))
+      for (let i = 0; i < c.length; i++)
+        for (let j = i + 1; j < c.length; j++) {
+          const a = c[i]!
+          const b = c[j]!
+          expect(
+            Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2,
+            `ronda ${ronda}: ${a.id} y ${b.id}`,
+          ).toBe(false)
+        }
+    }
+  })
+})

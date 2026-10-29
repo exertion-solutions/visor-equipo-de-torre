@@ -1,7 +1,6 @@
 import { Boxes, HardHat, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { isNativeEngineEnabled } from '@/lib/urlState'
 import {
   ENGINE_LABELS,
   VIEWER_ENGINES,
@@ -16,18 +15,16 @@ const ENGINE_ICONS: Record<ViewerEngine, LucideIcon> = {
 
 const ENGINE_HINTS: Record<ViewerEngine, string> = {
   legacy: 'Visor HTML V2 embebido: funcionalidad completa mientras se migra.',
-  native: 'Escena React Three Fiber: en migración, sin paridad con V2.',
+  native: 'Escena React Three Fiber: en migración, sin paridad completa con V2.',
 }
 
 /**
- * El motor nativo aún no tiene paridad (canvas vacío): en la versión publicada no se ofrece.
- * Solo aparece en desarrollo (`npm run dev`) o abriendo la app con `?dev=1`.
+ * Selector de motor: V2 compatible (por defecto, funcionalidad completa) o R3F nativo (en migración, con enlaces profundos y
+ * captura). Se ofrece siempre: el nativo ya tiene lo central del visor; la paridad completa está en `docs/FEATURE_PARITY.md`.
  */
 export function EngineToggle() {
   const engine = useViewerStore((s) => s.engine)
   const setEngine = useViewerStore((s) => s.setEngine)
-
-  if (!isNativeEngineEnabled(location.search, import.meta.env.DEV)) return null
 
   return (
     <div
