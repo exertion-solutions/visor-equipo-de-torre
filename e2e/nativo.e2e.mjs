@@ -394,6 +394,114 @@ prueba('árbol: elige un componente tapado y lo oculta y lo muestra de la escena
   mismoConjunto(e.visibles, e.componentes, 'al mostrar el grupo vuelven a dibujarse todos')
 })
 
+// Proyección ortográfica enunciada de nuevo acá (independiente del proyector del motor): base de la cámara a partir de su
+// posición y objetivo, con el eje Y arriba; `k` = píxeles por metro (alto del lienzo / alto del frustum).
+const proyectarOrto = (camara, lienzo, p) => {
+  const [px, py, pz] = camara.posicion
+  const [tx, ty, tz] = camara.objetivo
+  const unit = (v) => v.map((c) => c / Math.hypot(...v))
+  const cross = (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ]
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+  const dir = unit([tx - px, ty - py, tz - pz])
+  const derecha = unit(cross(dir, [0, 1, 0]))
+  const arriba = cross(derecha, dir)
+  const k = lienzo.alto / (camara.frustum.top - camara.frustum.bottom)
+  const d = [p[0] - tx, p[1] - ty, p[2] - tz]
+  return { x: lienzo.ancho / 2 + dot(d, derecha) * k, y: lienzo.alto / 2 - dot(d, arriba) * k }
+}
+
+/** Posición (en el lienzo) y visibilidad de cada etiqueta dibujada. */
+const leerEtiquetas = (page) =>
+  page.evaluate(() => {
+    const capa = document.querySelector('[data-testid="component-labels"]')
+    if (!capa) return null
+    const o = capa.getBoundingClientRect()
+    return [...capa.querySelectorAll('[data-testid^="label-"]')].map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        id: el.dataset.testid.replace('label-', ''),
+        visible: getComputedStyle(el).display !== 'none',
+        x: r.left + r.width / 2 - o.left,
+        y: r.top + r.height / 2 - o.top,
+      }
+    })
+  })
+
+/** Espera a que la cámara deje de moverse (dos lecturas iguales con 300 ms de diferencia). */
+const camaraQuieta = async (page) => {
+  let previa = null
+  for (let i = 0; i < 100; i++) {
+    const e = await estado(page)
+    const actual = JSON.stringify([e.camara.posicion, e.camara.objetivo, e.camara.frustum])
+    if (actual === previa) return e
+    previa = actual
+    await page.waitForTimeout(300)
+  }
+  assert.fail('la cámara no se asentó')
+}
+
+prueba(
+  'etiquetas: aparecen sobre cada componente con su número, lo siguen al mover la cámara y se apagan',
+  async (page) => {
+    assert.equal(await leerEtiquetas(page), null, 'apagadas al arrancar: no hay capa de etiquetas')
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await boton(page, 'Etiquetas').click()
+    assert.equal(await boton(page, 'Etiquetas').getAttribute('aria-pressed'), 'true')
+
+    // Cada etiqueta cae donde la proyección independiente pone el centro de la caja de su componente; las que están
+    // claramente dentro de la pantalla se ven y las claramente fuera se ocultan.
+    const verificar = async (nombre) => {
+      const e = await camaraQuieta(page)
+      const cajasEscena = await cajas(page)
+      await page.waitForTimeout(400) // un cuadro más, ya con la cámara quieta
+      const etiquetas = await leerEtiquetas(page)
+      assert.ok(etiquetas.length >= 12, `${nombre}: hay una etiqueta por componente`)
+      let vistas = 0
+      for (const et of etiquetas) {
+        const esperado = proyectarOrto(e.camara, e.lienzo, cajasEscena[et.id].centro)
+        const nx = (esperado.x - e.lienzo.ancho / 2) / (e.lienzo.ancho / 2)
+        const ny = (esperado.y - e.lienzo.alto / 2) / (e.lienzo.alto / 2)
+        const dentro = Math.max(Math.abs(nx), Math.abs(ny))
+        if (dentro < 0.95) {
+          assert.ok(et.visible, `${nombre}: ${et.id} se ve (está dentro de la pantalla)`)
+          assert.ok(
+            Math.hypot(et.x - esperado.x, et.y - esperado.y) < 3,
+            `${nombre}: ${et.id} en (${et.x.toFixed(1)}, ${et.y.toFixed(1)}), esperado (${esperado.x.toFixed(1)}, ${esperado.y.toFixed(1)})`,
+          )
+          vistas++
+        } else if (dentro > 1.25) {
+          assert.ok(!et.visible, `${nombre}: ${et.id} se oculta (está fuera de la pantalla)`)
+        }
+      }
+      assert.ok(vistas >= 8, `${nombre}: al menos 8 etiquetas visibles (hay ${vistas})`)
+    }
+    await verificar('vista inicial')
+
+    // Al enfocar un componente la cámara se mueve: las etiquetas la siguen.
+    await clic(page, MASTIL)
+    await hasta(page, (e) => e.tienda.seleccionado === MASTIL)
+    await boton(page, 'Enfocar').click()
+    await hasta(page, (e) => e.tienda.puedeVolver)
+    await verificar('tras enfocar')
+
+    // Ocultar un componente desde el árbol le quita la etiqueta.
+    const antes = (await leerEtiquetas(page)).length
+    await page.getByTestId('tree-item-sk575_bop').getByRole('checkbox').uncheck()
+    await hasta(page, (e) => e.tienda.ocultos.includes('sk575_bop'))
+    const sin = await leerEtiquetas(page)
+    assert.equal(sin.length, antes - 1)
+    assert.ok(!sin.some((et) => et.id === 'sk575_bop'))
+
+    // Apagadas, desaparece la capa.
+    await boton(page, 'Etiquetas').click()
+    assert.equal(await leerEtiquetas(page), null)
+  },
+)
 // Cotas de las vistas del V2 (`na` y `Uh` de la base del legacy), enunciadas de nuevo acá como especificación independiente.
 const VISTAS = [
   ['Isométrica', [40, 40, 42], [-2, 13, 0], true, 44],

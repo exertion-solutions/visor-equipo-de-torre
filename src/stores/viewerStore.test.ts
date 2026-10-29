@@ -188,6 +188,15 @@ describe('viewerStore', () => {
     })
   })
 
+  it('las etiquetas arrancan apagadas y se alternan', () => {
+    useViewerStore.setState({ labels: false })
+    expect(useViewerStore.getState().labels).toBe(false)
+    useViewerStore.getState().toggleLabels()
+    expect(useViewerStore.getState().labels).toBe(true)
+    useViewerStore.getState().toggleLabels()
+    expect(useViewerStore.getState().labels).toBe(false)
+  })
+
   describe('setComponentsVisible (panel de componentes)', () => {
     beforeEach(() =>
       useViewerStore.setState({

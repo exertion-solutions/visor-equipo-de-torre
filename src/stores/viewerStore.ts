@@ -45,6 +45,8 @@ interface ViewerState {
   cameraCommand: CameraCommand | null
   /** Hay una vista guardada por un foco: "Volver" la restaura. Lo mantiene `CameraRig`. */
   canGoBack: boolean
+  /** Etiquetas numeradas sobre los componentes (apagadas al arrancar, como en el V2). */
+  labels: boolean
   /** Última vista estándar elegida (botón resaltado); `null` = ninguna. El legacy tampoco la limpia al orbitar. */
   activeView: CameraPresetId | null
   /** Motor nativo: proyección de la cámara (la aplica `CameraRig`, conservando posición y objetivo). */
@@ -60,6 +62,7 @@ interface ViewerState {
   setLegacyState: (state: { view: LegacyView | null; layers: LegacyLayer[] }) => void
   setSelection: (selection: LegacySelection | null) => void
   toggleEdges: () => void
+  toggleLabels: () => void
   /** Encuadra el componente seleccionado (no hace nada sin selección). */
   focusSelected: () => void
   /** Restaura la vista previa al primer foco (no hace nada si no hay vista guardada). */
@@ -95,6 +98,7 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   edges: true,
   cameraCommand: null,
   canGoBack: false,
+  labels: false,
   activeView: null,
   projection: DEFAULT_PROJECTION,
   hiddenComponentIds: [],
@@ -106,6 +110,7 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   setLegacyState: ({ view, layers }) => set({ view, layers }),
   setSelection: (selection) => set({ selection, selectedComponentId: selection?.id ?? null }),
   toggleEdges: () => set((s) => ({ edges: !s.edges })),
+  toggleLabels: () => set((s) => ({ labels: !s.labels })),
   focusSelected: () => {
     const { selectedComponentId, cameraCommand } = get()
     if (!selectedComponentId) return
