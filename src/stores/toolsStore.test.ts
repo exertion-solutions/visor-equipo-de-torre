@@ -12,6 +12,8 @@ beforeEach(() =>
     zones: false,
     drops: false,
     dropsSection: null,
+    cut: false,
+    cutX: 0,
     explodeOn: false,
     explodeAmount: 0.6,
     exploded: false,
@@ -146,5 +148,25 @@ describe('despiece', () => {
     useToolsStore.getState().toggleExplode()
     useToolsStore.getState().toggleExplode()
     expect(useToolsStore.getState().explodeAmount).toBe(0.3)
+  })
+})
+
+describe('corte de sección', () => {
+  it('arranca apagado en x = 0 y se enciende y apaga', () => {
+    const s = useToolsStore.getState()
+    expect([s.cut, s.cutX]).toEqual([false, 0])
+    s.toggleCut()
+    expect(useToolsStore.getState().cut).toBe(true)
+    useToolsStore.getState().toggleCut()
+    expect(useToolsStore.getState().cut).toBe(false)
+  })
+
+  it('la posición se acota a ±18 m y se recuerda con el corte apagado', () => {
+    useToolsStore.getState().setCutX(99)
+    expect(useToolsStore.getState().cutX).toBe(18)
+    useToolsStore.getState().setCutX(-4.4)
+    useToolsStore.getState().toggleCut()
+    useToolsStore.getState().toggleCut()
+    expect(useToolsStore.getState().cutX).toBeCloseTo(-4.4, 10)
   })
 })
