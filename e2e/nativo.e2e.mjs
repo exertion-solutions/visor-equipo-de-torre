@@ -724,3 +724,81 @@ prueba('vistas estándar: ir a una vista descarta el "Volver" de un foco previo'
   assert.equal(e.tienda.puedeVolver, false)
   assert.ok(await boton(page, 'Volver').isDisabled(), '"Volver" queda deshabilitado')
 })
+
+// Zonas ilustrativas enunciadas de nuevo acá (no se importan del dataset): del V2, círculo de 1,1 × 31,71 m en el pie del
+// mástil, franja de la línea de cable y círculo bajo la carga suspendida, en metros sobre el terreno (X, Z).
+const ZONAS = [
+  ['zona-envolvente-mastil', [-1, 0], [69.762, 69.762]],
+  ['zona-cable-tension', [-2.415, 0], [6.69, 2.6]],
+  ['zona-carga-suspendida', [0, 0], [4.8, 4.8]],
+]
+
+prueba(
+  'zonas QHSE: ilustrativas y sin validar, con su leyenda; las enciende el botón o el modo QHSE y se apagan al salir',
+  async (page) => {
+    const zonas = () => page.evaluate(() => window.__rigNativo.zonas())
+    assert.deepEqual(await zonas(), [], 'apagadas al arrancar')
+    assert.equal(await page.getByTestId('qhse-panel').count(), 0)
+
+    // Botón: aparecen las tres zonas, en su lugar y con su tamaño, y la leyenda con el aviso.
+    await boton(page, 'Zonas').click()
+    assert.equal(await boton(page, 'Zonas').getAttribute('aria-pressed'), 'true')
+    await page.getByTestId('qhse-panel').waitFor({ state: 'visible' })
+    await page.waitForFunction(() => window.__rigNativo.zonas().length === 3, null, {
+      timeout: 30_000,
+    })
+    for (const [id, [cx, cz], [ax, az]] of ZONAS) {
+      const z = (await zonas()).find((x) => x.id === id)
+      assert.ok(z, id)
+      assert.ok(
+        Math.abs(z.centro[0] - cx) < 0.05 && Math.abs(z.centro[2] - cz) < 0.05,
+        `${id}: centro`,
+      )
+      assert.ok(
+        Math.abs(z.tamano[0] - ax) < 0.1 && Math.abs(z.tamano[2] - az) < 0.1,
+        `${id}: tamaño`,
+      )
+      assert.ok(z.centro[1] < 0.2 && z.tamano[1] < 0.2, `${id}: apoyada sobre el terreno`)
+      assert.ok(z.transparente && z.opacidad < 0.3, `${id}: relleno traslúcido (no tapa la escena)`)
+    }
+    const panel = page.getByTestId('qhse-panel')
+    assert.match(await panel.textContent(), /ZONAS ILUSTRATIVAS — SIN VALIDAR/)
+    assert.match(await panel.textContent(), /no sustituyen exclusiones aprobadas/)
+    assert.equal(
+      await panel.getByText('Pendiente de validación').count(),
+      3,
+      'estatus de cada zona',
+    )
+    assert.doesNotMatch(await panel.textContent(), /\d+([.,]\d+)?\s*m\b/, 'no muestra medidas')
+    assert.equal(
+      await page.getByTestId('qhse-controls').count(),
+      0,
+      'fuera de QHSE no hay controles',
+    )
+
+    // Apagar a mano.
+    await boton(page, 'Zonas').click()
+    assert.deepEqual(await zonas(), [])
+    assert.equal(await page.getByTestId('qhse-panel').count(), 0)
+
+    // Modo QHSE: las enciende solo, con los controles orientativos como recomendación pendiente; el botón queda fijo.
+    await page.getByRole('button', { name: 'QHSE', exact: true }).first().click()
+    await page.waitForFunction(() => window.__rigNativo.zonas().length === 3, null, {
+      timeout: 30_000,
+    })
+    const controles = page.getByTestId('qhse-controls')
+    await controles.waitFor({ state: 'visible' })
+    assert.match(await controles.textContent(), /Controles orientativos · verificar aplicabilidad/)
+    assert.equal(await controles.getByText(/^Se recomienda/).count(), 4)
+    assert.doesNotMatch(await controles.textContent(), /Requisito/)
+    assert.ok(await boton(page, 'Zonas').isDisabled(), 'en QHSE el botón no las apaga')
+
+    // Al volver a EXPLORE se apagan solas (capa derivada) y la escena queda como al arrancar.
+    await page.getByRole('button', { name: 'EXPLORE', exact: true }).first().click()
+    await page.waitForFunction(() => window.__rigNativo.zonas().length === 0, null, {
+      timeout: 30_000,
+    })
+    assert.equal(await page.getByTestId('qhse-panel').count(), 0)
+    assert.ok(await boton(page, 'Zonas').isEnabled())
+  },
+)
