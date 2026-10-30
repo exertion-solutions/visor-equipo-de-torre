@@ -19,8 +19,13 @@ describe('parseNativeLink', () => {
     expect(parseNativeLink('?engine=native&comp=sk575_bop')).toEqual({
       comp: 'sk575_bop',
       view: null,
+      vp: null,
     })
-    expect(parseNativeLink('?engine=native&view=side')).toEqual({ comp: null, view: 'side' })
+    expect(parseNativeLink('?engine=native&view=side')).toEqual({
+      comp: null,
+      view: 'side',
+      vp: null,
+    })
     expect(parseNativeLink('?comp=carrier_huella&view=top')).toEqual({
       comp: 'carrier_huella',
       view: 'top',
