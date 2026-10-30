@@ -14,6 +14,8 @@ beforeEach(() =>
     drops: false,
     dropsSection: null,
     cuts: initialCuts(),
+    hoistHeight: 14,
+    hoistPlaying: false,
     explodeOn: false,
     explodeAmount: 0.6,
     exploded: false,
@@ -183,5 +185,47 @@ describe('cortes de sección', () => {
     useToolsStore.getState().toggleCut('z')
     useToolsStore.getState().toggleCut('z')
     expect(useToolsStore.getState().cuts.z.value).toBe(-4.4)
+  })
+})
+
+describe('animación del aparejo', () => {
+  it('arranca en reposo (14 m) y detenida', () => {
+    const s = useToolsStore.getState()
+    expect([s.hoistHeight, s.hoistPlaying]).toEqual([14, false])
+  })
+
+  it('animar rotula la animación como didáctica; volver a tocar la pausa', () => {
+    useToolsStore.getState().toggleHoistPlay()
+    expect(useToolsStore.getState().hoistPlaying).toBe(true)
+    expect(useToolsStore.getState().notice).toMatch(/didáctica.*sin validar.*No es una simulación/)
+    useToolsStore.getState().toggleHoistPlay()
+    expect(useToolsStore.getState().hoistPlaying).toBe(false)
+  })
+
+  it('mover el deslizador pausa y fija la altura, acotada a 7–25 m', () => {
+    useToolsStore.getState().toggleHoistPlay()
+    useToolsStore.getState().setHoistHeight(40)
+    expect(useToolsStore.getState().hoistHeight).toBe(25)
+    expect(useToolsStore.getState().hoistPlaying).toBe(false)
+    useToolsStore.getState().setHoistHeight(1)
+    expect(useToolsStore.getState().hoistHeight).toBe(7)
+  })
+
+  it('la animación publica su altura sin pausarse', () => {
+    useToolsStore.getState().toggleHoistPlay()
+    useToolsStore.getState().syncHoist(15.25)
+    expect(useToolsStore.getState().hoistHeight).toBe(15.25)
+    expect(useToolsStore.getState().hoistPlaying).toBe(true)
+  })
+
+  it('con el equipo desarmado no se anima, y desarmar pausa la animación en marcha', () => {
+    useToolsStore.setState({ exploded: true })
+    useToolsStore.getState().toggleHoistPlay()
+    expect(useToolsStore.getState().hoistPlaying).toBe(false)
+    useToolsStore.setState({ exploded: false })
+    useToolsStore.getState().toggleHoistPlay()
+    useToolsStore.getState().toggleExplode()
+    expect(useToolsStore.getState().hoistPlaying).toBe(false)
+    useToolsStore.setState({ explodeOn: false })
   })
 })

@@ -3,6 +3,7 @@ import { GRADE_HINT, GRADE_STYLES } from '@/components/equipment/grade'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { HoistControls } from '@/components/viewer/HoistControls'
 import { captureFileName } from '@/lib/capture'
 import { buildShareUrl } from '@/lib/deepLink'
 import { CUT_AXES, CUT_SPECS } from '@/lib/cut'
@@ -22,6 +23,8 @@ export function StatusBar() {
   const toggleEdges = useViewerStore((s) => s.toggleEdges)
   const labels = useViewerStore((s) => s.labels)
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
+  const wire = useViewerStore((s) => s.wire)
+  const toggleWire = useViewerStore((s) => s.toggleWire)
   const toggleZones = useToolsStore((s) => s.toggleZones)
   // El botón refleja lo pedido (a mano o por el modo QHSE), aunque el despiece oculte la capa un rato.
   const zonesOn = useToolsStore((s) => zonesVisible(s.zones, mode))
@@ -62,6 +65,24 @@ export function StatusBar() {
       showNotice('Enlace copiado')
     } catch {
       showNotice(`No se pudo copiar. Enlace: ${url}`)
+    }
+  }
+
+  const exportGlb = async () => {
+    showNotice('Exportando GLB…')
+    try {
+      const { exportRigGlb, GLB_FILE_NAME } = await import('@/scene/export/exportGlb')
+      const blob = await exportRigGlb()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = GLB_FILE_NAME
+      document.body.append(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+      showNotice('GLB exportado: geometría de referencia, unidades nominales en metros.')
+    } catch (e) {
+      showNotice(`No se pudo exportar: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
@@ -200,6 +221,17 @@ export function StatusBar() {
             className="shrink-0"
           >
             Etiquetas
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant={wire ? 'secondary' : 'ghost'}
+            aria-pressed={wire}
+            onClick={toggleWire}
+            title="Malla: muestra los triángulos de todos los componentes (reversible)"
+            className="shrink-0"
+          >
+            Malla
           </Button>
           <Button
             type="button"
@@ -345,6 +377,17 @@ export function StatusBar() {
             className="shrink-0"
           >
             Copiar enlace
+          </Button>
+          <HoistControls />
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            onClick={exportGlb}
+            title="Descarga todo el equipo como GLB (armado, aparejo en reposo), con el aviso de referencia digital dentro del archivo"
+            className="shrink-0"
+          >
+            Exportar GLB
           </Button>
           <Button
             type="button"

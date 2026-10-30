@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { clampHoist, HOIST_NOTICE, HOIST_REST } from '@/lib/hoist'
 import { clampCut, initialCuts, type CutAxis, type Cuts } from '@/lib/cut'
 import { clampExplodeAmount, DEFAULT_EXPLODE_AMOUNT } from '@/lib/explode'
 import type { Vec3 } from '@/lib/geometry'
@@ -31,6 +32,14 @@ interface ToolsState {
   exploded: boolean
   /** Cortes de sección X, Y y Z (planos globales que se combinan; las superficies quedan abiertas, sin tapas). */
   cuts: Cuts
+  /** Altura del bloque del aparejo (m): la fija el deslizador o la va escribiendo la animación (a unos 10 Hz). */
+  hoistHeight: number
+  /** Animación didáctica del aparejo en marcha (sube y baja entre 7 y 25 m). */
+  hoistPlaying: boolean
+  setHoistHeight: (height: number) => void
+  toggleHoistPlay: () => void
+  /** La animación publica su altura sin pausarse. */
+  syncHoist: (height: number) => void
   /** Aviso breve de una acción (enlace copiado, captura lista); se borra solo. `null` = ninguno. */
   notice: string | null
   showNotice: (text: string) => void
@@ -72,7 +81,7 @@ function toggleKind(s: ToolsState, kind: MeasureKind): Partial<ToolsState> {
 
 let noticeTimer: ReturnType<typeof setTimeout> | undefined
 
-export const useToolsStore = create<ToolsState>()((set) => ({
+export const useToolsStore = create<ToolsState>()((set, get) => ({
   dims: false,
   zones: false,
   drops: false,
@@ -81,6 +90,8 @@ export const useToolsStore = create<ToolsState>()((set) => ({
   explodeOn: false,
   explodeAmount: DEFAULT_EXPLODE_AMOUNT,
   exploded: false,
+  hoistHeight: HOIST_REST,
+  hoistPlaying: false,
   notice: null,
   measure: false,
   measureKind: 'distance',
@@ -93,7 +104,12 @@ export const useToolsStore = create<ToolsState>()((set) => ({
     set({ dropsSection: id })
   },
   toggleExplode: () =>
-    set((s) => ({ explodeOn: !s.explodeOn, measure: s.explodeOn ? s.measure : false })),
+    set((s) => ({
+      explodeOn: !s.explodeOn,
+      measure: s.explodeOn ? s.measure : false,
+      // Desarmar pausa la animación del aparejo (el V2 también).
+      hoistPlaying: s.explodeOn ? s.hoistPlaying : false,
+    })),
   setExplodeAmount: (amount) => set({ explodeAmount: clampExplodeAmount(amount) }),
   setExploded: (exploded) => set({ exploded }),
   toggleCut: (axis) =>
@@ -103,6 +119,17 @@ export const useToolsStore = create<ToolsState>()((set) => ({
       cuts: { ...s.cuts, [axis]: { ...s.cuts[axis], value: clampCut(axis, value) } },
     })),
   // Con el equipo desarmado no se mide: los puntos quedarían sobre piezas que ya no están ahí.
+  // Mover el deslizador pausa la animación (como el V2) y fija la altura.
+  setHoistHeight: (height) => set({ hoistHeight: clampHoist(height), hoistPlaying: false }),
+  // Con el equipo desarmado no se anima: el aparejo no está en su lugar.
+  toggleHoistPlay: () => {
+    const s = get()
+    if (s.explodeOn || s.exploded) return
+    const playing = !s.hoistPlaying
+    set({ hoistPlaying: playing })
+    if (playing) s.showNotice(HOIST_NOTICE)
+  },
+  syncHoist: (height) => set({ hoistHeight: height }),
   showNotice: (text) => {
     set({ notice: text })
     clearTimeout(noticeTimer)
