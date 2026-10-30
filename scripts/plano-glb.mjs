@@ -556,7 +556,7 @@ text(
 text(
   12,
   19.5,
-  `Geometría de los GLB del visor (aristas de rasgo, líneas ocultas eliminadas). NO es as-built ni apto para fabricación. Pose abatida sin dato: ε = ${f(EPS, 1)}°, luz ${f(LUZ)} m sobre cabina/capot.`,
+  `Geometría de los GLB del visor (aristas de rasgo, líneas ocultas eliminadas). NO es as-built ni apto para fabricación. Pose horizontal sobre el apoyo de cabina (procedimiento de rig-up): ε = ${f(EPS, 1)}°, luz ${f(LUZ)} m (sin cota).`,
   2.4,
   'start',
   ORG,
@@ -735,6 +735,22 @@ text(
   meas.escape > meas.mastilBase ? RED : '#111',
 )
 
+const y3 = y2 + 5
+text(cx0, y3, 'CONFIRMADO CON EL DATA BOOK (A)', 2.6, 'start', '#111', 'bold')
+;[
+  '2 cilindros de izaje HYCO 50162-813 para este mástil: Ø9,42″, 60,0″ cerrado / 191,5″ extendido.',
+  'Cuadro de maniobras: tambor principal 42×12 y de pistoneo 42×8; 2 discos de freno 48″ por aire, 2 pinzas.',
+  'Rig-up: mástil horizontal sobre el apoyo de cabina, 2.º tramo retraído, piso de enganche plegado; H-Base 3,2°–3,5°.',
+].forEach((s, i) => text(cx0, y3 + 4.2 * (i + 1), s, 2.2))
+text(
+  cx0,
+  y3 + 4.2 * 4,
+  'SIN DATO: espesor y sección del mástil, altura del apoyo, pivote abatido y pedestal de los cilindros.',
+  2.2,
+  'start',
+  RED,
+)
+
 const nx = 275
 text(nx, 205, 'NOTAS', 3, 'start', '#111', 'bold')
 const notes = [
@@ -743,9 +759,9 @@ const notes = [
   'geometría: no se dibujó ninguna forma a mano.',
   'El modelo está armado: el mástil y los cilindros se transformaron',
   'a la pose abatida (giro sobre el pivote y regla de carrera del meta).',
-  'Pose abatida sin dato documentado: horizontal según fotos de',
-  'referencia; luz y ángulo son parámetros (C). El espesor del mástil',
-  'del modelo (1,9 m) es mayor que el de las fotos (≈ 1,25 m).',
+  'Pose horizontal sobre el apoyo de cabina: procedimiento de rig-up',
+  '(documento interno, B). Altura del apoyo y luz: sin cota (parámetros).',
+  'Espesor del mástil del modelo 1,9 m: sin dato real (fotos ≈ 1,25 m).',
   'Sin casilla, piso de enganche, aparejo ni cables (sin dato de pose).',
   'Líneas = aristas de rasgo del modelo: no son un plano de taller.',
 ]
