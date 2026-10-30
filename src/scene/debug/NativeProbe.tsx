@@ -38,6 +38,16 @@ export interface NativeProbeState {
 }
 
 export interface NativeProbeApi {
+  /**
+   * Cajas (alturas, m) del bloque del aparejo y de sus líneas, tomadas de las mallas por nombre (`*_cable` = líneas): sirve
+   * para comprobar el recorrido sin conocer los pivotes de la animación.
+   */
+  aparejo: () => {
+    bloque: { min: number; max: number } | null
+    cable: { min: number; max: number } | null
+  }
+  /** Materiales de los componentes con y sin malla (wireframe). */
+  mallas: () => { total: number; conMalla: number }
   /** Planos de recorte globales del renderer (lo que realmente corta), con normal y constante. */
   corte: () => { normal: number[]; constante: number }[]
   /** Huella de los colores de todos los materiales de los componentes (base y emisivo): detecta cualquier teñido. */
@@ -141,6 +151,32 @@ export function NativeProbe() {
           }
         }
         return out
+      },
+      aparejo: () => {
+        const bloque = new Box3()
+        const cable = new Box3()
+        getComponentObject('sk575_aparejo')?.traverse((o) => {
+          const mesh = o as Mesh
+          if (!mesh.isMesh) return
+          let esCable = false
+          for (let p: Object3D | null = mesh; p; p = p.parent)
+            if (p.name.endsWith('_cable')) esCable = true
+          ;(esCable ? cable : bloque).expandByObject(mesh)
+        })
+        const rango = (b: Box3) => (b.isEmpty() ? null : { min: b.min.y, max: b.max.y })
+        return { bloque: rango(bloque), cable: rango(cable) }
+      },
+      mallas: () => {
+        const vistos = new Set<Material & { wireframe?: boolean }>()
+        for (const id of registeredComponentIds())
+          getComponentObject(id)?.traverse((o) => {
+            const mesh = o as Mesh
+            if (!mesh.isMesh) return
+            for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material])
+              vistos.add(m as Material & { wireframe?: boolean })
+          })
+        const lista = [...vistos].filter((m) => m.wireframe !== undefined)
+        return { total: lista.length, conMalla: lista.filter((m) => m.wireframe).length }
       },
       corte: () =>
         get().gl.clippingPlanes.map((p) => ({ normal: arr(p.normal), constante: p.constant })),

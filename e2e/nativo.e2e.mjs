@@ -10,6 +10,7 @@
 // Estas pruebas son el gate automatizado de las filas "Foco de cámara", "Aislamiento" y "Ortográfica / perspectiva"
 // de docs/FEATURE_PARITY.md; no reemplazan una pasada humana en un dispositivo real.
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { after, before, test } from 'node:test'
@@ -1523,3 +1524,247 @@ prueba('captura PNG: descarga la escena con la leyenda "no as-built" y el sitio'
   assert.ok(r.franja > 150, `la franja trae texto (${r.franja} px claros)`)
   assert.deepEqual(r.esquina.slice(0, 3), [11, 13, 18], 'el fondo de la franja es el de la escena')
 })
+
+// — Malla, aparejo y exportar GLB —
+
+/** Fracción de píxeles del lienzo (sin el panel izquierdo ni la nota de abajo) que cambian entre dos capturas. */
+const fraccionDistinta = (page, a, b) =>
+  page.evaluate(
+    async ({ a, b }) => {
+      const leer = async (b64) => {
+        const img = new Image()
+        img.src = `data:image/png;base64,${b64}`
+        await img.decode()
+        const cv = document.createElement('canvas')
+        cv.width = img.width
+        cv.height = img.height
+        const ctx = cv.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+        return ctx.getImageData(0, 0, img.width, img.height)
+      }
+      const r = document.querySelector('canvas').getBoundingClientRect()
+      const [A, B] = [await leer(a), await leer(b)]
+      let total = 0
+      let distintos = 0
+      for (let y = Math.max(80, r.top); y < r.bottom - 90; y++)
+        for (let x = 290; x < Math.min(A.width, r.right); x++) {
+          const i = (y * A.width + x) * 4
+          total++
+          if (
+            Math.abs(A.data[i] - B.data[i]) > 30 ||
+            Math.abs(A.data[i + 1] - B.data[i + 1]) > 30 ||
+            Math.abs(A.data[i + 2] - B.data[i + 2]) > 30
+          )
+            distintos++
+        }
+      return distintos / total
+    },
+    { a, b },
+  )
+const captura = async (page) => (await page.screenshot()).toString('base64')
+
+prueba(
+  'malla: dibuja los triángulos de todos los materiales y apagarla restaura todo',
+  async (page) => {
+    const mallas = () => page.evaluate(() => window.__rigNativo.mallas())
+    const huella = () => page.evaluate(() => window.__rigNativo.huellaMateriales())
+    const inicial = await mallas()
+    assert.ok(inicial.total > 50, `hay materiales (${inicial.total})`)
+    assert.equal(inicial.conMalla, 0, 'apagada al arrancar')
+    const colores = await huella()
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await page.waitForTimeout(1500)
+    const antes = await captura(page)
+
+    await boton(page, 'Malla').click()
+    assert.equal(await boton(page, 'Malla').getAttribute('aria-pressed'), 'true')
+    assert.deepEqual(await mallas(), { total: inicial.total, conMalla: inicial.total })
+    // Independiente del flag: la imagen cambia de verdad (los triángulos reemplazan a las superficies llenas).
+    await page.waitForTimeout(2500)
+    const con = await captura(page)
+    const cambio = await fraccionDistinta(page, antes, con)
+    assert.ok(
+      cambio > 0.02,
+      `con malla la imagen cambia (${(cambio * 100).toFixed(1)} % de píxeles)`,
+    )
+
+    await boton(page, 'Malla').click()
+    assert.equal(await boton(page, 'Malla').getAttribute('aria-pressed'), 'false')
+    assert.deepEqual(await mallas(), { total: inicial.total, conMalla: 0 })
+    assert.equal(await huella(), colores, 'los colores de los materiales no cambian')
+    await page.waitForTimeout(2500)
+    const despues = await captura(page)
+    const resto = await fraccionDistinta(page, antes, despues)
+    assert.ok(
+      resto < 0.005,
+      `apagada, la imagen vuelve a la original (${(resto * 100).toFixed(2)} % distinto)`,
+    )
+  },
+)
+
+prueba(
+  'aparejo: el bloque sube y baja con el deslizador, las líneas se estiran con la corona fija y la animación pausa y rebota',
+  async (page) => {
+    const aparejo = () => page.evaluate(() => window.__rigNativo.aparejo())
+    const altura = async () =>
+      Number(
+        (await page.getByTestId('hoist-value').textContent())
+          .replace(/[^\d,]/g, '')
+          .replace(',', '.'),
+      )
+    const reposo = await aparejo()
+    assert.ok(reposo.bloque && reposo.cable, 'hay bloque y líneas')
+    assert.equal(await altura(), 14)
+    assert.equal(await boton(page, 'Animar aparejo').getAttribute('aria-pressed'), 'false')
+
+    // Deslizador: el bloque se traslada (h − 14) y las líneas conservan la corona y siguen al bloque (formas del V2).
+    const enAltura = async (h) => {
+      await page.getByLabel('Altura aproximada del aparejo').fill(String(h))
+      await page.waitForTimeout(1200)
+      const dy = h - 14
+      const a = await aparejo()
+      const cerca2 = (x, y, msg) =>
+        assert.ok(Math.abs(x - y) < 0.02, `${msg}: ${x} ≠ ${y} (h = ${h})`)
+      cerca2(a.bloque.min, reposo.bloque.min + dy, 'base del bloque')
+      cerca2(a.bloque.max, reposo.bloque.max + dy, 'tope del bloque')
+      cerca2(a.cable.max, reposo.cable.max, 'la corona no se mueve')
+      cerca2(a.cable.min, reposo.cable.min + dy, 'las líneas llegan al bloque')
+      assert.equal(await altura(), h)
+    }
+    await enAltura(22)
+    await enAltura(7)
+    await enAltura(25)
+    await enAltura(14)
+    const igual = await aparejo()
+    assert.deepEqual(igual, reposo, 'de vuelta a 14 m queda exactamente como al arrancar')
+
+    // Animación: arranca subiendo desde el reposo, lleva el rótulo didáctico y se puede pausar.
+    await boton(page, 'Animar aparejo').click()
+    assert.equal(await boton(page, 'Pausar movimiento').getAttribute('aria-pressed'), 'true')
+    assert.match(
+      await page.getByTestId('notice').textContent(),
+      /didáctica.*sin validar.*No es una simulación/,
+    )
+    const t0 = Date.now()
+    while ((await altura()) < 14.5 && Date.now() - t0 < 60_000) await page.waitForTimeout(250)
+    assert.ok((await altura()) >= 14.5, 'el bloque sube')
+    await boton(page, 'Pausar movimiento').click()
+    assert.equal(await boton(page, 'Animar aparejo').getAttribute('aria-pressed'), 'false')
+    const h1 = await altura()
+    await page.waitForTimeout(1500)
+    assert.equal(await altura(), h1, 'pausada no se mueve')
+    const a1 = await aparejo()
+    assert.ok(
+      Math.abs(a1.bloque.min - (reposo.bloque.min + h1 - 14)) < 0.08,
+      'la pose coincide con la lectura',
+    )
+
+    // Mover el deslizador en plena animación la pausa (como el V2).
+    await boton(page, 'Animar aparejo').click()
+    await page.getByLabel('Altura aproximada del aparejo').fill('20')
+    assert.equal(await boton(page, 'Animar aparejo').getAttribute('aria-pressed'), 'false')
+    assert.equal(await altura(), 20)
+
+    // Rebote: desde cerca del tope baja (la dirección se invierte al llegar a 25 m).
+    await page.getByLabel('Altura aproximada del aparejo').fill('24.9')
+    await boton(page, 'Animar aparejo').click()
+    const t1 = Date.now()
+    let llego = false
+    let h = await altura()
+    while (Date.now() - t1 < 60_000) {
+      h = await altura()
+      if (h >= 25) llego = true
+      if (llego && h < 24.8) break
+      await page.waitForTimeout(150)
+    }
+    assert.ok(llego && h < 24.8, `rebota en 25 m y baja (llegó ${llego}, ahora ${h})`)
+    await boton(page, 'Pausar movimiento').click()
+
+    // Desarmado no se anima: el botón y el deslizador se deshabilitan; desarmar pausa la animación.
+    await boton(page, 'Animar aparejo').click()
+    await boton(page, 'Despiece').click()
+    assert.equal(await boton(page, 'Animar aparejo').getAttribute('aria-pressed'), 'false')
+    assert.equal(await boton(page, 'Animar aparejo').isDisabled(), true)
+    assert.equal(await page.getByLabel('Altura aproximada del aparejo').isDisabled(), true)
+  },
+)
+
+prueba(
+  'exportar GLB: descarga todo el equipo con jerarquía, nombres de componente y el aviso dentro',
+  async (page) => {
+    // Con otra pose (aparejo a 22 m y equipo desarmado) el archivo sale igual: armado y con el aparejo en reposo.
+    await page.getByLabel('Altura aproximada del aparejo').fill('22')
+    await boton(page, 'Despiece').click()
+    await hasta(page, () => true)
+    await page.waitForTimeout(3000)
+    const ids = (await estado(page)).componentes
+
+    const [descarga] = await Promise.all([
+      page.waitForEvent('download', { timeout: 120_000 }),
+      boton(page, 'Exportar GLB').click(),
+    ])
+    assert.equal(descarga.suggestedFilename(), 'RIG10_Modelo_Aproximado.glb')
+    const archivo = path.join(root, 'node_modules', '.cache', `export-${Date.now()}.glb`)
+    fs.mkdirSync(path.dirname(archivo), { recursive: true })
+    await descarga.saveAs(archivo)
+    try {
+      const bytes = fs.readFileSync(archivo)
+      // Contenedor GLB: magic, versión 2, largo y primer trozo JSON.
+      assert.equal(bytes.toString('ascii', 0, 4), 'glTF')
+      assert.equal(bytes.readUInt32LE(4), 2)
+      assert.equal(bytes.readUInt32LE(8), bytes.length, 'el largo declarado es el del archivo')
+      const jsonLen = bytes.readUInt32LE(12)
+      assert.equal(bytes.readUInt32LE(16), 0x4e4f534a, 'primer trozo = JSON')
+      const gltf = JSON.parse(bytes.toString('utf8', 20, 20 + jsonLen))
+
+      // Un nodo por componente de la escena, con su id.
+      const nombres = new Set(gltf.nodes.map((n) => n.name))
+      for (const id of ids) assert.ok(nombres.has(id), `el GLB trae el componente ${id}`)
+      const raiz = gltf.scenes[gltf.scene ?? 0]
+      assert.equal(raiz.nodes.length, ids.length, 'un nodo raíz por componente')
+      assert.ok(
+        raiz.nodes.every((i) => (gltf.nodes[i].children ?? []).length > 0),
+        'con jerarquía debajo',
+      )
+      assert.ok(gltf.meshes.length > 100, `trae las mallas (${gltf.meshes.length})`)
+      // El aviso viaja dentro del archivo.
+      assert.match(raiz.extras?.aviso ?? '', /no as-built/)
+      assert.match(raiz.extras?.marco ?? '', /1 unidad = 1 m/)
+      // Sin las aristas del visor: solo triángulos.
+      const modos = new Set(gltf.meshes.flatMap((m) => m.primitives.map((p) => p.mode ?? 4)))
+      assert.deepEqual([...modos], [4], 'solo mallas de triángulos')
+      // Armado y con el aparejo en reposo, aunque se estuviera desarmado y a 22 m: ningún nodo trae traslación ni escala.
+      const movidos = gltf.nodes.filter(
+        (n) =>
+          (n.name?.startsWith('explode_') || n.name?.endsWith('_pivote')) &&
+          (n.translation || n.scale),
+      )
+      assert.deepEqual(
+        movidos.map((n) => n.name),
+        [],
+      )
+      assert.ok(
+        nombres.has('explode_sk575_aparejo'),
+        'hay grupos de despiece (y salen en su lugar)',
+      )
+      assert.ok(
+        [...nombres].some((n) => n?.endsWith('_pivote')),
+        'hay pivotes del aparejo',
+      )
+
+      // Lo abre un lector externo (el CLI de gltf-transform lee y valida el archivo entero).
+      const cli = path.join(root, 'node_modules', '@gltf-transform', 'cli', 'bin', 'cli.js')
+      const r = spawnSync(process.execPath, [cli, 'inspect', archivo], { encoding: 'utf8' })
+      assert.equal(r.status, 0, `gltf-transform no pudo leer el GLB: ${r.stderr}`)
+      assert.match(r.stdout, /MESHES/)
+    } finally {
+      fs.rmSync(archivo, { force: true })
+    }
+    await page.getByTestId('notice').waitFor({ state: 'visible' })
+    assert.match(
+      await page.getByTestId('notice').textContent(),
+      /GLB exportado.*unidades nominales en metros/,
+    )
+  },
+)
