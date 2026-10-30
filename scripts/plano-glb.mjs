@@ -244,14 +244,10 @@ function telescope(parts) {
 }
 telescope(mast)
 
-const hinge = [MX, ZB]
-const theta = Math.PI / 2 + LEAN - (EPS * Math.PI) / 180
-const rot = rotZ(hinge, theta)
 const mastParts = [
   ...mast.filter((p) => p.tag === 'mast'),
   ...izaje.filter((p) => p.tag === 'mast'),
 ]
-apply(mastParts, rot)
 const cabX = (x) => (x >= -14.2 && x <= -12.6) || (x >= -12.1 && x <= -10.2)
 const roofY = Math.max(
   bbox(carrier.filter((p) => p.tag === 'cabina')).y[1],
@@ -260,8 +256,44 @@ const roofY = Math.max(
     (x, y) => y < 3.1,
   ).y[1],
 )
+// Pivote: 'eje' gira sobre el eje del mástil y lo sube hasta la luz pedida; 'atras' articula en el pie de la pata trasera (lado carrier)
+// a la altura documentada de la base (4'-0", A) y el ángulo sale de apoyar el mástil sobre la cabina con esa luz (la posición X de la
+// pata sale del ancho del 1.er tramo del modelo: B/C).
+const PIVOTE = opt('pivote', 'eje')
+const PIN_X = MX - 0.87
+const hinge = PIVOTE === 'atras' ? [PIN_X, ZB] : [MX, ZB]
+const thetaOf = (e) => Math.PI / 2 + LEAN - (e * Math.PI) / 180
+const lowestOverCab = (e) => {
+  const th = thetaOf(e)
+  const cs = Math.cos(th)
+  const sn = Math.sin(th)
+  let low = Infinity
+  for (const part of mast.filter((q) => q.tag === 'mast')) {
+    const a = part.tris
+    for (let i = 0; i < a.length; i += 3) {
+      const dx = a[i] - hinge[0]
+      const dy = a[i + 1] - hinge[1]
+      const x = hinge[0] + dx * cs - dy * sn
+      if (cabX(x)) low = Math.min(low, hinge[1] + dx * sn + dy * cs)
+    }
+  }
+  return low
+}
+let EPSU = EPS
+if (PIVOTE === 'atras') {
+  let lo = 0
+  let hi = 25
+  for (let k = 0; k < 40; k++) {
+    const mid = (lo + hi) / 2
+    if (lowestOverCab(mid) < roofY + LUZ) lo = mid
+    else hi = mid
+  }
+  EPSU = (lo + hi) / 2
+}
+const rot = rotZ(hinge, thetaOf(EPSU))
+apply(mastParts, rot)
 const mastLow = bbox(mast, (x) => cabX(x)).y[0]
-const lift = roofY + LUZ - mastLow
+const lift = PIVOTE === 'atras' ? 0 : roofY + LUZ - mastLow
 apply(mastParts, (v, o) => {
   o[0] = v[0]
   o[1] = v[1] + lift
@@ -556,7 +588,7 @@ text(
 text(
   12,
   19.5,
-  `Geometría de los GLB del visor (aristas de rasgo, líneas ocultas eliminadas). NO es as-built ni apto para fabricación. Pose horizontal sobre el apoyo de cabina (procedimiento de rig-up): ε = ${f(EPS, 1)}°, luz ${f(LUZ)} m (sin cota).`,
+  `Geometría de los GLB del visor (aristas de rasgo, líneas ocultas eliminadas). NO es as-built ni apto para fabricación. Pose horizontal sobre el apoyo de cabina (procedimiento de rig-up): ε = ${f(EPSU, 1)}°${PIVOTE === 'atras' ? ' (sale del apoyo en cabina; pivote en la pata trasera a 1,2192 m)' : ''}, luz ${f(LUZ)} m (sin cota).`,
   2.4,
   'start',
   ORG,
@@ -769,7 +801,12 @@ notes.forEach((t, i) => text(nx, 210 + i * 3.8, t, 2.2))
 add(`<rect x="275" y="258" width="135" height="30" fill="none" stroke="#111" stroke-width="0.4"/>`)
 text(278, 264, 'Equipo 10 · carrier con mástil abatido', 3, 'start', '#111', 'bold')
 text(278, 269, 'Hoja A3 · 1:60 · vistas lateral, planta y frontal', 2.3)
-text(278, 273.5, `generado: scripts/plano-glb.mjs --eps ${EPS} --luz ${LUZ}`, 2.1)
+text(
+  278,
+  273.5,
+  `generado: scripts/plano-glb.mjs ${PIVOTE === 'atras' ? '--pivote atras' : `--eps ${EPS}`} --luz ${LUZ}`,
+  2.1,
+)
 text(
   278,
   278,
@@ -787,7 +824,8 @@ fs.writeFileSync(svgPath, svg)
 console.log(
   JSON.stringify(
     {
-      eps: EPS,
+      eps: EPSU,
+      pivote: PIVOTE,
       luz: LUZ,
       lift: +lift.toFixed(3),
       roofY: +roofY.toFixed(3),
