@@ -24,12 +24,17 @@ describe('parseNativeLink', () => {
     expect(parseNativeLink('?comp=carrier_huella&view=top')).toEqual({
       comp: 'carrier_huella',
       view: 'top',
+      vp: null,
     })
   })
   it('descarta lo inválido: ids con símbolos o largos y vistas desconocidas', () => {
-    expect(parseNativeLink('?comp=<script>&view=abajo')).toEqual({ comp: null, view: null })
+    expect(parseNativeLink('?comp=<script>&view=abajo')).toEqual({
+      comp: null,
+      view: null,
+      vp: null,
+    })
     expect(parseNativeLink(`?comp=${'a'.repeat(41)}`).comp).toBeNull()
-    expect(parseNativeLink('')).toEqual({ comp: null, view: null })
+    expect(parseNativeLink('')).toEqual({ comp: null, view: null, vp: null })
   })
 })
 
@@ -55,6 +60,31 @@ describe('buildShareUrl', () => {
   })
   it('ida y vuelta con parseNativeLink', () => {
     const url = buildShareUrl(page, { comp: 'sk575_mastil', view: null })
-    expect(parseNativeLink(new URL(url).search)).toEqual({ comp: 'sk575_mastil', view: null })
+    expect(parseNativeLink(new URL(url).search)).toEqual({
+      comp: 'sk575_mastil',
+      view: null,
+      vp: null,
+    })
+  })
+})
+
+describe('enlaces a un sector (vp)', () => {
+  it('se lee y se descarta si es inválido', () => {
+    expect(parseNativeLink('?engine=native&vp=piso-trabajo').vp).toBe('piso-trabajo')
+    expect(parseNativeLink('?vp=<script>').vp).toBeNull()
+    expect(parseNativeLink('?vp=SK575_Bop').vp).toBeNull()
+  })
+  const site = 'https://exertion-solutions.github.io/visor-equipo-de-torre/'
+  it('el sector manda sobre el componente y la vista al compartir', () => {
+    expect(buildShareUrl(site, { comp: 'sk575_bop', view: 'side', vp: 'bop' })).toBe(
+      `${site}?engine=native&vp=bop`,
+    )
+    expect(buildShareUrl(site, { comp: 'sk575_bop', view: null, vp: null })).toBe(
+      `${site}?engine=native&comp=sk575_bop`,
+    )
+  })
+  it('ida y vuelta', () => {
+    const url = buildShareUrl(site, { comp: null, view: null, vp: 'piso-enganche' })
+    expect(parseNativeLink(new URL(url).search).vp).toBe('piso-enganche')
   })
 })

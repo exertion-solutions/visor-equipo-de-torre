@@ -1808,3 +1808,462 @@ prueba(
     )
   },
 )
+
+// — Teclado y recorridos —
+
+const VP_JSON = JSON.parse(
+  fs.readFileSync(path.join(root, 'src', 'data', 'viewpoints', 'rig10-viewpoints.json'), 'utf8'),
+)
+const deg = (r) => (r * 180) / Math.PI
+const menos = (a, b) => a.map((v, i) => v - b[i])
+const horizontal = (v) => Math.hypot(v[0], v[2])
+/** Ángulo (°) con signo de a a b en el plano horizontal XZ (positivo de +Z hacia +X). */
+const anguloXZ = (a, b) => deg(Math.atan2(b[0], b[2]) - Math.atan2(a[0], a[2]))
+const angNorm = (a) => ((a + 540) % 360) - 180
+const elevacion = (v) => deg(Math.atan2(v[1], horizontal(v)))
+
+prueba(
+  'teclado: el lienzo recibe foco con Tab y las flechas, + − y ? mueven la cámara y abren la ayuda',
+  async (page) => {
+    const cam = async () => {
+      const e = await estado(page)
+      return { pos: e.camara.posicion, tgt: e.camara.objetivo, zoom: e.camara.zoom, e }
+    }
+    const foco = () => page.evaluate(() => document.activeElement?.tagName)
+    // Tab llega al lienzo (y solo él es del lienzo).
+    await page.evaluate(() => document.body.focus())
+    let llego = false
+    for (let i = 0; i < 80 && !llego; i++) {
+      await page.keyboard.press('Tab')
+      llego = (await foco()) === 'CANVAS'
+    }
+    assert.ok(llego, 'el lienzo recibe foco con Tab')
+    assert.equal(
+      await page.evaluate(() => document.activeElement.getAttribute('role')),
+      'application',
+    )
+    assert.match(
+      await page.evaluate(() => document.activeElement.getAttribute('aria-label')),
+      /Flechas: girar e inclinar/,
+    )
+
+    // Flechas ← →: giran 7,5° alrededor del objetivo, sin cambiar distancia ni altura (fórmula propia, independiente).
+    const c0 = await cam()
+    await page.keyboard.press('ArrowRight')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) > 0.1)
+    const c1 = await cam()
+    const v0 = menos(c0.pos, c0.tgt)
+    const v1 = menos(c1.pos, c1.tgt)
+    assert.ok(
+      Math.abs(Math.abs(angNorm(anguloXZ(v0, v1))) - 7.5) < 0.05,
+      `giro de 7,5° (${angNorm(anguloXZ(v0, v1))})`,
+    )
+    assert.ok(Math.abs(Math.hypot(...v0) - Math.hypot(...v1)) < 1e-6, 'misma distancia')
+    assert.ok(Math.abs(v0[1] - v1[1]) < 1e-6, 'misma altura')
+    await page.keyboard.press('ArrowLeft')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) < 1e-6)
+
+    // ↑ ↓ inclinan 5° (la elevación sube y baja) conservando la distancia.
+    await page.keyboard.press('ArrowUp')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) > 0.05)
+    const c2 = await cam()
+    const dElev = elevacion(menos(c2.pos, c2.tgt)) - elevacion(v0)
+    assert.ok(Math.abs(dElev - 5) < 0.05, `inclina +5° (${dElev})`)
+    assert.ok(Math.abs(Math.hypot(...menos(c2.pos, c2.tgt)) - Math.hypot(...v0)) < 1e-6)
+    await page.keyboard.press('ArrowDown')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) < 1e-6)
+
+    // + y −: acercan y alejan ×1,15 (perspectiva: la distancia al objetivo).
+    await page.keyboard.press('+')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) > 0.1)
+    const c3 = await cam()
+    assert.ok(
+      Math.abs(Math.hypot(...menos(c3.pos, c3.tgt)) - Math.hypot(...v0) / 1.15) < 1e-6,
+      'acerca ×1,15',
+    )
+    await page.keyboard.press('-')
+    await hasta(page, (e) => distancia(e.camara.posicion, c0.pos) < 1e-6)
+
+    // Mayús + flecha: desplaza (cámara y objetivo juntos) el 5 % de la distancia, perpendicular a la mirada.
+    await page.keyboard.press('Shift+ArrowRight')
+    await hasta(page, (e) => distancia(e.camara.objetivo, c0.tgt) > 0.1)
+    const c4 = await cam()
+    const dT = menos(c4.tgt, c0.tgt)
+    assert.ok(
+      Math.abs(Math.hypot(...dT) - 0.05 * Math.hypot(...v0)) < 1e-6,
+      'desplaza el 5 % de la distancia',
+    )
+    assert.ok(
+      distancia(menos(c4.pos, c0.pos), dT) < 1e-6,
+      'la cámara se traslada igual que el objetivo',
+    )
+    assert.ok(
+      Math.abs(dT[0] * v0[0] + dT[1] * v0[1] + dT[2] * v0[2]) < 1e-6,
+      'perpendicular a la mirada',
+    )
+    await page.keyboard.press('Shift+ArrowLeft')
+    await hasta(page, (e) => distancia(e.camara.objetivo, c0.tgt) < 1e-6)
+
+    // Ayuda: ? la abre (dialog con los atajos), Esc la cierra y el foco vuelve al lienzo; H también alterna.
+    await page.keyboard.press('?')
+    const ayuda = page.getByRole('dialog', { name: 'Atajos de teclado' })
+    await ayuda.waitFor({ state: 'visible' })
+    assert.equal((await estado(page)).recorrido.ayuda, true)
+    for (const t of [
+      'Girar alrededor del equipo',
+      'Inclinar la vista',
+      'Mayús + flechas',
+      'Acercar / alejar',
+    ])
+      assert.ok((await ayuda.textContent()).includes(t), `la ayuda dice "${t}"`)
+    await page.keyboard.press('Escape')
+    await ayuda.waitFor({ state: 'hidden' })
+    assert.equal(await foco(), 'CANVAS', 'el foco vuelve al lienzo')
+    await page.keyboard.press('h')
+    await ayuda.waitFor({ state: 'visible' })
+    await page.keyboard.press('h')
+    await ayuda.waitFor({ state: 'hidden' })
+
+    // Con Ctrl no hay atajos (no pisa los del navegador) y otras teclas no hacen nada.
+    await page.keyboard.press('Control+ArrowRight')
+    await page.keyboard.press('a')
+    await page.waitForTimeout(500)
+    assert.ok(
+      distancia((await cam()).pos, c0.pos) < 1e-6,
+      'Ctrl+flecha y otras teclas no mueven nada',
+    )
+
+    // En ortográfica + y − escalan el zoom ×1,15 y el botón "Atajos" también abre la ayuda.
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    await page.evaluate(() => document.querySelector('canvas').focus())
+    const z0 = (await cam()).zoom
+    await page.keyboard.press('+')
+    await hasta(page, (e) => Math.abs(e.camara.zoom - z0 * 1.15) < 1e-6)
+    await boton(page, 'Atajos').click()
+    await ayuda.waitFor({ state: 'visible' })
+    await page.keyboard.press('Escape')
+    await ayuda.waitFor({ state: 'hidden' })
+  },
+)
+
+/** Espera a que la cámara llegue a la vista de un sector (posición, objetivo y fov del JSON). */
+const llegoA = (page, vp, ms = 40_000) =>
+  hasta(
+    page,
+    (e) =>
+      distancia(e.camara.posicion, vp.camPos) < 0.05 &&
+      distancia(e.camara.objetivo, vp.target) < 0.05 &&
+      Math.abs((e.camara.fov ?? 0) - vp.fov) < 0.05,
+    ms,
+  )
+const vpDe = (id) => VP_JSON.viewpoints.find((v) => v.id === id)
+const COTAS_PISO = { terreno: 0, pisoTrabajo: 3.61, pisoEnganche: 20.63 }
+// Qué resalta cada sector (la tabla se enuncia de nuevo acá: independiente de `VIEWPOINT_COMPONENTS`).
+const RESALTA = {
+  acceso: [],
+  acumulador: ['sk575_acumulador'],
+  bop: ['sk575_bop'],
+  'piso-trabajo': ['sk575_piso'],
+  'piso-enganche': ['sk575_mastil'],
+  planchada: ['sk575_planchada', 'sk575_tiros'],
+  mastil: ['sk575_mastil', 'sk575_izaje', 'sk575_vientos'],
+}
+
+prueba(
+  'recorridos: "Ir a equipo" vuela a cada sector con su ficha y resaltado, y "Volver a vista general" restaura',
+  async (page) => {
+    // Con ortográfica y despiece activos de antes: ir a un sector arma el equipo y pasa a perspectiva.
+    await boton(page, 'Ortográfica').click()
+    await hasta(page, (e) => e.tienda.proyeccion === 'orthographic')
+    const inicial = await estado(page)
+    await boton(page, 'Despiece').click()
+    assert.equal(await boton(page, 'Despiece').getAttribute('aria-pressed'), 'true')
+
+    await page.getByRole('button', { name: 'Ir a equipo' }).click()
+    const lista = page.getByRole('group', { name: 'Sectores' })
+    const nombres = await lista.getByRole('button').allTextContents()
+    assert.deepEqual(
+      nombres,
+      VP_JSON.viewpoints.map((v) => v.nombre),
+      'los 14 sectores del JSON, en su orden',
+    )
+
+    // Primer sector: no es instantáneo (vuelo de ~1,8 s) y llega con la altura de ojos de su piso.
+    const bop = vpDe('bop')
+    // El vuelo se muestrea dentro de la página, cuadro a cuadro, desde el clic: dura ~1,8 s (el tiempo es real, no de cuadros),
+    // parte lejos del destino, se acerca sin saltos y llega.
+    const muestras = await page.evaluate(
+      async ({ destino }) => {
+        const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+        document.querySelector('[data-testid="vp-bop"]').click()
+        const t0 = performance.now()
+        const out = []
+        while (performance.now() - t0 < 4500) {
+          const e = window.__rigNativo.estado()
+          out.push([performance.now() - t0, d(e.camara.posicion, destino)])
+          await new Promise((r) => requestAnimationFrame(r))
+        }
+        return out
+      },
+      { destino: bop.camPos },
+    )
+    assert.ok(muestras[0][1] > 5, `parte lejos del destino (${muestras[0][1].toFixed(1)} m)`)
+    const llegada = muestras.find(([, dist]) => dist < 0.05)
+    assert.ok(llegada, 'llega al destino')
+    assert.ok(
+      llegada[0] > 1400 && llegada[0] < 4000,
+      `el vuelo dura ~1,8 s (llegó a los ${Math.round(llegada[0])} ms)`,
+    )
+    const previas = muestras.filter(([t]) => t < llegada[0]).map(([, dist]) => dist)
+    assert.ok(previas.length >= 2, 'hay cuadros intermedios (no es un salto)')
+    assert.equal(
+      await boton(page, 'Despiece').getAttribute('aria-pressed'),
+      'false',
+      'ir a un sector arma el equipo',
+    )
+    await llegoA(page, bop)
+    let e = await estado(page)
+    assert.equal(e.tienda.proyeccion, 'perspective', 'la primera persona es en perspectiva')
+    assert.deepEqual(e.recorrido.resaltados, ['sk575_bop'])
+    assert.equal(e.recorrido.sector, 'bop')
+    assert.equal(e.recorrido.puedeVolver, true)
+
+    // Ficha: nombre, los cuatro campos y lo genérico rotulado "pendiente de validación".
+    const ficha = page.getByTestId('vp-ficha')
+    await ficha.waitFor({ state: 'visible' })
+    const texto = await ficha.textContent()
+    assert.match(texto, /BOP/)
+    for (const campo of ['Función', 'Riesgos', 'EPP', 'Controles'])
+      assert.match(texto, new RegExp(campo))
+    assert.ok(texto.includes(bop.ficha.funcion.slice(0, 40)), 'la ficha trae la función del sector')
+    assert.ok(
+      (texto.match(/pendiente de validación/g) ?? []).length >= 3,
+      'riesgos, EPP y controles son referencia genérica',
+    )
+
+    // Altura de ojos = cota del piso + 1,70 m en sectores de los tres pisos, con su fov y resaltado.
+    for (const id of [
+      'acumulador',
+      'piso-trabajo',
+      'piso-enganche',
+      'acceso',
+      'planchada',
+      'mastil',
+    ]) {
+      const vp = vpDe(id)
+      await page.getByTestId(`vp-${id}`).click()
+      await llegoA(page, vp)
+      e = await estado(page)
+      assert.ok(
+        Math.abs(e.camara.posicion[1] - (COTAS_PISO[vp.piso] + 1.7)) < 0.02,
+        `${id}: ojos a ${COTAS_PISO[vp.piso]} + 1,70 m`,
+      )
+      assert.deepEqual(
+        [...e.recorrido.resaltados].sort(),
+        [...(RESALTA[id] ?? [])].sort(),
+        `${id}: resaltado`,
+      )
+      assert.equal(e.recorrido.sector, id)
+      assert.equal(await page.getByTestId(`vp-${id}`).getAttribute('aria-current'), 'true')
+    }
+
+    // Volver a vista general: la vista previa (posición, objetivo, fov y la proyección ortográfica) y se suelta el resaltado.
+    await page.getByRole('button', { name: 'Volver a vista general' }).click()
+    e = await hasta(
+      page,
+      (s) =>
+        distancia(s.camara.posicion, inicial.camara.posicion) < 0.05 &&
+        s.tienda.proyeccion === 'orthographic',
+    )
+    assert.ok(distancia(e.camara.objetivo, inicial.camara.objetivo) < 0.05)
+    assert.deepEqual(e.recorrido.resaltados, [])
+    assert.equal(e.recorrido.sector, null)
+    assert.equal(e.recorrido.puedeVolver, false)
+    assert.equal(
+      await page.getByRole('button', { name: 'Volver a vista general' }).isDisabled(),
+      true,
+    )
+  },
+)
+
+prueba(
+  'recorridos: el doble clic sobre un equipo vuela a su sector y una vista estándar suelta el recorrido',
+  async (page) => {
+    const p = await page.evaluate((i) => window.__rigNativo.puntoClicable(i), LEJANO)
+    assert.ok(p, 'hay un punto clicable de las piletas')
+    await page.mouse.dblclick(p.x, p.y)
+    await llegoA(page, vpDe('piletas'))
+    assert.equal((await estado(page)).recorrido.sector, 'piletas')
+    assert.deepEqual((await estado(page)).recorrido.resaltados, ['sk575_piletas'])
+
+    // Otra vista de la cámara toma la cámara: el recorrido suelta su estado (sin sector ni resaltado).
+    await boton(page, 'Frontal').click()
+    const e = await hasta(
+      page,
+      (s) => s.recorrido.sector === null && s.recorrido.resaltados.length === 0,
+    )
+    assert.equal(e.recorrido.puedeVolver, false)
+  },
+)
+
+prueba(
+  'recorrido guiado: solo en Entrenamiento, avanza paradas con Anterior/Siguiente y solo con Reproducir',
+  async (page) => {
+    await page.getByRole('button', { name: 'Ir a equipo' }).click()
+    assert.equal(
+      await page.getByRole('group', { name: 'Recorrido guiado' }).count(),
+      0,
+      'fuera de Entrenamiento no se ofrece',
+    )
+    await boton(page, 'TRAINING').click()
+    const guiado = page.getByRole('group', { name: 'Recorrido guiado' })
+    await guiado.waitFor({ state: 'visible' })
+    const paradas = VP_JSON.recorrido.paradas
+    assert.match(
+      await page.getByTestId('tour-position').textContent(),
+      new RegExp(`${paradas.length} paradas`),
+    )
+
+    await guiado.getByRole('button', { name: 'Parada siguiente' }).click()
+    let e = await hasta(page, (s) => s.recorrido.sector === paradas[0])
+    assert.equal(e.recorrido.parada, 0)
+    await llegoA(page, vpDe(paradas[0]))
+    await guiado.getByRole('button', { name: 'Parada siguiente' }).click()
+    e = await hasta(page, (s) => s.recorrido.sector === paradas[1])
+    assert.equal(
+      await page.getByTestId('tour-position').textContent(),
+      `Parada 2/${paradas.length} · ${vpDe(paradas[1]).nombre}`,
+    )
+    await guiado.getByRole('button', { name: 'Parada anterior' }).click()
+    await hasta(page, (s) => s.recorrido.sector === paradas[0])
+    // Anterior en la primera parada se queda en ella; Siguiente en la última también.
+    await guiado.getByRole('button', { name: 'Parada anterior' }).click()
+    assert.equal((await estado(page)).recorrido.parada, 0)
+
+    // Sin Reproducir no avanza solo; con Reproducir pasa a la parada siguiente (vuelo + 8 s) y Pausa lo detiene.
+    await page.waitForTimeout(2500)
+    assert.equal((await estado(page)).recorrido.parada, 0, 'no avanza solo')
+    await guiado.getByRole('button', { name: 'Reproducir' }).click()
+    assert.equal((await estado(page)).recorrido.auto, true)
+    e = await hasta(page, (s) => s.recorrido.parada === 1, 60_000)
+    assert.equal(e.recorrido.sector, paradas[1])
+    await guiado.getByRole('button', { name: 'Pausa' }).click()
+    assert.equal((await estado(page)).recorrido.auto, false)
+    await page.waitForTimeout(2500)
+    assert.equal((await estado(page)).recorrido.parada, 1, 'en pausa no avanza')
+
+    // Fuera de Entrenamiento el recorrido guiado se detiene y se oculta.
+    await boton(page, 'EXPLORE').click()
+    await guiado.waitFor({ state: 'detached' })
+  },
+)
+
+prueba(
+  'caminata: a 1,70 m y hasta 1,4 m/s, sin salir del vallado ni atravesar equipos, y Esc vuelve a la órbita',
+  async (page) => {
+    // Se parte de la vista de la bomba (mira a −Z): la caminata sigue hacia donde se mira.
+    await page.getByRole('button', { name: 'Ir a equipo' }).click()
+    const bomba = vpDe('bomba')
+    await page.getByTestId('vp-bomba').click()
+    await llegoA(page, bomba)
+    const cajaBomba = (await cajas(page)).sk575_bomba
+    const minZ = cajaBomba.centro[2] - cajaBomba.tamano[2] / 2
+    const maxZ = cajaBomba.centro[2] + cajaBomba.tamano[2] / 2
+    const minX = cajaBomba.centro[0] - cajaBomba.tamano[0] / 2
+    const maxX = cajaBomba.centro[0] + cajaBomba.tamano[0] / 2
+    assert.ok(bomba.camPos[0] > minX && bomba.camPos[0] < maxX, 'la bomba está justo delante')
+    assert.ok(bomba.camPos[2] - maxZ > 0.5 && bomba.camPos[2] - maxZ < 6, 'a pocos metros')
+
+    await boton(page, 'Modo caminata').click()
+    let e = await hasta(page, (s) => s.recorrido.caminando && s.recorrido.controles === false)
+    assert.ok(Math.abs(e.camara.posicion[1] - 1.7) < 1e-6, 'ojos a 1,70 m')
+    const p0 = e.camara.posicion
+    assert.equal(e.camara.fov, 60)
+
+    // Adelante (W) durante un rato: avanza, nunca más rápido que 1,4 m/s y se detiene contra la bomba.
+    const t0 = Date.now()
+    await page.keyboard.down('KeyW')
+    let minVisto = Infinity
+    while (Date.now() - t0 < 12_000) {
+      await page.waitForTimeout(300)
+      const z = (await estado(page)).camara.posicion[2]
+      minVisto = Math.min(minVisto, z)
+    }
+    await page.keyboard.up('KeyW')
+    const seg = (Date.now() - t0) / 1000
+    e = await estado(page)
+    const recorrido = distancia(e.camara.posicion, p0)
+    assert.ok(recorrido > 1, `camina (${recorrido.toFixed(2)} m)`)
+    assert.ok(
+      recorrido <= 1.4 * seg * 1.02,
+      `no pasa de 1,4 m/s (${recorrido.toFixed(2)} m en ${seg.toFixed(1)} s)`,
+    )
+    assert.ok(Math.abs(e.camara.posicion[1] - 1.7) < 1e-6, 'sigue a 1,70 m')
+    assert.ok(
+      minVisto >= maxZ - 1e-6,
+      `no atraviesa la bomba (z ≥ ${maxZ.toFixed(2)}, mínimo ${minVisto.toFixed(2)})`,
+    )
+
+    // Esc sale: controles de órbita de nuevo y sin caminata.
+    await page.keyboard.press('Escape')
+    e = await hasta(page, (s) => !s.recorrido.caminando && s.recorrido.controles === true)
+    assert.equal(await boton(page, 'Modo caminata').getAttribute('aria-pressed'), 'false')
+  },
+)
+
+prueba(
+  'caminata: entrar desde lejos deja al caminante dentro del vallado y caminar hacia afuera no lo saca',
+  async (page) => {
+    await page.getByRole('button', { name: 'Ir a equipo' }).click()
+    await boton(page, 'Modo caminata').click()
+    let e = await hasta(page, (s) => s.recorrido.caminando)
+    const [x0, y0, z0] = e.camara.posicion
+    const f = VP_JSON.locacion
+    assert.ok(
+      x0 >= f.min[0] && x0 <= f.max[0] && z0 >= f.min[1] && z0 <= f.max[1],
+      'dentro del vallado al entrar',
+    )
+    assert.ok(Math.abs(y0 - 1.7) < 1e-6)
+    // Hacia atrás (S) y a un costado durante un rato: nunca fuera del vallado.
+    await page.keyboard.down('KeyS')
+    await page.keyboard.down('KeyD')
+    for (let i = 0; i < 20; i++) {
+      await page.waitForTimeout(300)
+      const [x, , z] = (await estado(page)).camara.posicion
+      assert.ok(
+        x >= f.min[0] - 1e-6 &&
+          x <= f.max[0] + 1e-6 &&
+          z >= f.min[1] - 1e-6 &&
+          z <= f.max[1] + 1e-6,
+        `(${x}, ${z}) fuera del vallado`,
+      )
+    }
+    await page.keyboard.up('KeyS')
+    await page.keyboard.up('KeyD')
+    // Al elegir un sector se sale de la caminata (con el puntero capturado el mouse no llega al panel: se usa el DOM).
+    await page.evaluate(() => document.querySelector('[data-testid="vp-acceso"]').click())
+    e = await hasta(page, (s) => !s.recorrido.caminando && s.recorrido.sector === 'acceso')
+    assert.equal(e.recorrido.controles, true)
+  },
+)
+
+prueba(
+  'enlace a un sector: ?engine=native&vp= abre en la vista del sector y "Copiar enlace" lo comparte',
+  async (page) => {
+    const bop = vpDe('bop')
+    await llegoA(page, bop)
+    const e = await estado(page)
+    assert.equal(e.recorrido.sector, 'bop')
+    assert.deepEqual(e.recorrido.resaltados, ['sk575_bop'])
+    // Copiar enlace: con un sector manda el sector (aunque haya un componente seleccionado).
+    const origen = new URL(page.url())
+    await boton(page, 'Copiar enlace').click()
+    await page.getByTestId('notice').waitFor({ state: 'visible' })
+    assert.equal(
+      await page.evaluate(() => navigator.clipboard.readText()),
+      `${origen.origin}${origen.pathname}?engine=native&vp=bop`,
+    )
+  },
+  { query: '?dev=1&engine=native&vp=bop&comp=sk575_mastil&view=top', alternar: false },
+)

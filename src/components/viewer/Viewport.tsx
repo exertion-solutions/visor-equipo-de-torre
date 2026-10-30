@@ -3,6 +3,8 @@ import { Grid } from '@react-three/drei'
 import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three'
 import { Suspense, useMemo } from 'react'
 import { CAMERA_PRESETS, DEFAULT_CAMERA_PRESET } from '@/scene/cameras/presets'
+import { WalkRig } from '@/scene/walk/WalkRig'
+import { KeyboardRig } from '@/scene/keyboard/KeyboardRig'
 import { HoistRig } from '@/scene/hoist/HoistRig'
 import { CaptureBridge } from '@/scene/capture/CaptureBridge'
 import { CutLayer } from '@/scene/cut/CutLayer'
@@ -38,7 +40,6 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
   )
   return (
     <Canvas
-      role="img"
       aria-label="Escena 3D del equipo 10 (referencia digital, no as-built)"
       // Render bajo demanda (escena estática): drei invalida en cada 'change' de OrbitControls,
       // y el damping sigue solo porque cada update() emite 'change' hasta asentarse. r3f invalida
@@ -82,6 +83,8 @@ export function Viewport({ models = RIG10_SCENE }: ViewportProps) {
         <PostFx />
       </Suspense>
       <ExplodeRig offsets={offsets} />
+      <KeyboardRig />
+      <WalkRig />
       <HoistRig />
       <CutLayer />
       <CaptureBridge />

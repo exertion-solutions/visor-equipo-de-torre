@@ -7,6 +7,7 @@ import { useCameraIdle } from './useCameraIdle'
 
 const HOVER_COLOR = 0x9fd0ff
 const SELECT_COLOR = 0xf2b632
+const HIGHLIGHT_COLOR = 0xffe08a
 
 /**
  * Postproceso (SMAA en lugar de MSAA: el blit multisample falla con el AO): contorno de hover y selección, AO solo con la cámara quieta y tone mapping neutral.
@@ -15,6 +16,7 @@ const SELECT_COLOR = 0xf2b632
 export function PostFx() {
   const hovered = useViewerStore((s) => s.hoveredComponentId)
   const selected = useViewerStore((s) => s.selectedComponentId)
+  const highlighted = useViewerStore((s) => s.highlightIds)
   const idle = useCameraIdle(250)
 
   const hoverObjects = useMemo(
@@ -22,6 +24,8 @@ export function PostFx() {
     [hovered, selected],
   )
   const selectObjects = useMemo(() => resolveMeshes([selected]), [selected])
+  // Sector del recorrido: contorno claro, sin abrir la ficha del componente.
+  const highlightObjects = useMemo(() => resolveMeshes(highlighted), [highlighted])
 
   return (
     <EffectComposer multisampling={0} enableNormalPass={false} autoClear={false}>
@@ -40,6 +44,14 @@ export function PostFx() {
         visibleEdgeColor={SELECT_COLOR}
         hiddenEdgeColor={SELECT_COLOR}
         edgeStrength={4}
+        blur
+      />
+      <Outline
+        selection={highlightObjects}
+        selectionLayer={12}
+        visibleEdgeColor={HIGHLIGHT_COLOR}
+        hiddenEdgeColor={HIGHLIGHT_COLOR}
+        edgeStrength={3}
         blur
       />
       <SMAA />

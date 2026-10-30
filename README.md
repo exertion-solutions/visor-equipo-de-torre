@@ -27,6 +27,8 @@ barra superior, o directo: https://exertion-solutions.github.io/visor-equipo-de-
   `?engine=native&comp=sk575_bop` (componente) o `?engine=native&view=top` (`iso`, `front`, `side`, `top`, `well`); se puede sumar
   `&mode=qhse`. Un id desconocido se ignora.
 - **Exportar GLB**: todo el equipo (armado, aparejo en reposo) en un archivo, con el aviso "referencia digital, no as-built" dentro.
+- **Teclado**: el lienzo recibe foco con Tab; flechas giran e inclinan, Mayús + flechas desplazan, + y − hacen zoom, `?` abre la ayuda de atajos.
+- **Recorridos**: "Ir a equipo" vuela en primera persona (ojos a 1,70 m del piso) a 14 sectores con su ficha; doble clic sobre un equipo va a su sector; en el modo TRAINING hay un recorrido guiado; el modo caminata recorre la locación con colisión. Herramienta visual: no son puestos de trabajo ni distancias de seguridad.
 - **Captura PNG**: descarga la escena 3D con una franja de leyenda ("referencia digital, no as-built") y el sitio, para que la
   imagen no pierda el aviso al circular. No incluye etiquetas ni paneles.
 - **Sin conexión**: se instala como PWA y, tras la primera visita, abre sin señal.
@@ -38,8 +40,8 @@ Migración por etapas desde el visor HTML V2 hacia una app React + React Three F
 - El visor **V2** (`public/legacy/Digital_Rig_V2.html`, embebido en un iframe) sigue siendo el motor por defecto ("V2 compatible"):
   tiene todas las funciones. El motor **nativo** ("R3F nativo") ya tiene lo central (lo de arriba) y sigue sin paridad completa;
   los modos EXPLORE / OPERATION / QHSE / TRAINING gobiernan el V2 y, en el nativo, la capa de zonas y DROPS en modo QHSE.
-- Pendiente en el nativo (estado por función en [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md)): recorridos guiados, secuencia
-  de montaje, teclado y ayuda de atajos, izamiento del mástil, maniobra, clima, VR, perfiles de calidad y más. El V2 no se retira hasta que todas las filas críticas estén
+- Pendiente en el nativo (estado por función en [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md)): secuencia de montaje, izamiento
+  del mástil, maniobra, clima, VR, perfiles de calidad y más. El V2 no se retira hasta que todas las filas críticas estén
   verificadas.
 - Modelo de referencia SK-575 en `public/models/rig10/` (GLB generados desde `cad/sk575/`, aproximados, nivel C).
 - Hoy hay un solo equipo (Equipo 10); el esquema de datos (zod) está pensado para sumar otros equipos de pulling/workover.
