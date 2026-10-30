@@ -1694,10 +1694,26 @@ prueba(
   'exportar GLB: descarga todo el equipo con jerarquía, nombres de componente y el aviso dentro',
   async (page) => {
     // Con otra pose (aparejo a 22 m y equipo desarmado) el archivo sale igual: armado y con el aparejo en reposo.
+    const inicial = await cajas(page)
+    const aparejo0 = await page.evaluate(() => window.__rigNativo.aparejo())
     await page.getByLabel('Altura aproximada del aparejo').fill('22')
+    await page.waitForTimeout(1200)
+    const aparejo1 = await page.evaluate(() => window.__rigNativo.aparejo())
+    assert.ok(
+      Math.abs(aparejo1.bloque.min - (aparejo0.bloque.min + 8)) < 0.05,
+      'el aparejo está a 22 m',
+    )
     await boton(page, 'Despiece').click()
-    await hasta(page, () => true)
-    await page.waitForTimeout(3000)
+    // Precondición: de verdad está desarmado (el mástil se corrió ≥ 1 m).
+    for (let i = 0; i < 100; i++) {
+      const c = (await cajas(page))[MASTIL].centro
+      if (distancia(c, inicial[MASTIL].centro) >= 1) break
+      await page.waitForTimeout(300)
+    }
+    assert.ok(
+      distancia((await cajas(page))[MASTIL].centro, inicial[MASTIL].centro) >= 1,
+      'el equipo está desarmado al exportar',
+    )
     const ids = (await estado(page)).componentes
 
     const [descarga] = await Promise.all([
@@ -1738,7 +1754,8 @@ prueba(
       const movidos = gltf.nodes.filter(
         (n) =>
           (n.name?.startsWith('explode_') || n.name?.endsWith('_pivote')) &&
-          (n.translation || n.scale),
+          // El exportador escribe las transformaciones como `matrix`; identidad = no se escribe nada.
+          (n.matrix || n.translation || n.scale),
       )
       assert.deepEqual(
         movidos.map((n) => n.name),
