@@ -348,13 +348,206 @@ def build(prof, luz):
             'font-family="Arial, Helvetica, sans-serif"><rect width="420" height="297" fill="#fff"/>' + "".join(s) + "</svg>"), ck
 
 
+def build_planta(prof, luz):
+    """Hoja 2: planta general 1:60 con cotas + detalle 1:30 del cuadro de maniobras."""
+    ZS = CAB_ROOF + luz
+    BLU, BLF, ORG, GRY, CD = "#1b4f8a", "#dce8f5", "#d35400", "#d6d6d6", "1.6 0.9"
+    s = []
+    add = s.append
+
+    def line(x1, y1, x2, y2, w=0.25, c="#111", dash=None):
+        d = f' stroke-dasharray="{dash}"' if dash else ""
+        add(f'<line x1="{x1:.2f}" y1="{y1:.2f}" x2="{x2:.2f}" y2="{y2:.2f}" stroke="{c}" stroke-width="{w}"{d}/>')
+
+    def rect(x0, y0, x1, y1, fill="none", w=0.25, c="#111", dash=None, op=1):
+        d = f' stroke-dasharray="{dash}"' if dash else ""
+        add(f'<rect x="{min(x0, x1):.2f}" y="{min(y0, y1):.2f}" width="{abs(x1 - x0):.2f}" height="{abs(y1 - y0):.2f}" '
+            f'fill="{fill}" fill-opacity="{op}" stroke="{c}" stroke-width="{w}"{d}/>')
+
+    def poly(pts, fill="none", w=0.25, c="#111", dash=None, op=1):
+        d = f' stroke-dasharray="{dash}"' if dash else ""
+        add(f'<polygon points="{" ".join(f"{x:.2f},{y:.2f}" for x, y in pts)}" fill="{fill}" fill-opacity="{op}" stroke="{c}" stroke-width="{w}"{d}/>')
+
+    def text(x, y, t, size=2.6, anchor="start", c="#111", weight="normal"):
+        add(f'<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" text-anchor="{anchor}" fill="{c}" font-weight="{weight}">{t}</text>')
+
+    def tag(x, y, n):
+        add(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="1.7" fill="#fff" stroke="#111" stroke-width="0.25"/>')
+        text(x, y + 0.75, str(n), 2.1, anchor="middle", weight="bold")
+
+    def hdim(x0, x1, y, label, size=2.3):
+        line(x0, y, x1, y, 0.2)
+        for x in (x0, x1):
+            line(x, y - 1.3, x, y + 1.3, 0.2)
+        text((x0 + x1) / 2, y + 3.6, label, size, anchor="middle")
+
+    def vdim(x, y0, y1, label, left=False, size=2.3):
+        line(x, y0, x, y1, 0.2)
+        for y in (y0, y1):
+            line(x - 1.3, y, x + 1.3, y, 0.2)
+        text(x + (-1.8 if left else 1.8), (y0 + y1) / 2 + 0.8, label, size, anchor="end" if left else "start")
+
+    def carrier(ex, py, K):
+        rect(ex(xc(60)), py(HW), ex(-2.0), py(-HW), "#e4e4e4", 0.4)
+        for y in (-0.39, 0.39):
+            line(ex(FR), py(y), ex(-2.0), py(y), 0.5, "#777")
+        rect(ex(FR), py(-HW + 33 * IN), ex(xc(60)), py(-HW), "#bdbdbd")
+        rect(ex(HOOD[0]), py(1.15), ex(HOOD[1]), py(-1.15), "#c8c8c8")
+        rect(ex(xc(66)), py(0.65), ex(xc(72)), py(-0.65), "#9a9a9a")
+        for i, xin in enumerate(AXLES_IN):
+            r = 44.7 / 2 * IN if i < 2 else 0.52
+            ys = ((79.8 / 2 * IN, 0.385),) if i < 2 else ((0.82, 0.279), (1.13, 0.279))
+            for y, w in ys:
+                for sg in (-1, 1):
+                    rect(ex(xc(xin) - r), py(sg * y + w / 2), ex(xc(xin) + r), py(sg * y - w / 2), "#555", 0.2)
+        for xin, y in ((163, 44.85 * IN), (475, 47.1 * IN)):
+            for sg in (-1, 1):
+                rect(ex(xc(xin) - 0.2), py(sg * y + 0.2), ex(xc(xin) + 0.2), py(sg * y - 0.2), "#a33", 0.2)
+        rect(ex(TSILL - 0.18), py(1.22), ex(TSILL + 0.18), py(-1.22), "none", 0.4, "#a33")
+
+    def equipo(ex, py, K, detalle=False):
+        rect(ex(xc(226)), py(0.83), ex(xc(376)), py(-0.83), "none", 0.3, BLU, "2 0.8")                       # 6 laterales del cuadro
+        rect(ex(xc(204)), py(0.15), ex(xc(243)), py(-0.85), BLF, 0.3, BLU)                                   # 4
+        for sg in (-1, 1):                                                                                   # 5
+            rect(ex(xc(195)), py(sg * 1.0 + 9 * IN), ex(xc(239)), py(sg * 1.0 - 9 * IN), BLF, 0.3, BLU)
+        rect(ex(xc(212)), py(0.42), ex(xc(240)), py(-0.42), BLF, 0.3, BLU)                                   # 3
+        if detalle:
+            rect(ex(xc(160) - 0.125), py(0.28), ex(xc(160) + 0.125), py(-0.28), BLF, 0.3, ORG, CD)           # 2
+            line(ex(xc(165)), py(0), ex(xc(212)), py(0), 0.8, "#555")                                        # cardán
+            rect(ex(xc(226)), py(1.02), ex(xc(350)), py(0.86), "#c9d6e6", 0.3, BLU)                           # cárter de cadena
+            rect(ex(xc(PTO_IN) - 0.05), py(0.9), ex(xc(PTO_IN) + 0.05), py(-0.9), "#9db8d6", 0.3, BLU)       # 9 eje de fuerza
+            line(ex(xc(PTO_IN)), py(0.94), ex(xc(332)), py(0.94), 0.3, ORG, "3 1 0.6 1")                     # cadena 140-2
+        for nom, xin, dd, frn, db, lb in DRUMS:                                                              # 7, 8
+            xa = ex(xc(xin))
+            rect(xa - db / 2 * IN * K, py(lb / 2 * IN), xa + db / 2 * IN * K, py(-lb / 2 * IN), "#9db8d6", 0.3, BLU)
+            for sg in (-1, 1):
+                y0_, y1_ = sg * lb / 2 * IN, sg * (lb + 2 * frn) / 2 * IN
+                rect(xa - dd / 2 * IN * K, py(max(y0_, y1_)), xa + dd / 2 * IN * K, py(min(y0_, y1_)), BLF, 0.3, BLU)
+        if detalle:
+            for y in (-0.93, -1.0):                                                                          # discos Kobelt Ø48,5"
+                rect(ex(xc(332)) - DISC_D / 2 * K, py(y + 0.0125), ex(xc(332)) + DISC_D / 2 * K, py(y - 0.0125), "#fff", 0.25, ORG, CD)
+        rect(ex(AUX[0] - 0.25), py(1.15), ex(AUX[0] + 0.25), py(0.75), "#f3d9c4", 0.3, ORG, CD)             # 10
+        pin = cyl_pin(ZS)
+        for sg in (-1, 1):                                                                                   # 11
+            rect(ex(pin[0]), py(sg * 0.6 + CYL_D / 2), ex(PIV[0]), py(sg * 0.6 - CYL_D / 2), "#f3d9c4", 0.4, ORG, CD)
+        for n, x, y in ((4, xc(223.5), -0.35), (5, xc(217), 1.0), (7, xc(332), 0), (8, xc(273), 0), (10, AUX[0], 0.95),
+                        (11, PIV[0] - 0.7, 0.6)) + (((3, xc(226), 0.25), (9, xc(PTO_IN), -0.75), (6, xc(370), 0.7)) if detalle else ()):
+            tag(ex(x), py(y), n)
+
+    add('<defs><clipPath id="cd"><rect x="10" y="108" width="258" height="150"/></clipPath></defs>')
+    add('<rect x="5" y="5" width="410" height="287" fill="none" stroke="#111" stroke-width="0.5"/>')
+    text(12, 14, "DIGITAL RIG · Equipo 10 (SK-575) · Vista en planta con mástil abatido", 4.2, weight="bold")
+    text(12, 19.5, "Referencia digital: NO es as-built, no es apto para fabricación ni certifica nada. Pose del mástil ilustrativa (C).", 2.6, c=ORG)
+
+    # ── planta general 1:60 ──────────────────────────────────────────────────────────────────────────────────────────────
+    K1, X1, PY1 = 1000 / 60, 18.0, 60.0
+
+    def ex1(x):
+        return X1 + (x + 19.5) * K1
+
+    def py1(y):
+        return PY1 - y * K1
+
+    text(12, 27, "PLANTA GENERAL  ·  escala 1:60  ·  cotas en m", 3, weight="bold")
+    line(ex1(-19.5), PY1, ex1(0.9), PY1, 0.15, "#888", "5 1 1 1")
+    carrier(ex1, py1, K1)
+    equipo(ex1, py1, K1)
+    top = [(ex1(MX - H_INF * i / 100), py1((W0 + (W1 - W0) * i / 100) / 2)) for i in range(101)]
+    bot = [(ex1(MX - H_INF * i / 100), py1(-(W0 + (W1 - W0) * i / 100) / 2)) for i in range(100, -1, -1)]
+    poly(top + bot, "#fbe9dc", 0.45, ORG, CD, 0.45)
+    x1_ = MX - H_INF
+    rect(ex1(x1_) - 0.15 * K1, py1(CROWN_W / 2), ex1(x1_), py1(-CROWN_W / 2), "#fbe9dc", 0.35, ORG, CD)
+    for y in (0.7, -0.7):
+        line(ex1(x1_), py1(y), ex1(x1_ - CROWN_H), py1(y), 0.35, ORG, CD)
+    line(ex1(WELL), py1(1.9), ex1(WELL), py1(-1.9), 0.2, "#111", "5 1 1 1")
+    text(ex1(WELL) - 1, py1(1.9) - 1, "eje del pozo", 2.4, anchor="end")
+    text(ex1(-12.6), py1(1.55), "mástil abatido (C), 1.er tramo en planta: ancho 1,74 → 1,50 m (B)", 2.3, c=ORG)
+    vdim(ex1(-2.9), py1(HW), py1(-HW), f"{fmt(WIDTH_IN * IN, 4)} (A)", left=True)
+    vdim(ex1(FR) - 6, py1(79.8 / 2 * IN), py1(-79.8 / 2 * IN), "trocha 79,8″ (A)", left=True)
+    for xin, ya, lab in ((163, 44.85 * IN, "89,7″ (B)"), (475, 47.1 * IN, "94,2″ (B)")):
+        vdim(ex1(xc(xin)) + 3.3, py1(ya), py1(-ya), lab)
+    vdim(ex1(FR) + 4, py1(-HW + 33 * IN), py1(-HW), "33″", left=False, size=2.0)
+    hdim(ex1(FR), ex1(-2.0), py1(-1.55) + 2, f"bastidor {fmt(FRAME_IN * IN, 3)} (A)")
+    hdim(ex1(MX), ex1(WELL), py1(-1.55) + 2, f"{fmt(76 * IN, 4)} (A)")
+
+    # ── detalle 1:30 ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    K2, X2, PY2 = 1000 / 30, 14.0, 183.0
+
+    def ex2(x):
+        return X2 + (x + 9.45) * K2
+
+    def py2(y):
+        return PY2 - y * K2
+
+    text(12, 112, "DETALLE A · CUADRO DE MANIOBRAS Y EQUIPOS DEL BASTIDOR  ·  escala 1:30", 3, weight="bold")
+    add('<g clip-path="url(#cd)">')
+    line(ex2(-9.45), PY2, ex2(-1.9), PY2, 0.15, "#888", "5 1 1 1")
+    carrier(ex2, py2, K2)
+    equipo(ex2, py2, K2, detalle=True)
+    add("</g>")
+    yb = py2(-1.45) + 3
+    xs = (PTO_IN, 273, 332)
+    for a_, b_ in zip(xs, xs[1:]):
+        hdim(ex2(xc(a_)), ex2(xc(b_)), yb, f"{b_ - a_}″ ({fmt((b_ - a_) * IN, 3)} m) (B)")
+    hdim(ex2(xc(332)), ex2(-2.0), yb + 9, f"{fmt(-2.0 - xc(332), 2)} m al fin del bastidor (derivado)")
+    xr = ex2(-2.0) + 6
+    vdim(xr, py2(HW), py2(-HW), f"{fmt(WIDTH_IN * IN, 4)} (A)", left=True)
+    vdim(ex2(xc(332)) + 21 * IN * K2 + 3.5, py2(31.375 * IN), py2(-31.375 * IN), "1,594 (B)", size=2.2)
+    vdim(ex2(xc(273)) + 21 * IN * K2 + 3.5, py2(29.875 * IN), py2(-29.875 * IN), "1,518 (B)", size=2.2)
+    vdim(ex2(xc(376)) + 4, py2(0.83), py2(-0.83), "1,66 (B)", size=2.2)
+    text(ex2(xc(226)), py2(-1.38), "−Y = lado conductor (cabina)", 2.2)
+
+    # ── lista, verificación y notas (columna derecha) ────────────────────────────────────────────────────────────────────
+    xl = 275
+    text(xl, 112, "COMPONENTES", 3, weight="bold")
+    leg = [
+        "1  Motor Detroit S60 bajo capot (B)", "2  Transmisión Allison 4500 OFS (B/C)", "3  Caja angular 2,47:1 (B)",
+        "4  Tanque hidráulico (B)", "5  Tanques de combustible ×2 (B)", "6  Cuadro de maniobras: laterales ±0,83 m (B)",
+        "7  Tambor principal Ø42″ × 12″ (B)", "8  Tambor de pistoneo Ø42″ × 8″ (B)", "9  Eje de fuerza y cadena 140-2 (B/C)",
+        "10 Malacate auxiliar 12.000 lb (C)", "11 Cilindros de izaje ×2, Ø9,42″ (A/C)",
+    ]
+    for i, t_ in enumerate(leg):
+        text(xl, 117.5 + i * 4.1, t_, 2.3)
+    ck = checks(prof, luz)
+    y1 = 168
+    text(xl, y1, "VERIFICACIÓN", 3, weight="bold")
+    bad = ck["cil_tambor"] < 0.02
+    rows = [
+        (f"Cilindros (11) recogidos: perno a X = {fmt(ck['cil_x'], 2)} m (C).", False),
+        (f"Luz al tambor principal (7): {fmt(ck['cil_tambor'], 2)} m", bad),
+        ("→ INTERFERENCIA: en planta cilindro (y ±0,6 m)" if bad else "→ libra", bad),
+        ("y brida del tambor (hasta ±0,80 m) se superponen.", bad),
+    ]
+    for i, (t_, b_) in enumerate(rows):
+        text(xl, y1 + 5 + i * 4.1, t_, 2.3, c="#b00020" if b_ else "#111")
+    y2 = 193
+    text(xl, y2, "NOTAS Y FUENTES", 3, weight="bold")
+    notes = [
+        "Azul = posición y medida de manual (B),", "forma esquemática. Naranja punteado = C.",
+        "Ejes y gatos: manual de partes (A/B). Ancho 102″", "y bastidor 40 ft: ficha del fabricante (A).",
+        "Discos de freno Ø48,5″ y cárter de cadena: forma", "esquemática; posición lateral del modelo (C).",
+        "Pose del mástil: foto de unidad similar (C).", "No se dibujan casilla, piso de enganche, líneas",
+        "hidráulicas ni cables. Sin cargas ni cálculos.",
+    ]
+    for i, t_ in enumerate(notes):
+        text(xl, y2 + 5 + i * 4.0, t_, 2.2)
+    add('<rect x="275" y="270" width="135" height="18" fill="none" stroke="#111" stroke-width="0.4"/>')
+    text(278, 276, "Equipo 10 · vista en planta", 3, weight="bold")
+    text(278, 281, "Hoja A3 · 1:60 y 1:30 · cad/sk575/plano_montaje.py --hoja planta", 2.1)
+    text(278, 285.5, "Estado: borrador de referencia · pose C pendiente", 2.3, c=ORG)
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297" '
+            'font-family="Arial, Helvetica, sans-serif"><rect width="420" height="297" fill="#fff"/>' + "".join(s) + "</svg>"), ck
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--prof", type=float, default=1.25, help="espesor visible del mástil abatido (m), medido sobre foto")
     ap.add_argument("--luz", type=float, default=0.10, help="cara inferior del mástil sobre el techo de cabina (m)")
-    ap.add_argument("--out", default="docs/planos/equipo10-carrier-mastil-abatido.svg")
+    ap.add_argument("--hoja", choices=("lateral", "planta"), default="lateral")
+    ap.add_argument("--out", default=None)
     a = ap.parse_args()
-    svg, ck = build(a.prof, a.luz)
+    a.out = a.out or ("docs/planos/equipo10-carrier-mastil-abatido.svg" if a.hoja == "lateral" else "docs/planos/equipo10-carrier-planta.svg")
+    svg, ck = (build if a.hoja == "lateral" else build_planta)(a.prof, a.luz)
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     open(a.out, "w", encoding="utf-8").write(svg)
     print(" ".join(f"{k}={v:.3f}" for k, v in ck.items()) + f" → {a.out}")
