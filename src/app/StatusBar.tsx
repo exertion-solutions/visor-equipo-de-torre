@@ -13,6 +13,7 @@ import { PROJECTION_LABELS } from '@/scene/cameras/projection'
 import { registeredComponentIds } from '@/scene/picking/componentObjects'
 import { MODE_LABELS, MODE_SUMMARIES, useModeStore } from '@/stores/modeStore'
 import { dropsVisible, useToolsStore, zonesVisible } from '@/stores/toolsStore'
+import { useTourStore } from '@/stores/tourStore'
 import { ENGINE_LABELS, useViewerStore } from '@/stores/viewerStore'
 
 export function StatusBar() {
@@ -24,6 +25,7 @@ export function StatusBar() {
   const labels = useViewerStore((s) => s.labels)
   const toggleLabels = useViewerStore((s) => s.toggleLabels)
   const wire = useViewerStore((s) => s.wire)
+  const setHelpOpen = useViewerStore((s) => s.setHelpOpen)
   const toggleWire = useViewerStore((s) => s.toggleWire)
   const toggleZones = useToolsStore((s) => s.toggleZones)
   // El botón refleja lo pedido (a mano o por el modo QHSE), aunque el despiece oculte la capa un rato.
@@ -59,7 +61,12 @@ export function StatusBar() {
   const toggleIsolation = useViewerStore((s) => s.toggleIsolation)
 
   const copyLink = async () => {
-    const url = buildShareUrl(location.href, { mode, comp: selectedId, view: activeView })
+    const url = buildShareUrl(location.href, {
+      mode,
+      comp: selectedId,
+      view: activeView,
+      vp: useTourStore.getState().currentId,
+    })
     try {
       await navigator.clipboard.writeText(url)
       showNotice('Enlace copiado')
@@ -379,6 +386,17 @@ export function StatusBar() {
             Copiar enlace
           </Button>
           <HoistControls />
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            aria-haspopup="dialog"
+            onClick={() => setHelpOpen(true)}
+            title="Atajos de teclado: flechas, Mayús + flechas, + y −. También con ? con el foco en el modelo"
+            className="shrink-0"
+          >
+            Atajos
+          </Button>
           <Button
             type="button"
             size="xs"

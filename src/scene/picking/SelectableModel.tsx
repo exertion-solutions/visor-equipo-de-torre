@@ -1,8 +1,12 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import type { ReactNode } from 'react'
+import type { Object3D } from 'three'
 import { isCutAway } from '@/lib/cut'
 import { useToolsStore } from '@/stores/toolsStore'
 import { useViewerStore } from '@/stores/viewerStore'
+import { RIG10_VIEWPOINTS } from '@/data/viewpoints/rig10-viewpoints'
+import { viewpointOfNames } from '@/lib/viewpoints'
+import { useTourStore } from '@/stores/tourStore'
 import { registerExplodeObject } from '@/scene/explode/explodeObjects'
 import { registerComponentObject } from './componentObjects'
 
@@ -57,6 +61,17 @@ export function SelectableModel({ componentId, position, children }: SelectableM
     selectComponent(componentId)
   }
 
+  // Doble clic sobre un equipo: vuela a su sector ("Ir a equipo"). Midiendo, o caminando, no.
+  const doubleClick = (e: ThreeEvent<MouseEvent>) => {
+    if (cutAway(e) || useToolsStore.getState().measure || useTourStore.getState().walking) return
+    const names: string[] = []
+    for (let o: Object3D | null = e.object; o; o = o.parent) names.push(o.name)
+    const vp = viewpointOfNames(names, RIG10_VIEWPOINTS.viewpoints)
+    if (!vp) return
+    e.stopPropagation()
+    useTourStore.getState().go(vp.id)
+  }
+
   return (
     <group
       ref={(o) => {
@@ -68,6 +83,7 @@ export function SelectableModel({ componentId, position, children }: SelectableM
       onPointerOver={hidden ? undefined : over}
       onPointerOut={hidden ? undefined : out}
       onClick={hidden ? undefined : click}
+      onDoubleClick={hidden ? undefined : doubleClick}
     >
       {/* El despiece mueve este grupo interno: el seleccionable (y su registro) queda en su lugar. */}
       <group

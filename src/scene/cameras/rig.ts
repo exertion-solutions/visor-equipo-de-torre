@@ -37,6 +37,12 @@ export function syncCameraMatrices(
   perspective.updateProjectionMatrix()
 }
 
+/** Campo de visión de la cámara de perspectiva (el vuelo a un sector lo cambia y restaura). */
+export function setFov(camera: PerspectiveCamera, fov: number): void {
+  camera.fov = fov
+  camera.updateProjectionMatrix()
+}
+
 /** Zoom de la ortográfica (el de OrbitControls en ortográfica; 1 = el alto del frustum). */
 export function setOrthoZoom(ortho: OrthographicCamera, zoom: number): void {
   ortho.zoom = zoom

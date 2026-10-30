@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Box3, Raycaster, Vector2, Vector3, type Material, type Mesh, type Object3D } from 'three'
 import { getComponentObject, registeredComponentIds } from '@/scene/picking/componentObjects'
 import { useToolsStore } from '@/stores/toolsStore'
+import { useTourStore } from '@/stores/tourStore'
 import { useViewerStore } from '@/stores/viewerStore'
 
 /**
@@ -15,6 +16,8 @@ export interface NativeProbeState {
     posicion: number[]
     objetivo: number[]
     zoom: number
+    /** Campo de visión vertical (°) de la perspectiva; `null` en ortográfica. */
+    fov: number | null
     aspecto: number | null
     /** Frustum de la ortográfica; `null` en perspectiva. */
     frustum: { left: number; right: number; top: number; bottom: number } | null
@@ -27,6 +30,18 @@ export interface NativeProbeState {
     aislado: boolean
     proyeccion: string
     puedeVolver: boolean
+  }
+  /** Recorrido: sector actual, parada del recorrido guiado, si avanza solo, si se camina y los componentes resaltados. */
+  recorrido: {
+    sector: string | null
+    parada: number
+    auto: boolean
+    caminando: boolean
+    resaltados: readonly string[]
+    puedeVolver: boolean
+    ayuda: boolean
+    /** Controles de órbita habilitados (apagados al caminar). */
+    controles: boolean
   }
   /** Cotas, modo medir y puntos medidos (marco de escena). */
   herramientas: { cotas: boolean; medir: boolean; tipoMedicion: string; puntos: number[][] }
@@ -109,6 +124,7 @@ export function NativeProbe() {
             posicion: arr(camera.position),
             objetivo: arr(target),
             zoom: (camera as { zoom?: number }).zoom ?? 1,
+            fov: (camera as { fov?: number }).fov ?? null,
             aspecto: orto.aspect ?? null,
             frustum: orto.isOrthographicCamera
               ? {
@@ -127,6 +143,16 @@ export function NativeProbe() {
             aislado: s.isolationSnapshot !== null,
             proyeccion: s.projection,
             puedeVolver: s.canGoBack,
+          },
+          recorrido: {
+            sector: useTourStore.getState().currentId,
+            parada: useTourStore.getState().stopIndex,
+            auto: useTourStore.getState().auto,
+            caminando: useTourStore.getState().walking,
+            resaltados: s.highlightIds,
+            puedeVolver: s.canGoBack,
+            ayuda: s.helpOpen,
+            controles: (controls as unknown as { enabled: boolean }).enabled,
           },
           herramientas: (({ dims, measure, measureKind, points }) => ({
             cotas: dims,

@@ -6,11 +6,14 @@ import { DropsMarkers } from '@/components/viewer/DropsMarkers'
 import { DropsOfComponent } from '@/components/viewer/DropsOfComponent'
 import { DropsPanel } from '@/components/viewer/DropsPanel'
 import { HoverTooltip } from '@/components/viewer/HoverTooltip'
+import { ShortcutsHelp } from '@/components/viewer/ShortcutsHelp'
 import { QhsePanel } from '@/components/viewer/QhsePanel'
+import { TourPanel } from '@/components/viewer/TourPanel'
 import { ToolHints } from '@/components/viewer/ToolHints'
 import { ToolLabels } from '@/components/viewer/ToolLabels'
 import { ViewButtons } from '@/components/viewer/ViewButtons'
 import { RIG10_RIG, RIG10_SCENE } from '@/data/rigs/rig10'
+import { useTourStore } from '@/stores/tourStore'
 import { useViewerStore } from '@/stores/viewerStore'
 import { useNativeLink } from './useNativeLink'
 
@@ -25,6 +28,8 @@ export default function NativeOverlay() {
   const selected = useViewerStore((s) => s.selectedComponentId)
   const selectComponent = useViewerStore((s) => s.selectComponent)
   useNativeLink(SCENE_IDS)
+  // Al salir del motor nativo no queda un recorrido ni una caminata a medias.
+  useEffect(() => () => useTourStore.getState().clear(), [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -42,9 +47,11 @@ export default function NativeOverlay() {
       {/* Columna izquierda: el panel de componentes cede lugar al panel QHSE (que no tapa el centro de la escena). */}
       <div className="pointer-events-none absolute top-24 bottom-14 left-3 z-10 flex w-[min(16rem,calc(100%-1.5rem))] flex-col gap-2 sm:top-14 sm:w-64">
         <ComponentTree rig={RIG10_RIG} sceneIds={SCENE_IDS} />
+        <TourPanel />
         <QhsePanel />
       </div>
       <ViewButtons raised={selected !== null} />
+      <ShortcutsHelp />
       <DropsMarkers />
       <DropsPanel />
       <HoverTooltip rig={RIG10_RIG} />

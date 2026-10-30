@@ -4,6 +4,11 @@ Cambios visibles del visor, de lo más nuevo a lo más viejo. El detalle de cada
 [`docs/FEATURE_PARITY.md`](docs/FEATURE_PARITY.md). Todo lo del motor **R3F nativo** convive con el visor **V2**, que sigue siendo
 el motor por defecto hasta que todas las funciones críticas estén verificadas.
 
+## Próxima versión · Teclado y recorridos en el nativo
+
+- **Teclado**: el lienzo recibe foco con Tab; ← → giran 7,5°, ↑ ↓ inclinan 5°, Mayús + flechas desplazan, + y − hacen zoom, `?` o `H` abren la ayuda de atajos (también el botón "Atajos") y Esc la cierra. La inclinación ya no cruza la vertical.
+- **Recorridos**: panel "Ir a equipo" con los 14 sectores (vuelo de ~1,8 s en primera persona, ojos a 1,70 m del piso, ficha del sector, "Volver a vista general"); doble clic sobre un equipo va a su sector; recorrido guiado en Entrenamiento (Anterior / Reproducir / Siguiente) y **modo caminata** (W A S D o flechas, 1,4 m/s, colisión con los equipos, dentro del vallado, Esc sale). Herramienta visual: las vistas no son puestos de trabajo ni distancias de seguridad; las fichas son referencia genérica pendiente de validación.
+
 ## 2026-10-30 · El motor nativo, operativo y a la vista
 
 - **El selector de motor ya se ve en el sitio publicado** ("V2 compatible" / "R3F nativo"). Antes solo aparecía con `?dev=1`.
@@ -26,5 +31,5 @@ Sigue siendo una **referencia digital, no as-built**: geometría aproximada, no 
 
 ## Pendiente para la próxima versión
 
-Recorridos guiados, secuencia de montaje, teclado y ayuda de atajos, izamiento del mástil, maniobra, clima, VR, perfiles de calidad, el parámetro
+Secuencia de montaje, izamiento del mástil, maniobra, clima, VR, perfiles de calidad, el parámetro
 `vp` de los enlaces, el detalle de puntos DROPS en la geometría y, al final, retirar `public/legacy/`. Prueba en celular real e inglés.

@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import type { LegacyLayer, LegacySelection, LegacyView } from '@/lib/legacyBridge'
+import type { Vec3 } from '@/lib/geometry'
+import type { Fence } from '@/lib/walk'
 import { presetProjection, type CameraPresetId } from '@/scene/cameras/presets'
 import { DEFAULT_PROJECTION, type Projection } from '@/scene/cameras/projection'
 
@@ -26,6 +28,10 @@ export type CameraCommand =
   | { type: 'focus'; componentId: string; seq: number }
   | { type: 'back'; seq: number }
   | { type: 'view'; view: CameraPresetId; seq: number }
+  /** Vuelo a una vista en primera persona (perspectiva, con su fov): `ms` = 0 es un salto. Guarda la vista previa para "Volver". */
+  | { type: 'viewpoint'; position: Vec3; target: Vec3; fov: number; ms: number; seq: number }
+  /** Pasa a la altura de los ojos (1,70 m) en el lugar donde está la cámara, dentro del vallado, y mirando hacia donde miraba. */
+  | { type: 'walk'; fence: Fence; seq: number }
 
 interface ViewerState {
   engine: ViewerEngine
@@ -45,6 +51,10 @@ interface ViewerState {
   cameraCommand: CameraCommand | null
   /** Hay una vista guardada por un foco: "Volver" la restaura. Lo mantiene `CameraRig`. */
   canGoBack: boolean
+  /** Componentes resaltados por un sector del recorrido (contorno dorado, sin abrir la ficha). */
+  highlightIds: readonly string[]
+  /** Ayuda de atajos de teclado abierta (`?` o `H` con el foco en el lienzo). */
+  helpOpen: boolean
   /** Malla (wireframe) sobre todos los materiales; apagada al arrancar. Reversible: no cambia ningún otro dato del material. */
   wire: boolean
   /** Etiquetas numeradas sobre los componentes (apagadas al arrancar, como en el V2). */
@@ -66,6 +76,12 @@ interface ViewerState {
   toggleEdges: () => void
   toggleLabels: () => void
   toggleWire: () => void
+  setHelpOpen: (open: boolean) => void
+  setHighlight: (ids: readonly string[]) => void
+  /** Vuela a una vista en primera persona (la ejecuta `CameraRig`). */
+  flyTo: (view: { position: Vec3; target: Vec3; fov: number; ms: number }) => void
+  /** Baja la cámara a la altura de los ojos para caminar (la ejecuta `CameraRig`). */
+  standUp: (fence: Fence) => void
   /** Encuadra el componente seleccionado (no hace nada sin selección). */
   focusSelected: () => void
   /** Restaura la vista previa al primer foco (no hace nada si no hay vista guardada). */
@@ -103,6 +119,8 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   canGoBack: false,
   labels: false,
   wire: false,
+  helpOpen: false,
+  highlightIds: [],
   activeView: null,
   projection: DEFAULT_PROJECTION,
   hiddenComponentIds: [],
@@ -116,6 +134,14 @@ export const useViewerStore = create<ViewerState>()((set, get) => ({
   toggleEdges: () => set((s) => ({ edges: !s.edges })),
   toggleLabels: () => set((s) => ({ labels: !s.labels })),
   toggleWire: () => set((s) => ({ wire: !s.wire })),
+  setHelpOpen: (helpOpen) => set({ helpOpen }),
+  setHighlight: (highlightIds) => set({ highlightIds }),
+  flyTo: (view) =>
+    set((s) => ({
+      cameraCommand: { type: 'viewpoint', ...view, seq: (s.cameraCommand?.seq ?? 0) + 1 },
+    })),
+  standUp: (fence) =>
+    set((s) => ({ cameraCommand: { type: 'walk', fence, seq: (s.cameraCommand?.seq ?? 0) + 1 } })),
   focusSelected: () => {
     const { selectedComponentId, cameraCommand } = get()
     if (!selectedComponentId) return
