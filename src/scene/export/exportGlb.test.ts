@@ -58,8 +58,11 @@ describe('buildExportScene', () => {
     expect([pivot.position.y, pivot.scale.y]).toEqual([8, 0.4])
   })
 
-  it('todo visible (también lo oculto) y sin las aristas del visor', () => {
-    component('a')
+  it('todo visible (también lo oculto) y sin ninguna línea: ni las aristas del visor ni las `*_arista` del GLB', () => {
+    const { explode } = component('a')
+    const propia = new LineSegments(new BufferGeometry())
+    propia.name = 'sk575_a_arista'
+    explode.add(propia)
     const scene = buildExportScene()
     expect(scene.getObjectByName('a')!.visible).toBe(true)
     let lineas = 0

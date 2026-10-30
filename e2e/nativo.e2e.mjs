@@ -1621,15 +1621,27 @@ prueba(
     // Deslizador: el bloque se traslada (h − 14) y las líneas conservan la corona y siguen al bloque (formas del V2).
     const enAltura = async (h) => {
       await page.getByLabel('Altura aproximada del aparejo').fill(String(h))
-      await page.waitForTimeout(1200)
       const dy = h - 14
-      const a = await aparejo()
-      const cerca2 = (x, y, msg) =>
-        assert.ok(Math.abs(x - y) < 0.02, `${msg}: ${x} ≠ ${y} (h = ${h})`)
-      cerca2(a.bloque.min, reposo.bloque.min + dy, 'base del bloque')
-      cerca2(a.bloque.max, reposo.bloque.max + dy, 'tope del bloque')
-      cerca2(a.cable.max, reposo.cable.max, 'la corona no se mueve')
-      cerca2(a.cable.min, reposo.cable.min + dy, 'las líneas llegan al bloque')
+      const cerca2 = (x, y) => Math.abs(x - y) < 0.02
+      // Se espera a que el cuadro se renderice (render por software, lento si la CPU está ocupada); no se asume un tiempo fijo.
+      let a
+      const t0 = Date.now()
+      do {
+        await page.waitForTimeout(250)
+        a = await aparejo()
+      } while (
+        Date.now() - t0 < 40_000 &&
+        !(
+          cerca2(a.bloque.min, reposo.bloque.min + dy) &&
+          cerca2(a.cable.min, reposo.cable.min + dy) &&
+          cerca2(a.cable.max, reposo.cable.max)
+        )
+      )
+      const ok = (x, y, msg) => assert.ok(cerca2(x, y), `${msg}: ${x} ≠ ${y} (h = ${h})`)
+      ok(a.bloque.min, reposo.bloque.min + dy, 'base del bloque')
+      ok(a.bloque.max, reposo.bloque.max + dy, 'tope del bloque')
+      ok(a.cable.max, reposo.cable.max, 'la corona no se mueve')
+      ok(a.cable.min, reposo.cable.min + dy, 'las líneas llegan al bloque')
       assert.equal(await altura(), h)
     }
     await enAltura(22)
@@ -1666,19 +1678,23 @@ prueba(
     assert.equal(await boton(page, 'Animar aparejo').getAttribute('aria-pressed'), 'false')
     assert.equal(await altura(), 20)
 
-    // Rebote: desde cerca del tope baja (la dirección se invierte al llegar a 25 m).
+    // Rebote: desde cerca del tope la altura sube y luego baja: solo un rebote en 25 m invierte la dirección.
     await page.getByLabel('Altura aproximada del aparejo').fill('24.9')
+    const tf = Date.now()
+    while ((await altura()) !== 24.9 && Date.now() - tf < 20_000) await page.waitForTimeout(150)
+    assert.equal(await altura(), 24.9, 'el deslizador quedó en 24,9')
     await boton(page, 'Animar aparejo').click()
     const t1 = Date.now()
-    let llego = false
-    let h = await altura()
-    while (Date.now() - t1 < 60_000) {
+    let max = 24.9
+    let h = max
+    while (Date.now() - t1 < 90_000) {
       h = await altura()
-      if (h >= 25) llego = true
-      if (llego && h < 24.8) break
-      await page.waitForTimeout(150)
+      max = Math.max(max, h)
+      if (max >= 24.95 && h < max - 0.1) break
+      await page.waitForTimeout(100)
     }
-    assert.ok(llego && h < 24.8, `rebota en 25 m y baja (llegó ${llego}, ahora ${h})`)
+    assert.ok(max >= 24.95 && h < max - 0.1, `rebota en el tope y baja (máximo ${max}, ahora ${h})`)
+    assert.ok(max <= 25, `no pasa de 25 m (${max})`)
     await boton(page, 'Pausar movimiento').click()
 
     // Desarmado no se anima: el botón y el deslizador se deshabilitan; desarmar pausa la animación.
@@ -1694,10 +1710,33 @@ prueba(
   'exportar GLB: descarga todo el equipo con jerarquía, nombres de componente y el aviso dentro',
   async (page) => {
     // Con otra pose (aparejo a 22 m y equipo desarmado) el archivo sale igual: armado y con el aparejo en reposo.
+    const inicial = await cajas(page)
+    const aparejo0 = await page.evaluate(() => window.__rigNativo.aparejo())
     await page.getByLabel('Altura aproximada del aparejo').fill('22')
+    let aparejo1
+    const ta = Date.now()
+    do {
+      await page.waitForTimeout(250)
+      aparejo1 = await page.evaluate(() => window.__rigNativo.aparejo())
+    } while (
+      Date.now() - ta < 40_000 &&
+      Math.abs(aparejo1.bloque.min - (aparejo0.bloque.min + 8)) >= 0.05
+    )
+    assert.ok(
+      Math.abs(aparejo1.bloque.min - (aparejo0.bloque.min + 8)) < 0.05,
+      'el aparejo está a 22 m',
+    )
     await boton(page, 'Despiece').click()
-    await hasta(page, () => true)
-    await page.waitForTimeout(3000)
+    // Precondición: de verdad está desarmado (el mástil se corrió ≥ 1 m).
+    for (let i = 0; i < 100; i++) {
+      const c = (await cajas(page))[MASTIL].centro
+      if (distancia(c, inicial[MASTIL].centro) >= 1) break
+      await page.waitForTimeout(300)
+    }
+    assert.ok(
+      distancia((await cajas(page))[MASTIL].centro, inicial[MASTIL].centro) >= 1,
+      'el equipo está desarmado al exportar',
+    )
     const ids = (await estado(page)).componentes
 
     const [descarga] = await Promise.all([
@@ -1738,7 +1777,8 @@ prueba(
       const movidos = gltf.nodes.filter(
         (n) =>
           (n.name?.startsWith('explode_') || n.name?.endsWith('_pivote')) &&
-          (n.translation || n.scale),
+          // El exportador escribe las transformaciones como `matrix`; identidad = no se escribe nada.
+          (n.matrix || n.translation || n.scale),
       )
       assert.deepEqual(
         movidos.map((n) => n.name),
