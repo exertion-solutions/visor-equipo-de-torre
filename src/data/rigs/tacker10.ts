@@ -273,9 +273,16 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_bop',
     'Conjunto BOP (carretel, doble ram, anular, KL/CL)',
     'well-control',
-    ['src-folleto', 'src-manual-bop-11', 'src-esquema-ahogo'],
+    ['src-folleto', 'src-manual-bop-11', 'src-esquema-ahogo', 'src-plano-bop-stack'],
     'Dibujado a 11" (manuales de la carpeta del usuario); el diámetro nominal está en conflicto con el folleto (7-1/16"). Cuerpos y bridas ilustrativos.',
     [
+      spec(
+        'stackStandardWS',
+        'Stack estándar Well Service (plano 8127-0011)',
+        'Pipe ram · doble pipe/shear · anular; carretes y bridas de transición; salidas con válvula HCR y manual, check y brida ciega. Orden, medidas y presiones: no legibles en el PDF',
+        'C',
+        'src-plano-bop-stack',
+      ),
       {
         ...spec(
           'nominalBore',
@@ -423,9 +430,16 @@ const SK575_COMPONENTS: Component[] = [
     'sk575_piletas',
     'Piletas (preparación, circulación, ensayo) y trip tank',
     'circulation',
-    ['src-plano-piletas', 'src-layout-ws10'],
+    ['src-plano-piletas', 'src-layout-ws10', 'src-plano-cargas-piletas'],
     'Piletas con las cotas del plano; accesorios internos y trip tank ilustrativos.',
     [
+      spec(
+        'cargasWS',
+        'Cargas de transporte Well Service (plano 29/01/2026)',
+        'Almacenamiento ×2, circulación, preparadora, ensayo-golpeador/zaranda, unidad de filtrado, patín insonorizado y semirremolque con triplex/pileta/golpeador. Flota WS: no se asigna al TKR-10 ni se agregan piletas',
+        'C',
+        'src-plano-cargas-piletas',
+      ),
       spec(
         'count',
         'Piletas',
@@ -639,6 +653,33 @@ export const TACKER10_RIG: Rig = {
       kind: 'layout',
       title: 'Plano "Pileta TACKER 1-2-3" (golpeador / zaranda / preparadora)',
       ref: 'X:\\Mantenimiento WS\\Planos Tecnicos\\Piletas\\Pileta TACKER 1-2-3.dwg.pdf',
+      verified: true,
+    },
+    {
+      id: 'src-plano-bop-stack',
+      kind: 'layout',
+      title:
+        'Plano TACKER 8127-0011 "Stack BOP estándar" — esquema típico Well Service (cotas y presiones ilegibles en el PDF)',
+      ref: 'EnsamblajeBOP_STACK_WS_STD_30092026.PDF (1 p. A4; fuente CenturyGothic sin embeber)',
+      revision: 'rev. no legible, 30/09/2026',
+      verified: true,
+    },
+    {
+      id: 'src-plano-cargas-piletas',
+      kind: 'layout',
+      title:
+        'Plano TACKER "Cargas piletas Well Service Tacker" (semirremolque, patín insonorizado, unidad de filtrado y 5 piletas; sin cotas)',
+      ref: 'EnsamblajeCargasPiletas.PDF (1 p. A4)',
+      revision: 'rev 1, 29/01/2026',
+      verified: true,
+    },
+    {
+      id: 'src-plano-cargas-trailer',
+      kind: 'layout',
+      title:
+        "Plano TACKER 8140-0200 \"Trailer modelo TACKER Well Service\" (oficina, personal, jefe de equipo; contenedor 40'×8'×8,6')",
+      ref: 'EnsamblajeCargasTrailer_WS_TACKER.PDF (1 p. A4)',
+      revision: 'rev 1, 29/01/2026',
       verified: true,
     },
     {
